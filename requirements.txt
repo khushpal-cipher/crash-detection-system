@@ -1,0 +1,7 @@
+tensorflow==2.13.1
+opencv-python
+ultralytics
+torch
+scipy
+h5py
+numpy
