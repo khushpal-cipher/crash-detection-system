@@ -1,0 +1,17 @@
+# Virtual environments
+venv/
+venv_orbstack/
+myenv/
+tf-env/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Runtime outputs
+crash_outputs/
+*.log
+
+# Auto-downloaded model
+yolov8n.pt
