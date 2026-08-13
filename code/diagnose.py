@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+6-test diagnostic tool to identify which pipeline stage has a problem
+
 🔍 CRASH DETECTION DIAGNOSTIC TOOL
 ====================================
 Tests each pipeline stage independently to find exactly where the problem is.
@@ -42,7 +44,7 @@ SHORTCUTS = {
 }
 
 PROCESS_W, PROCESS_H = 640, 480
-PPM = 25
+PPM = 25  # DEPRECATED: enhanced.py uses pinhole camera projection instead of flat PPM
 
 
 def find_video(name):

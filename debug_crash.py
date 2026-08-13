@@ -2,6 +2,8 @@
 # Run this to see EXACTLY why crashes are not detected
 
 """
+Written during development to figure out WHY crashes weren't being detected — verbose frame-by-frame debugger
+
 This script processes a crash video and prints detailed debug info
 for every single frame to identify the exact failure point.
 
@@ -27,12 +29,12 @@ import argparse
 # CONFIGURATION
 # ============================================================================
 
-PIXELS_PER_METER = 40
-MAX_SPEED = 120
+PIXELS_PER_METER = 25          # DEPRECATED: enhanced.py uses pinhole projection
+MAX_SPEED = 180
 SPEED_SMOOTH_FRAMES = 3
-COLLISION_DISTANCE_THRESHOLD = 1.5
-CRASH_THRESHOLD_HIGH = 0.65
-CRASH_THRESHOLD_MEDIUM = 0.40
+COLLISION_DISTANCE_THRESHOLD = 1.5   # synced with enhanced.py DIST_CONTACT
+CRASH_THRESHOLD_HIGH = 0.80    # synced with enhanced.py CNN_THRESH
+CRASH_THRESHOLD_MEDIUM = 0.50  # synced with enhanced.py
 MODEL_PATH = Path.home() / 'Desktop' / 'crash_detection' / 'models' / 'crash_detection_model'
 
 

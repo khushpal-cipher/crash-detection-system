@@ -13,5 +13,12 @@ __pycache__/
 crash_outputs/
 *.log
 
-# Auto-downloaded model
+# Auto-downloaded model & large weights
 yolov8n.pt
+models/crash_detection_model.h5
+models/feature_extractor.keras
+models/crash_detection_model/
+models/crash_model_cpu/
+models/crash_model_saved/
+videos
+

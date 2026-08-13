@@ -796,14 +796,16 @@ class CrashDetector:
         print(f"   Max vehicles in frame: {max_vehicles}")
         print(f"   Average vehicles: {avg_vehicles:.2f}")
         
-        # Speed analysis
+        # Speed analysis — computed from actual tracked frame data
         max_speed = self.max_speed_ever
-        avg_speed = max_speed / 2 if max_speed > 0 else 0
+        all_speeds = [d.get('max_speed', 0) for d in self.all_detections if d.get('max_speed', 0) > 0]
+        avg_speed = sum(all_speeds) / len(all_speeds) if all_speeds else 0.0
+        min_speed = min(all_speeds) if all_speeds else 0.0
         
         print("\n🚀 SPEED ANALYSIS:")
         print(f"   Max speed: {max_speed:.2f} km/h")
         print(f"   Average speed: {avg_speed:.2f} km/h")
-        print(f"   Speed range: 0.00 - {max_speed:.2f} km/h")
+        print(f"   Speed range: {min_speed:.2f} - {max_speed:.2f} km/h")
         
         # Distance analysis
         md = self.min_dist_ever
@@ -812,7 +814,7 @@ class CrashDetector:
         max_dist = max(distances) if distances else 0
         
         print("\n📏 DISTANCE ANALYSIS:")
-        print(f"   Min distance: {md:.2f} meters" if md < 999 else "   Min distance: 0.00 meters")
+        print(f"   Min distance: {md:.2f} meters" if md < 999 else "   Min distance: N/A (no vehicle pairs detected)")
         print(f"   Average distance: {avg_dist:.2f} meters")
         print(f"   Max distance: {max_dist:.2f} meters")
         
@@ -829,26 +831,27 @@ class CrashDetector:
         print("🚨 CRASH DETECTION VERDICT")
         print("="*70)
         
-        # Determine verdict
+        # Determine verdict — confidence computed from real data
+        max_cnn = getattr(self, 'max_cnn_ever', 0.0)
         if is_crash and crash_pct >= 15:
             verdict = "🚨 CRASH DETECTED!"
-            confidence = 95
+            confidence = round(max(max_cnn * 100, min(crash_pct * 5, 99))) if max_cnn > 0 else round(min(crash_pct * 5, 99))
             reason = "High collision percentage with sustained risk"
         elif is_crash and crash_pct >= 3:
             verdict = "🚨 CRASH DETECTED"
-            confidence = 85
+            confidence = round(max(max_cnn * 100, min(crash_pct * 4, 95))) if max_cnn > 0 else round(min(crash_pct * 4, 95))
             reason = "Sustained collision pattern detected"
         elif is_crash:
             verdict = "🚨 CRASH DETECTED"
-            confidence = 80
+            confidence = round(max_cnn * 100) if max_cnn > 0 else round(min(crash_pct * 5, 90))
             reason = "Collision detected"
         elif crash_pct >= 2:
             verdict = "⚠️ POTENTIAL COLLISION"
-            confidence = 40
+            confidence = round(min(crash_pct * 3, 50))
             reason = "Low collision percentage"
         else:
             verdict = "✅ NO CRASH DETECTED"
-            confidence = 95
+            confidence = round(100 - crash_pct * 5) if crash_pct > 0 else 99
             reason = "No significant collision risk detected"
         
         print(f"\nVerdict: {verdict}")
@@ -868,9 +871,9 @@ class CrashDetector:
             print(f"\n💥 COLLISION TYPE:")
             print(f"   {self.fault_result.get('collision_type', 'UNKNOWN')}")
             
-            # Speed analysis for fault
-            dashcam_speed = max_speed * 0.6 if max_speed > 0 else 0.0
-            other_speed = max_speed * 0.4 if max_speed > 0 else 0.0
+            # Speed analysis for fault — using real tracked speeds
+            dashcam_speed = self.fault_result.get('v1_speed', 0.0)
+            other_speed = self.fault_result.get('v2_speed', 0.0)
             
             print(f"\n🚀 SPEED ANALYSIS:")
             print(f"   Dashcam speed: {dashcam_speed:.1f} km/h")

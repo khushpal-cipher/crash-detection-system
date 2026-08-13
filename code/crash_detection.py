@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
+⭐ Main script — runs the full pipeline
+
 🚗 CRASH DETECTION SYSTEM - v12.0 FINAL
 ============================================================================
 
@@ -97,15 +99,15 @@ class Config:
     # ── Detection ──
     YOLO_CONF_THRESHOLD = 0.5      # Same as Colab
     NMS_IOU_THRESHOLD = 0.45       # Remove duplicate detections
-    MAX_DISTANCE_TRACKING = 50     # Same as Colab
+    MAX_DISTANCE_TRACKING = 80     # synced with enhanced.py SSOT
 
     # ── Physics (at 640x480 resolution) ──
-    PIXELS_PER_METER = 25          # Same as Colab
-    MAX_SPEED = 120
-    SPEED_SMOOTH_FRAMES = 3
+    PIXELS_PER_METER = 25          # DEPRECATED: enhanced.py uses pinhole projection
+    MAX_SPEED = 180
+    SPEED_SMOOTH_FRAMES = 5        # DEPRECATED: enhanced.py uses Kalman Filter
 
     # ── Collision Detection ──
-    COLLISION_DISTANCE_THRESHOLD = 2.0   # meters - same as Colab
+    COLLISION_DISTANCE_THRESHOLD = 1.5   # meters - synced with enhanced.py DIST_CONTACT
 
     # ── Temporal ──
     CRASH_WINDOW_SIZE = 10         # frames
@@ -117,7 +119,7 @@ class Config:
     WEIGHTS_PATH = MODELS_DIR / 'crash_model_weights.weights.h5'
     CNN_FRAMES   = 10       # rolling buffer length
     CNN_SIZE     = 112      # frame size for MobileNetV2
-    CNN_THRESH   = 0.7      # crash probability threshold
+    CNN_THRESH   = 0.80     # synced with enhanced.py SSOT
 
     VIDEO_SHORTCUTS = {
         'crash1': VIDEOS_DIR / 'crash1.mov',
