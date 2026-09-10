@@ -1,0 +1,55 @@
+parsed 1500 crash clips
+
+=== T5a: youtubeID group structure (POSITIVES) ===
+  1500 crash clips come from 133 distinct YouTube source videos
+  mean clips per source video: 11.28   max: 34
+  group-size histogram (clips per source video -> how many sources):
+      1 clip(s):    1 sources
+      2 clip(s):    3 sources
+      3 clip(s):    2 sources
+      4 clip(s):    7 sources
+      5 clip(s):    9 sources
+      6 clip(s):    7 sources
+      7 clip(s):    9 sources
+      8 clip(s):   11 sources
+      9 clip(s):    9 sources
+     10 clip(s):   12 sources
+     11 clip(s):    8 sources
+     12 clip(s):   10 sources
+     13 clip(s):    2 sources
+     14 clip(s):    8 sources
+     15 clip(s):    6 sources
+     16 clip(s):    7 sources
+     17 clip(s):    3 sources
+     18 clip(s):    3 sources
+     19 clip(s):    1 sources
+     20 clip(s):    3 sources
+     21 clip(s):    4 sources
+     22 clip(s):    1 sources
+     23 clip(s):    1 sources
+     24 clip(s):    2 sources
+     25 clip(s):    1 sources
+     26 clip(s):    2 sources
+     34 clip(s):    1 sources
+  clips belonging to a MULTI-CLIP source: 1499/1500 = 99.9%
+
+=== T5b: leakage under RANDOM 80/20 clip split (the Colab method) ===
+  source videos split ACROSS train and val : 113 (min 102, max 121) out of 133
+  crash clips implicated by that leakage    : 1372/1500 = 91.4%
+  => roughly 274 of the 300 val crash clips (91%) have a sibling clip,
+     cut from the SAME YouTube video, sitting in the training set.
+
+=== T5c: does the OFFICIAL CCD split avoid this? ===
+  official train positives: 1200   official test positives: 300
+  source videos appearing in BOTH official train and test: 107
+  => the official split is ALSO NOT source-grouped
+
+=== T5d: metadata that was available and discarded ===
+  timing  : {'Day': 1325, 'Night': 175}
+  weather : {'Normal': 1141, 'Snowy': 235, 'Rainy': 124}
+  ego     : {'Yes': 801, 'No': 699}
+  accident onset frame (of 50): mean 37.2, median 36.0, min 30, max 49
+  => on average 74% of every 'crash' clip contains NO accident,
+     yet every sampled frame was trained with label=1.
+  uniform 10-frame sampling picks frames [0, 5, 11, 16, 22, 27, 33, 38, 44, 49]
+  => 72% of the frames the model saw for a positive clip are PRE-accident.

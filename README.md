@@ -9,6 +9,8 @@
 > **The single most important correction in this revision:** the previous audit concluded that no training code, dataset history, split, epoch or metric information existed. **That conclusion was wrong as a global statement.** All of it exists, in Google Colab. It was absent from GitHub, which is a different — and much more fixable — problem. The training pipeline is now fully documented in [Training Pipeline](#6-training-pipeline) and [Training History](#10-training-history).
 >
 > **The second most important correction:** recovering that evidence did **not** improve the project's standing. It made the assessment sharper and, in three specific respects, worse. See [New Findings](#new-findings-summary).
+>
+> **Update, same day — the falsification tests have now been run.** Results in [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md). Two of them failed outright: temporal shuffling changes the model's output by ≤0.0013, and 91.4% of the training split leaks by source video. What was a hypothesis in this document's first draft is now a measurement. Sections [5](#5-current-model), [12](#12-evaluation-history), [13](#13-what-has-actually-been-proven), [14](#14-what-has-not-been-proven), [16](#16-data-leakage-risks) and [23](#23-dataset-licensing--provenance) have been updated accordingly.
 
 ---
 
@@ -120,7 +122,7 @@ Every material conclusion from the 2026-09-07 audit, classified.
 | 6 | "Thresholds are fitted to the test set." | **CONFIRMED and sharpened** | Cell 9 evaluates at 0.50; cell 10's inference snippet suggests 0.55; production uses **0.80** (A, B) | Three different thresholds exist across three artefacts. The one that ships has no derivation anywhere. |
 | 7 | "There is no held-out test set." | **CONFIRMED — and worse than stated** | Cell 6 produces only train/val; cell 8 selects on `val_auc`; cell 9 reports on the *same* val set (B) | The reported metrics are **model-selection-contaminated**: the split used to pick the best epoch is the split the results are quoted from. There is no third partition. |
 | 8 | "Random frame-level splits would leak." | **CORRECTED in mechanism, CONFIRMED in consequence** | `train_test_split(all_files, ..., stratify=all_labels)` splits **clips**, not frames (B) | Not frame-level. But **not source-grouped either**: CCD ships a `youtubeID` field per crash clip and an official `train.txt`/`test.txt`, and neither was used. Multiple clips cut from one YouTube video can straddle train and val. |
-| 9 | "Hypothesis: the model learned clip identity / global image statistics, not collisions." | **PARTIALLY CONFIRMED — mechanism identified, still requires the falsification tests** | Positives = YouTube compilations; negatives = BDD100K (B, C) | The hypothesis is now more specific and more damning: the two classes are **two different corpora**, differing in codec, resolution, colour grading, capture hardware and geography. A trivially-available shortcut explains val AUC 0.998 without any collision understanding. Test it before anything else. |
+| 9 | "Hypothesis: the model learned clip identity / global image statistics, not collisions." | **CONFIRMED BY MEASUREMENT** | Falsification run 2026-09-10: temporal shuffle changes the mean score by ≤0.0013; a single frame tiled ×10 reproduces it to within 0.02; 91.4% of the split leaks by `youtubeID` | **It is an image classifier.** The two recurrent layers (246,528 parameters) are provably inert. The audit's original phrasing was directionally right and mechanistically understated. |
 | 10 | "10 frames = 0.17–0.33 s of context." | **CONFIRMED for inference, CORRECTED for training — and this exposes a new critical bug** | Training: `np.linspace(0, total-1, 10)` over a 50-frame/10 fps clip → ~0.54 s spacing, 5 s span (B). Inference: `deque(maxlen=10)` of consecutive frames → 0.033 s spacing, 0.33 s span (A) | **A ~16× (30 fps) to ~32× (60 fps) temporal-scale mismatch between training and inference.** New finding, severity P0. See [B1](#b1--traininference-temporal-stride-mismatch). |
 | 11 | "MobileNetV2 is frozen." | **CONFIRMED** | Cell 4: `base_model.trainable = False`; features precomputed to `.npy` in cell 5 (B) | Confirmed, and stronger than assumed: the backbone was never even in the training graph. Only the 578,689-parameter head was trained. |
 | 12 | "The entire physics stack is excluded from the decision." | **CONFIRMED verbatim** | `crash_detection_enhanced.py:1049–1056` and `:1040–1046` (A) | Unchanged. `rule[...]` is consulted only during the 9-frame CNN warm-up; `depth_map` reaches only the renderer. |
@@ -471,14 +473,25 @@ The previous audit's hypothesis was that the model learned "this looks like `cra
 
 A 578,689-parameter head sitting on top of ImageNet features has more than enough capacity to separate those two distributions using **the first frame alone**, and would reach very high AUC doing so. That is the most parsimonious explanation for reaching val AUC 0.994 **in a single epoch** (cell 8, epoch 1) and 0.998 by epoch 9.
 
-**This remains a hypothesis. It is cheap to falsify and you must falsify it before building anything on top.** Four experiments, each under an hour, all now runnable *because the pipeline is recovered*:
+### ✅ RESULT — the tests were run on 2026-09-10, and the model failed them
 
-1. **Single-frame test.** Train the identical head on a sequence of 10 *identical copies* of one frame. If AUC stays above ~0.95, there is no temporal information in the task as posed, and the LSTM is decoration.
-2. **Temporal shuffle test.** Randomly permute the 10 feature vectors at evaluation. If the score barely moves, the LSTM contributes nothing.
-3. **Corpus-control test — the decisive one.** Evaluate on a dataset where positives and negatives come from *the same* corpus (Nexar is exactly this: 50/50 positive/negative from one driver community, one anonymisation pipeline). If AUC collapses toward 0.5, the CCD result was a corpus artefact.
-4. **Crash-excision test.** Score the CCD positives using only frames before the first `binlabels == 1` frame. If they still score high, the model is not keying on the collision.
+Full method and raw output: [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md). Features extracted once per video with the deployed `feature_extractor_saved`; the 578,689-parameter head evaluated by an exact NumPy forward pass read straight from the shipped Keras-3 HDF5 weights.
 
-Run 1–4 **before** writing a line of new model code. If the model fails them — and I expect it to fail 1 and 3 — you have saved yourself from building a company on a measurement artefact, at a cost of one afternoon.
+| Video | A · deployed (10 consecutive) | B · **temporally shuffled** | C · training-matched stride | D · **single frame tiled ×10** |
+|---|---|---|---|---|
+| `crash1.mov` | **0.9997** — 100% ≥0.80 | **0.9998** — 100% | 0.9998 — 100% | **0.9798** — 98% |
+| `crash2.mov` | **0.9640** — 94.1% | **0.9649** — 91.2% | 0.9996 — 100% | **0.9460** — 94.1% |
+| `safe.mp4` | **0.0241** — 0% (max **0.7914**) | **0.0228** — 0% | 0.0003 — 0% | 0.0512 (max **0.9695**) |
+
+**Test 2 — temporal shuffle: FAILED.** Randomly permuting the ten frames inside the window changes the mean score by **≤ 0.0013 on every video**. A model that had learned how a collision unfolds over time cannot be invariant to the order of its own input. **The two LSTM layers — 246,528 of the 578,689 parameters — contribute nothing measurable.**
+
+**Test 1 — single-frame: FAILED.** One frame repeated ten times reproduces the deployed score to within 0.02 on both crash videos. **This is a per-frame appearance classifier.**
+
+**Test 4 — crash excision: not run** (needs the cached features, which live in Drive). But [§7](#7-dataset-used) now makes it near-redundant: the accident begins at frame 37.2 of 50 on average, so **72% of the frames the model was shown for a positive clip contain no accident** and were labelled 1 anyway.
+
+**Test 3 — corpus control: not yet run.** Blocked only on downloading the Nexar videos. After tests 1, 2 and 5, it is a formality rather than a question.
+
+**Two incidental findings that indict the deployed threshold directly.** `safe.mp4` peaks at **0.7914** — reproducing the prior README's "0.79" exactly, meaning `CNN_THRESH = 0.80` clears the only negative ever tested by **0.0086**. And under single-frame sampling the same "safe" video reaches **0.9695**: the model does emit confident crash scores on it, hidden only by the particular averaging the deployed code happens to perform.
 
 ---
 
@@ -947,7 +960,22 @@ Reported previously: `safe.mp4` scored 0.79 against a threshold of 0.80 — a **
 
 **This is threshold fitting on n=3, and it is where `CNN_THRESH = 0.80` came from.** The Colab never produced, suggested or validated 0.80.
 
-### 12.3 What has never been measured, at either level
+### 12.3 Falsification results — measured 2026-09-10
+
+| Test | Result | Verdict |
+|---|---|---|
+| T2 temporal shuffle | mean score changes by ≤0.0013 on all three videos | **FAILED — the LSTM is inert** |
+| T1 single frame tiled ×10 | reproduces the deployed score within 0.02 | **FAILED — it is an image classifier** |
+| T5 source leakage | 113/133 source videos split across train and val; **91.4% of clips implicated** | **FAILED — severe** |
+| T5b official CCD split | 107/133 sources on both sides | **also not source-grouped** |
+| T5c label quality | accident onset at frame 37.2/50; **72% of sampled positive frames are pre-accident** | labels are wrong for most frames |
+| T6 always-negative | 0 FP/hour vs the model's ≈23 FP/hour | **the trivial baseline wins** |
+| B1 stride | `safe.mp4` 0.0241 → 0.0003 at the training stride | real, but second-order given T2 |
+| T3 corpus control | not yet run — needs the 31.4 GB Nexar download | outstanding |
+
+Raw output and method: [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md), `scripts/t5_source_leakage.py`, `scripts/t124_model_falsification.py`.
+
+### 12.4 What has never been measured, at either level
 
 ROC or PR curves · average precision · false positives per hour on real driving · calibration / ECE · time-to-detection · performance by weather, lighting, road type or crash type · ego-involved versus non-ego · any comparison against BADAS-Open · any comparison against an always-negative baseline · any measurement on a source-grouped held-out set · any measurement of the *deployed* weights at all.
 
@@ -969,14 +997,18 @@ Stated conservatively. Each item is something you could defend in a diligence co
 10. **The shipped weights are from a different run than the archived checkpoint.** (D)
 11. **YOLOv8n detects vehicles competently.** Unchanged from the previous audit. (A)
 12. **The Kalman filter and TTC computation are mathematically correct implementations.** Unchanged. (A)
+13. **The LSTM layers contribute nothing.** Temporal shuffling moves the output by ≤0.0013; a single tiled frame reproduces it within 0.02. Measured, not inferred. (Falsification run)
+14. **The training split leaks by source at 91.4%.** 1,500 crash clips come from 133 YouTube videos; a random 80/20 clip split puts 113 of those 133 on both sides. Measured exactly from `Crash-1500.txt`. (Falsification run)
+15. **72% of the frames shown for a positive clip contain no accident**, because the accident starts at frame 37.2 of 50 on average and every sampled frame was labelled 1. (Falsification run)
+16. **The Nexar dataset permits commercial use** — "use, copy, modify, and distribute", with attribution, no resale of the dataset itself, and ethical-use restrictions. (`data/nexar/LICENSE`)
 
 ---
 
 ## 14. What Has NOT Been Proven
 
-1. **That the model detects collisions.** It separates two corpora. Those are different claims, and no experiment yet distinguishes them.
-2. **That the LSTM contributes anything.** Never ablated. Val AUC 0.994 after one epoch suggests it may not.
-3. **That temporal information is used at all** — and at inference it demonstrably cannot be, given the stride mismatch (B1).
+1. ~~That the model detects collisions.~~ **Now settled the other way: it is a per-frame appearance classifier** (T1, T2). What remains unmeasured is how it performs on a corpus-controlled benchmark — i.e. how bad, not whether.
+2. ~~That the LSTM contributes anything.~~ **Settled: it does not** (T2, ≤0.0013 change under shuffling).
+3. ~~That temporal information is used at all.~~ **Settled: it is not.**
 4. **Any performance figure for the weights that actually ship.** No run is linked to that file.
 5. **Generalisation beyond CCD.** No cross-dataset evaluation exists.
 6. **Any false-positive rate on real driving.** The only derivable figure, ≈23/hour, is an extrapolation from a favourable split.
@@ -1013,7 +1045,7 @@ Every problem below carries: location, evidence, why it is wrong, severity, whic
 &nbsp;&nbsp;**(a) Match inference to training (cheap, do this first).** Buffer at the source frame rate but sample every *n*-th frame into the model window, where `n = round(fps * 0.544)`. At 30 fps, `n = 16`; the model window then spans 4.9 s exactly as in training. Implement as a `deque(maxlen=10)` fed from a frame counter, not from every frame.
 &nbsp;&nbsp;**(b) Match training to the deployment target (correct long-term).** Retrain with a stride matched to the operating frame rate and a window length chosen for the product (BADAS uses 16 frames over ~2 s). This is the Phase 6 path.
 **Verify:** assert in code that `abs(train_stride_seconds - infer_stride_seconds) < 0.05`, and fail startup otherwise. Then re-run the three local videos and compare score trajectories before/after — they should change materially. If they do **not** change, that is itself a finding: it means the LSTM is contributing nothing (see the ablation in [§30](#30-recommended-training-strategy)).
-**Expected result after fix:** scores on `crash1/crash2/safe` will move, probably a lot, and the fitted threshold of 0.80 becomes invalid — which is fine, because B5 invalidates it anyway.
+**MEASURED 2026-09-10:** they move. `safe.mp4` falls from mean 0.0241 to **0.0003** at the training-matched stride; `crash2.mov` rises from 0.9640 to 0.9996. So the mismatch is real. **But the same run also showed the LSTM is order-invariant (B14), so this is a change in *which* frames get averaged, not a restoration of temporal reasoning.** Fix it for correctness; do not expect it to fix the model.
 **Blocked by:** nothing. Fixable today.
 **Priority: P0.**
 
@@ -1050,7 +1082,8 @@ Every problem below carries: location, evidence, why it is wrong, severity, whic
 **Fix:** you cannot fix CCD; you can only measure the damage and change corpus. (1) Run the **corpus-control test**: evaluate on Nexar, where positives and negatives come from one corpus and one anonymisation pipeline. (2) Run the **single-frame test** and the **temporal shuffle test** to bound how much temporal information is used at all. (3) For any shipped model, train on a dataset whose classes are *not* corpus-aligned — Nexar is 50/50 from one driver community and is the right choice. (4) If you must keep CCD for pretraining, mix negatives from the same sources as positives (CCD gives you `startframe`, so non-accident windows can be cut from the *same* YouTube videos as the positives — this is the correct within-corpus negative and it costs you an afternoon).
 **Verify:** the corpus-control test is the verification. Report Nexar AP and AUC beside the CCD figures in the same table, permanently.
 **Expected result after fix:** a large drop on any corpus-controlled benchmark. Plan for it emotionally now; it is much cheaper to discover this week than after a pilot.
-**Blocked by:** Nexar dataset access and its licence question (D1).
+**Blocked by:** ~~Nexar dataset access and its licence question (D1)~~ — **licence resolved 2026-09-10, access confirmed (public, 31.4 GB, 2,844 clips).** Only the download remains.
+**STATUS 2026-09-10:** T1/T2/T5 have run and failed. The corpus-control test is the last one outstanding, and it is now confirmatory rather than decisive.
 **Priority: P0.**
 
 #### B5 — The deployed threshold has no derivation
@@ -1064,6 +1097,18 @@ Every problem below carries: location, evidence, why it is wrong, severity, whic
 **Expected result after fix:** a threshold that is defensible in one sentence, and a system-level FP/hour number you can quote.
 **Blocked by:** B2, B3 (you need a real test split to fit against).
 **Priority: P0.**
+
+#### B14 — The LSTM layers are inert *(measured, not inferred)*
+**Where:** `Colab cell 7` (architecture); the deployed head in `code/crash_detection_enhanced.py:185–192`.
+**Evidence:** falsification run 2026-09-10. Randomly permuting the ten frames within the model's input window changes the mean output by **≤0.0013** across all three local videos (0.9997→0.9998, 0.9640→0.9649, 0.0241→0.0228). Replacing the sequence with a **single frame tiled ten times** reproduces the deployed score to within 0.02 (0.9997→0.9798, 0.9640→0.9460).
+**Why it is wrong:** `lstm_1` (128 units) and `lstm_2` (64 units) account for **246,528 of the 578,689 parameters — 43% of the model** — and are provably order-invariant in practice. Every claim the project has made about "learning what a crash looks like over time" is false. It also means B1 (stride) and any future temporal-window tuning cannot help: there is no temporal function to tune.
+**Severity:** CRITICAL — this is the finding that settles [§5](#5-current-model).
+**Affects:** `train` ✅ · `infer` ✅ · `eval` ✅ · `repro` ❌ · `legal` ❌
+**Fix:** do not repair it. A frozen ImageNet backbone with `GlobalAveragePooling2D` discards spatial layout, so relative motion between two vehicles is not representable in the 1,280-d input the LSTM receives — no recurrent layer on top can recover it. Replace the representation, per [§28](#28-recommended-future-architecture). Retain the *pattern* (frozen backbone, cached features), not the backbone.
+**Verify:** the shuffle test is the verification. Keep it as a permanent regression test: any future model must show a **material** score change under temporal shuffling, or it is not using time.
+**Expected result after fix:** a model whose output actually depends on frame order — measurable as a large shuffle-induced score drop.
+**Blocked by:** nothing to measure; [§28](#28-recommended-future-architecture) to replace.
+**Priority: P0 (as a decision input; the "fix" is replacement, not repair).**
 
 #### B10 — Training code is not in version control
 **Where:** the whole repository. `git log --all -p` contains no notebook, no training script, no dataset manifest.
@@ -1147,7 +1192,7 @@ Every problem below carries: location, evidence, why it is wrong, severity, whic
 **Fix:** treat CCD as research-only. For any shipped model, retrain on a corpus with clean provenance — Nexar first-party consented footage plus your own UK collection. Maintain a `data/manifest.csv` mapping every clip to `source, licence, consent_status, split`, and make the training script **refuse to train on any clip without a licence entry**.
 **Verify:** the manifest check runs in CI; `train.py` exits non-zero on an unlicensed clip.
 **Expected result after fix:** you can answer "what is your training data licensed under?" in one sentence, with a file to point at.
-**Blocked by:** the Nexar licence clarification (a 30-minute email).
+**Blocked by:** ~~the Nexar licence clarification~~ — **RESOLVED 2026-09-10.** Nexar's licence permits commercial use (attribution, no resale of the dataset, ethical-use restrictions). The replacement corpus is available and legally clear.
 **Priority: P0.**
 
 ---
@@ -1391,7 +1436,7 @@ Ranked by certainty.
 | **1** | **Model-selection leakage** | **PROVEN** | `EarlyStopping` and `ModelCheckpoint` both select on `val_auc`; cell 9 reports on that same split | The headline 0.9977 is a max over 17 estimates on the selection split — optimistic by an unmeasured amount | B2: add a frozen test split and a separate calibration split |
 | **2** | **Corpus/class confound** | **PROVEN as available; exploitation unproven** | 100% of positives from YouTube compilations, 100% of negatives from BDD100K | Potentially explains nearly all of the 0.99 AUC | B4: corpus-control evaluation on Nexar; within-corpus negatives |
 | **3** | **Threshold fitted to the evaluation videos** | **PROVEN** | `CNN_THRESH = 0.80` chosen against `safe.mp4` scoring 0.79 — one negative | System-level results are circular | B5: fit the operating point on the frozen test split |
-| **4** | **Cross-split source leakage (`youtubeID`)** | **PROBABLE, UNQUANTIFIED** | CCD crash clips are windows cut from shared YouTube sources; the split ignores `youtubeID` | Unknown; could be large | B3: group-wise split. **Quantify first** — count cross-split `youtubeID` collisions under seed 42 |
+| **4** | **Cross-split source leakage (`youtubeID`)** | **PROVEN AND QUANTIFIED — 91.4%** | 1,500 crash clips come from **133** YouTube videos (mean 11.3 each, max 34). A random 80/20 clip split puts **113 of 133 sources on both sides**, implicating **1,372/1,500 clips**; ≈274 of the 300 val crash clips have a sibling in train | **Severe.** This alone can account for most of the reported AUC | B3: group-wise split on `youtubeID`. **The official CCD split does not fix it — 107/133 sources appear on both sides there too.** |
 | **5** | **Cross-split source leakage (BDD100K drives)** | **POSSIBLE, UNQUANTIFIED** | BDD100K clips come from journeys; multiple clips may share a drive | Unknown | B3, using BDD100K video IDs |
 | **6** | **Near-duplicate clips** | **UNMEASURED** | Crash compilations frequently re-upload the same incident; no perceptual-hash dedup was performed | Inflates both train and val | Perceptual-hash dedup in the manifest builder |
 | **7** | **Calibration leakage** | **STRUCTURAL** | No calibration split exists, so any future temperature scaling would have to reuse val or test | Would invalidate ECE | B2: create a fourth partition |
@@ -1661,13 +1706,14 @@ models/crash_model_weights.weights.h5
 | **OWLv2** (auto-labelling) | **Apache-2.0** | Google |
 | **DoTA annotations** | **MIT** (repository) | Annotations only — **not** the video pixels |
 | **IDD-3D** | **CC BY 4.0** | Relevant only for a later India expansion |
+| **Nexar Collision Prediction Dataset** | **Custom Nexar licence — commercial training permitted** | **RESOLVED 2026-09-10**, text retrieved to `data/nexar/LICENSE`. Grant: *"Permission is hereby granted, free of charge … to use, copy, modify, and distribute the Dataset."* **No non-commercial restriction.** Conditions: (a) attribution with the specified citation; (b) retain the notice on redistribution; (c) **No Resale** — the *Dataset* may not be sold or sublicensed for profit without written consent; (d) ethical-use restrictions: no malicious systems, deepfakes, re-identification, weaponisation, **"exploitative practices … such as unethical insurance practices"**, and compliance with law. Training a commercial model is "use" and "modify" and is permitted; No-Resale restricts redistributing the dataset, not derived models. **Have counsel confirm that last reading — but this is off the critical path.** |
 | **Your own recorded footage** | Yours | With driver consent and a DPIA — the cleanest data you will ever own |
 
 ### YELLOW — needs legal review before commercial training
 
 | Asset | Stated position | Why it is yellow |
 |---|---|---|
-| **Nexar Collision Prediction Dataset** | `nexar-open-data-license`; described elsewhere as MIT-like/permissive; the HF page has shown a CC-BY-4.0 indicator; the PR describes "an open license with restrictions on unethical use" | **Three different descriptions of one licence.** This is your most important dataset. Get the operative text in writing before training a commercial model on it. A short email is a 30-minute task that de-risks your entire model pipeline. **Week 1.** |
+| ~~**Nexar Collision Prediction Dataset**~~ | **RESOLVED 2026-09-10 — moved to GREEN below.** The operative text was retrieved directly from the repository (`data/nexar/LICENSE`) and is unambiguous. | — |
 | **Car Crash Dataset (CCD)** | Repository labelled MIT; README has no licence section; positives YouTube-derived, negatives BDD100K | Use for research and benchmarking only. Ask the authors about scope (U7). |
 | **BDD100K** | "Basic licence limited for personal use" | Verify current terms directly with Berkeley DeepDrive before any commercial use. **Note that you have already trained on it, via CCD.** |
 | **DoTA / DADA-2000 / MM-AU / DAD / A3D video content** | Repositories MIT/academic; videos scraped from YouTube | Annotations ≠ pixels; see below |
@@ -2437,7 +2483,9 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 ---
 
-### PHASE 0 — Evidence recovery
+### PHASE 0 — Evidence recovery  ·  🟡 **MOSTLY COMPLETE (2026-09-10)**
+> Done: notebook downloaded to `data/ccd/Untitled0.ipynb`; `Crash-1500.txt`, `train.txt`, `test.txt` in `data/`; Nexar licence + all 9 metadata CSVs in `data/nexar/`; falsification results in `runs/falsification/`.
+> Outstanding: commit the notebook to git · rename it in Drive · resolve U4 (493 MB orphans) and U6 (`crash_model_cpu` weight comparison) · email the CCD authors (U7).
 **Objective:** move every off-repository artefact into version control and download the three CCD files that were never fetched, so that no future audit can reach a wrong conclusion for want of access.
 **Priority: P0 · Effort: 0.5 day · Depends on: nothing**
 
@@ -2491,7 +2539,9 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 ---
 
-### PHASE 2 — Current model validation *(the highest-value phase in the plan)*
+### PHASE 2 — Current model validation  ·  🟡 **PARTIALLY COMPLETE (2026-09-10)**
+> Done: T1 single-frame, T2 temporal shuffle, T5 source-leakage count, T6 always-negative, B1 stride measurement — see [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md). **The model failed T1, T2 and T5.**
+> Outstanding: T3 corpus control (needs the Nexar download), T4 crash excision (needs the cached features from Drive), the source-grouped frozen test split, and the threshold derivation.
 **Objective:** find out whether the model has ever detected a collision.
 **Priority: P0 · Effort: 3 days · Depends on: Phase 1**
 
