@@ -1,0 +1,6 @@
+print('1. start', flush=True)
+import cv2; print('2. cv2 ok', flush=True)
+import tensorflow as tf; print('3. tf ok', flush=True)
+import torch; print('4. torch ok', flush=True)
+from ultralytics import YOLO; print('5. ultralytics ok', flush=True)
+print('ALL OK', flush=True)

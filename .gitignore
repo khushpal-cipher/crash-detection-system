@@ -1,24 +1,22 @@
-# Virtual environments
-venv/
-venv_orbstack/
-myenv/
-tf-env/
-__pycache__/
-*.pyc
-
-# macOS
-.DS_Store
-
-# Runtime outputs
-crash_outputs/
-*.log
 
 # Auto-downloaded model & large weights
-yolov8n.pt
+# Runtime outputs
+# Virtual environments
+# macOS
+*.log
+*.pyc
+.DS_Store
+__pycache__/
+crash_env/
+crash_outputs/
 models/crash_detection_model.h5
-models/feature_extractor.keras
 models/crash_detection_model/
 models/crash_model_cpu/
 models/crash_model_saved/
+models/feature_extractor.keras
+myenv/
+tf-env/
+venv/
+venv_orbstack/
 videos
-
+yolov8n.pt

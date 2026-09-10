@@ -1,0 +1,37 @@
+# Virtual environments
+venv/
+venv_orbstack/
+myenv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Old / bad models (do not commit)
+models/crash_detection_model.h5
+models/crash_detection_model.keras
+models/best_crash_model.keras
+models/feature_extractor.keras
+models/crash_model_cpu/
+models/crash_model_saved/
+models/crash_detection_model/
+
+# YOLO weights (auto-downloaded by ultralytics)
+*.pt
+
+# Test videos (too large — share separately)
+videos/
+
+# Generated outputs
+crash_outputs/
+diagnostics/
+debug_crash.py
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
