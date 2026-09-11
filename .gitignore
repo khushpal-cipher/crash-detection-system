@@ -20,3 +20,6 @@ venv/
 venv_orbstack/
 videos
 yolov8n.pt
+
+# Nexar dataset videos (2.7 GB) - re-downloadable, never commit
+data/nexar/**/*.mp4

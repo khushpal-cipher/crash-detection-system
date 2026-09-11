@@ -40,15 +40,6 @@ from ultralytics import YOLO
 from scipy.spatial.distance import cdist
 warnings. filterwarnings('ignore')
 
-# Local modules
-try:
-    from depth_estimator import DepthEstimator
-except ImportError:
-    DepthEstimator = None
-try:
-    from bev_renderer import BEVRenderer
-except ImportError:
-    BEVRenderer = None
 
 
 # ============================================================================
@@ -73,11 +64,9 @@ class Config:
     # ── Detection ──
     YOLO_CONF      = 0.5
     CONF_NEW_TRACK = 0.50   # min confidence to create new track
-    CONF_CONTINUE  = 0.30   # min confidence to continue existing track
     NMS_IOU        = 0.45
     TRACK_MAX_DIST = 80
     MIN_BOX_AREA   = 2000
-    MIN_VEHICLE_Z  = 3.0    # meters — reject "vehicles" closer than this (likely false)
     MIN_VEHICLE_AR = 0.4    # min aspect ratio (w/h) for vehicles
 
     # ── Speed ──
@@ -85,7 +74,6 @@ class Config:
     CAMERA_FPS     = 30     # fallback when measured FPS unavailable
 
     # ── Collision (TTC-based) ──
-    TTC_WARN       = 2.5    # seconds — issue warning
     TTC_CRITICAL   = 1.2    # seconds — collision imminent
     DIST_CONTACT   = 1.5    # meters — physical contact threshold
     CLOSING_MIN    = 0.5    # m/s — min closing speed to compute TTC
@@ -107,13 +95,6 @@ class Config:
     CNN_FRAMES   = 10
     CNN_SIZE     = 112
     CNN_THRESH   = 0.80
-
-    # ── Dashcam ego zone (fraction of frame dimensions) ──
-    EGO_ZONE_W     = 0.20   # width  = 20% of frame
-    EGO_ZONE_H     = 0.09   # height =  9% of frame
-    EGO_ZONE_Y     = 0.96   # bottom edge at 96% down the frame
-    EGO_ZONE_MAX_W = 250    # max ego zone width in pixels (clamp for high res)
-    EGO_ZONE_MAX_H = 80     # max ego zone height in pixels
 
     # ── ROI mask (fraction of frame height) ──
     ROI_SKY_CUT  = 0.40    # mask out top 40% (sky)
@@ -137,7 +118,6 @@ class Config:
         assert 0.3 < cls.H_CAM < 4.0, f"Camera height {cls.H_CAM}m out of range"
         assert -15 < cls.PITCH_DEG < 15, f"Pitch {cls.PITCH_DEG}° out of range"
         assert cls.FX > 50, f"Focal length {cls.FX} too small"
-        assert cls.TTC_CRITICAL < cls.TTC_WARN, "TTC_CRITICAL must be < TTC_WARN"
 
 
 # ============================================================================
@@ -616,169 +596,6 @@ class RuleCollision:
 
 
 # ============================================================================
-# FAULT DETECTOR (3D metric space — replaces old pixel-space dot products)
-# ============================================================================
-
-class FaultDetector:
-    def __init__(self):
-        self.pos_hist = {}   # id -> deque of (X_m, Z_m)
-
-    def _update(self, vehicles):
-        for v in vehicles:
-            if v['id'] not in self.pos_hist:
-                self.pos_hist[v['id']] = deque(maxlen=25)
-            self.pos_hist[v['id']].append(
-                (v.get('X_m', 0), v.get('Z_m', 0))
-            )
-
-    @staticmethod
-    def _motion_label_3d(speed_ms):
-        """Label based on 3D metric speed (m/s)."""
-        if speed_ms < 0.5:    return "stopped"
-        if speed_ms < 3.0:    return "moving slowly"
-        if speed_ms < 10.0:   return "moving fast"
-        return "moving very fast"
-
-    def _collision_type_3d(self, a, b):
-        """Classify collision using 3D metric velocity vectors."""
-        va = np.array([a.get('Vx_ms', 0), a.get('Vz_ms', 0)])
-        vb = np.array([b.get('Vx_ms', 0), b.get('Vz_ms', 0)])
-
-        speed_a = np.linalg.norm(va)
-        speed_b = np.linalg.norm(vb)
-
-        # Both stationary
-        if speed_a < 0.5 and speed_b < 0.5:
-            return 'stationary'
-        # One stationary (parked car hit)
-        if speed_a < 0.5:
-            return 'rear-end-b'
-        if speed_b < 0.5:
-            return 'rear-end-a'
-
-        # 3D direction vector from A to B
-        ab_3d = np.array([b.get('X_m', 0) - a.get('X_m', 0),
-                          b.get('Z_m', 0) - a.get('Z_m', 0)])
-        ab_norm = ab_3d / (np.linalg.norm(ab_3d) + 1e-6)
-
-        # Heading alignment in metric space
-        a_toward = float(np.dot(va / speed_a, ab_norm))
-        b_toward = float(np.dot(vb / speed_b, -ab_norm))
-
-        if a_toward > 0.45 and b_toward > 0.45:
-            return 'head-on'
-        if a_toward > 0.45 and b_toward < 0.15:
-            return 'rear-end-a'
-        if b_toward > 0.45 and a_toward < 0.15:
-            return 'rear-end-b'
-        return 'side'
-
-    def analyze(self, vehicles: List[Dict]) -> Optional[Dict]:
-        if len(vehicles) < 2:
-            return None
-
-        self._update(vehicles)
-
-        # Find closest pair in 3D metric space
-        pairs = []
-        for i in range(len(vehicles)):
-            for j in range(i + 1, len(vehicles)):
-                a, b = vehicles[i], vehicles[j]
-                d = np.sqrt((a.get('X_m', 0) - b.get('X_m', 0))**2 +
-                            (a.get('Z_m', 0) - b.get('Z_m', 0))**2)
-                pairs.append((d, a, b))
-        _, a, b = min(pairs, key=lambda x: x[0])
-
-        ctype = self._collision_type_3d(a, b)
-        speed_a = np.sqrt(a.get('Vx_ms', 0)**2 + a.get('Vz_ms', 0)**2)
-        speed_b = np.sqrt(b.get('Vx_ms', 0)**2 + b.get('Vz_ms', 0)**2)
-        la = self._motion_label_3d(speed_a)
-        lb = self._motion_label_3d(speed_b)
-
-        if ctype == 'rear-end-a':
-            fault  = f"V{a['id']}"
-            reason = f"V{a['id']} hit V{b['id']} from behind ({la})"
-        elif ctype == 'rear-end-b':
-            fault  = f"V{b['id']}"
-            reason = f"V{b['id']} hit V{a['id']} from behind ({lb})"
-        elif ctype == 'head-on':
-            fault  = 'shared'
-            reason = "Head-on — both vehicles approaching each other"
-        elif ctype == 'stationary':
-            fault  = 'unclear'
-            reason = "Both stationary — unable to determine from motion"
-        else:
-            sa = a.get('speed', 0)
-            sb = b.get('speed', 0)
-            if sa > sb + 10:
-                fault  = f"V{a['id']}"
-                reason = f"V{a['id']} was faster in side impact ({sa:.0f} vs {sb:.0f} km/h)"
-            elif sb > sa + 10:
-                fault  = f"V{b['id']}"
-                reason = f"V{b['id']} was faster in side impact ({sb:.0f} vs {sa:.0f} km/h)"
-            else:
-                fault  = 'unclear'
-                reason = f"Side impact between V{a['id']} and V{b['id']}"
-
-        return {'at_fault': fault, 'reason': reason, 'collision_type': ctype,
-                'v1': a['id'], 'v2': b['id'],
-                'v1_speed': a.get('speed', 0), 'v2_speed': b.get('speed', 0)}
-
-
-# ============================================================================
-# DASHCAM EGO ZONE
-# ============================================================================
-
-class EgoZone:
-    """Fixed zone at bottom-center representing the dashcam car's front bumper."""
-
-    @staticmethod
-    def bounds(fw, fh):
-        """Returns (x1, y1, x2, y2) of the ego zone, clamped for high-res."""
-        zw = min(int(fw * Config.EGO_ZONE_W), Config.EGO_ZONE_MAX_W)
-        zh = min(int(fh * Config.EGO_ZONE_H), Config.EGO_ZONE_MAX_H)
-        cx = fw // 2
-        y2 = int(fh * Config.EGO_ZONE_Y)
-        return cx - zw // 2, y2 - zh, cx + zw // 2, y2
-
-    @staticmethod
-    def overlaps(vx1, vy1, vx2, vy2, ex1, ey1, ex2, ey2) -> bool:
-        return not (vx2 < ex1 or vx1 > ex2 or vy2 < ey1 or vy1 > ey2)
-
-    @staticmethod
-    def check(vehicles, fw, fh):
-        """Return list of vehicles whose bbox overlaps the ego zone."""
-        ex1, ey1, ex2, ey2 = EgoZone.bounds(fw, fh)
-        return [v for v in vehicles
-                if v.get('is_vehicle', True) and
-                EgoZone.overlaps(v['x1'], v['y1'], v['x2'], v['y2'], ex1, ey1, ex2, ey2)]
-
-    @staticmethod
-    def fault(v, fw):
-        """Direction the offending vehicle came from."""
-        spd = v.get('speed', 0)
-        spd_s = f"{spd:.0f} km/h" if spd < Config.MAX_SPEED else "high speed"
-        cx_v   = v['cx']
-        cx_ego = fw // 2
-        margin = fw * 0.12
-        if cx_v < cx_ego - margin:
-            direction = "from the left"
-        elif cx_v > cx_ego + margin:
-            direction = "from the right"
-        else:
-            direction = "head-on"
-        return {
-            'at_fault'      : f"V{v['id']}",
-            'reason'        : f"V{v['id']} struck your car {direction} ({spd_s})",
-            'collision_type': f'dashcam-{direction.replace(" ", "-")}',
-            'v1'            : v['id'],
-            'v2'            : 'ego',
-            'v1_speed'      : spd,
-            'v2_speed'      : 0,
-        }
-
-
-# ============================================================================
 # DISPLAY
 # ============================================================================
 
@@ -786,8 +603,7 @@ class Display:
     def __init__(self, on=True):
         self.on = on
 
-    def draw(self, frame, vehicles, is_crash, cnn_prob, min_dist,
-             fault_info=None, dashcam=False, ego_hits=None, min_ttc=None):
+    def draw(self, frame, vehicles, is_crash, cnn_prob, min_dist, min_ttc=None):
         out = frame.copy()
         h, w = out.shape[:2]
 
@@ -812,42 +628,15 @@ class Display:
         n_veh = sum(1 for v in vehicles if v.get('is_vehicle', True))
         n_obj = len(vehicles) - n_veh
 
-        # --- Dashcam ego zone (only when vehicles are actually present) ---
-        if dashcam and n_veh > 0:
-            ex1, ey1, ex2, ey2 = EgoZone.bounds(w, h)
-            hit_ids = {v['id'] for v in (ego_hits or [])}
-            zone_color = (0, 0, 255) if ego_hits else (0, 200, 255)
-            # Semi-transparent ego zone
-            overlay = out.copy()
-            cv2.rectangle(overlay, (ex1, ey1), (ex2, ey2), zone_color, -1)
-            cv2.addWeighted(overlay, 0.25, out, 0.75, 0, out)
-            cv2.rectangle(out, (ex1, ey1), (ex2, ey2), zone_color, 2)
-            cv2.putText(out, "EGO",
-                        (ex1 + 5, ey2 - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, zone_color, 1)
-            # Draw line from each hitting vehicle to ego zone
-            for v in (ego_hits or []):
-                cx_v, cy_v = v['cx'], v['cy']
-                cx_e = (ex1 + ex2) // 2
-                cy_e = (ey1 + ey2) // 2
-                cv2.line(out, (cx_v, cy_v), (cx_e, cy_e), (0, 0, 255), 2)
 
         # Info bar at top
         bar = np.zeros((90, w, 3), dtype=np.uint8)
         cnn_s = f"{cnn_prob:.2f}" if cnn_prob >= 0 else "warming up"
         spd_s = f"{max_spd:.0f}km/h" if n_veh else "--"
         ttc_s = f"{min_ttc:.1f}s" if min_ttc is not None and min_ttc < 999 else "--"
-        if dashcam:
-            mode_s = "DASHCAM"
-            cv2.putText(bar, f"[{mode_s}] Vehicles:{n_veh}  Objects:{n_obj}  |  Speed:{spd_s}  TTC:{ttc_s}  |  CNN:{cnn_s}",
-                        (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.56, (0, 200, 255), 2)
-        else:
-            md_s = f"{min_dist:.2f}m" if min_dist < 999 else "inf"
-            cv2.putText(bar, f"Vehicles:{n_veh}  Objects:{n_obj}  |  Dist:{md_s}  TTC:{ttc_s}  Speed:{spd_s}  |  CNN:{cnn_s}",
-                        (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.56, (255, 255, 255), 2)
-        if fault_info:
-            cv2.putText(bar, f"Fault: {fault_info['reason'][:60]}",
-                        (10, 58), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 200, 100), 1)
+        md_s = f"{min_dist:.2f}m" if min_dist < 999 else "inf"
+        cv2.putText(bar, f"Vehicles:{n_veh}  Objects:{n_obj}  |  Dist:{md_s}  TTC:{ttc_s}  Speed:{spd_s}  |  CNN:{cnn_s}",
+                    (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.56, (255, 255, 255), 2)
 
         if is_crash:
             cv2.rectangle(bar, (0, 62), (w, 90), (0, 0, 220), -1)
@@ -858,45 +647,6 @@ class Display:
 
         return cv2.vconcat([bar, out])
 
-    def draw_with_overlays(self, frame, vehicles, is_crash, cnn_prob, min_dist,
-                           fault_info=None, dashcam=False, ego_hits=None,
-                           min_ttc=None, depth_map=None, bev_img=None,
-                           show_depth=False, show_bev=True):
-        """Extended draw with depth heatmap and BEV minimap overlays."""
-        out = self.draw(frame, vehicles, is_crash, cnn_prob, min_dist,
-                        fault_info, dashcam, ego_hits, min_ttc)
-        h, w = out.shape[:2]
-
-        # BEV minimap in top-right corner
-        if show_bev and bev_img is not None:
-            bh, bw = bev_img.shape[:2]
-            # Ensure it fits
-            if bh < h and bw < w:
-                x_off = w - bw - 10
-                y_off = 10
-                # Semi-transparent background
-                roi = out[y_off:y_off+bh, x_off:x_off+bw]
-                blended = cv2.addWeighted(roi, 0.3, bev_img, 0.7, 0)
-                out[y_off:y_off+bh, x_off:x_off+bw] = blended
-
-        # Depth heatmap in top-left corner
-        if show_depth and depth_map is not None:
-            dh, dw = min(200, h//3), min(300, w//3)
-            depth_vis = cv2.resize(depth_map, (dw, dh))
-            if len(depth_vis.shape) == 2:
-                depth_vis = cv2.applyColorMap(
-                    (depth_vis / (depth_vis.max() + 1e-6) * 255).astype(np.uint8),
-                    cv2.COLORMAP_MAGMA
-                )
-            x_off, y_off = 10, 10
-            roi = out[y_off:y_off+dh, x_off:x_off+dw]
-            blended = cv2.addWeighted(roi, 0.3, depth_vis, 0.7, 0)
-            out[y_off:y_off+dh, x_off:x_off+dw] = blended
-            cv2.putText(out, "DEPTH", (x_off + 5, y_off + 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
-        return out
-
     def show(self, frame, title="Crash Detection v17.0 — 3D Perception") -> bool:
         if not self.on:
             return True
@@ -905,10 +655,6 @@ class Display:
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 return False
-            if key == ord('d'):
-                self.toggle_depth = not getattr(self, 'toggle_depth', False)
-            if key == ord('b'):
-                self.toggle_bev = not getattr(self, 'toggle_bev', True)
             return True
         except Exception:
             return True
@@ -925,7 +671,7 @@ class Display:
 # ============================================================================
 
 class CrashDetectionEnhanced:
-    def __init__(self, save_output=False, dashcam=False):
+    def __init__(self, save_output=False):
         Log.head("CRASH DETECTION v17.0 — 3D PERCEPTION + DEPTH + BEV")
         Config.validate()
         Config.OUTPUT_DIR.mkdir(exist_ok=True)
@@ -933,33 +679,10 @@ class CrashDetectionEnhanced:
         self.detector    = Detector()
         self.neural      = NeuralCrashDetector()
         self.save_output = save_output
-        self.dashcam     = dashcam
 
-        # Depth estimator (MiDaS)
-        self.depth_est = None
-        if DepthEstimator is not None:
-            try:
-                self.depth_est = DepthEstimator()
-                if self.depth_est.enabled:
-                    Log.ok("MiDaS depth estimator loaded (MPS GPU)")
-                else:
-                    Log.warn("MiDaS depth estimator failed to load — using pinhole only")
-                    self.depth_est = None
-            except Exception as e:
-                Log.warn(f"Depth estimator unavailable: {e}")
-                self.depth_est = None
-
-        # BEV renderer
-        self.bev = None
-        if BEVRenderer is not None:
-            self.bev = BEVRenderer(canvas_size=250, max_range=50.0)
-            Log.ok("BEV renderer initialized")
-
-        if dashcam:
-            Log.ok("Dashcam mode ON — ego zone active")
 
     def _make_pipeline(self):
-        return Tracker(), SpeedEstimator(), RuleCollision(), FaultDetector()
+        return Tracker(), SpeedEstimator(), RuleCollision()
 
     def run_video(self, video_path, display=True, max_frames=500):
         from pathlib import Path as P
@@ -988,7 +711,7 @@ class CrashDetectionEnhanced:
         Log.ok(f"Resolution: {orig_w}x{orig_h} @ {fps:.0f}fps")
         Log.ok(f"Duration: {dur:.1f}s ({total} frames)")
 
-        tracker, speed_est, rule_col, fault_det = self._make_pipeline()
+        tracker, speed_est, rule_col = self._make_pipeline()
         disp = Display(on=display)
 
         frame_count = crash_frames = 0
@@ -1018,13 +741,6 @@ class CrashDetectionEnhanced:
                 tracked = speed_est.update(tracked, fps)
                 vehs    = [v for v in tracked if v.get('is_vehicle', True)]
 
-                # Depth estimation (runs every frame if available)
-                depth_map = None
-                if self.depth_est is not None:
-                    depth_map = self.depth_est.estimate_metric(
-                        frame, Config.H_CAM, Config.PITCH_DEG,
-                        Config.FY, Config.CY_IMG
-                    )
                 rule    = rule_col.process(vehs)
                 cnn     = self.neural.predict(frame)
                 fh, fw  = frame.shape[:2]
@@ -1032,33 +748,14 @@ class CrashDetectionEnhanced:
                 if cnn >= 0:
                     max_cnn = max(max_cnn, cnn)
 
-                ego_hits   = []
-                fault_info = None
-
-                if self.dashcam:
-                    # Dashcam: ego zone is the only crash trigger
-                    ego_hits = EgoZone.check(vehs, fw, fh)
-                    is_crash = len(ego_hits) > 0
+                # CNN gates the verdict, require >=2 vehicles.
+                # NOTE: this threshold has no derivation - see README bug B5.
+                if cnn >= 0:
+                    is_crash = (cnn >= Config.CNN_THRESH) and (len(vehs) >= 2)
                     if is_crash:
                         neural_confirmed = True
-                        fault_info = EgoZone.fault(ego_hits[0], fw)
-                        if first_fault is None:
-                            first_fault = fault_info
                 else:
-                    # Standard: CNN gates verdict, require ≥2 vehicles
-                    if cnn >= 0:
-                        if (cnn >= Config.CNN_THRESH) and (len(vehs) >= 2):
-                            neural_confirmed = True
-                            is_crash = True
-                        else:
-                            is_crash = False
-                    else:
-                        is_crash = rule['is_sustained'] and (len(vehs) >= 2)
-
-                    if is_crash and len(vehs) >= 2:
-                        fault_info = fault_det.analyze(vehs)
-                        if fault_info and first_fault is None:
-                            first_fault = fault_info
+                    is_crash = rule['is_sustained'] and (len(vehs) >= 2)
 
                 frame_count += 1
                 if is_crash:
@@ -1071,23 +768,9 @@ class CrashDetectionEnhanced:
                                      max((v.get('speed', 0) for v in vehs), default=0))
 
                 if display:
-                    # Render BEV minimap
-                    bev_img = None
-                    if self.bev is not None:
-                        bev_img = self.bev.render(
-                            vehs, ego_speed=0.0,
-                            min_ttc=rule.get('min_ttc', float('inf'))
-                        )
-
-                    show_depth = getattr(disp, 'toggle_depth', False)
-                    show_bev = getattr(disp, 'toggle_bev', True)
-
-                    df = disp.draw_with_overlays(
+                    df = disp.draw(
                         frame, tracked, is_crash, cnn, rule['min_dist'],
-                        fault_info, dashcam=self.dashcam, ego_hits=ego_hits,
-                        min_ttc=rule.get('min_ttc'),
-                        depth_map=depth_map, bev_img=bev_img,
-                        show_depth=show_depth, show_bev=show_bev
+                        min_ttc=rule.get('min_ttc')
                     )
                     if not disp.show(df):
                         break
@@ -1128,7 +811,7 @@ class CrashDetectionEnhanced:
         Config.set_resolution(cam_w, cam_h)
         fps = cap.get(cv2.CAP_PROP_FPS) or Config.CAMERA_FPS
 
-        tracker, speed_est, rule_col, fault_det = self._make_pipeline()
+        tracker, speed_est, rule_col = self._make_pipeline()
         disp = Display(on=display)
 
         frame_count = crash_frames = 0
@@ -1155,13 +838,6 @@ class CrashDetectionEnhanced:
                 tracked = speed_est.update(tracked, fps)
                 vehs    = [v for v in tracked if v.get('is_vehicle', True)]
 
-                # Depth estimation
-                depth_map = None
-                if self.depth_est is not None:
-                    depth_map = self.depth_est.estimate_metric(
-                        frame, Config.H_CAM, Config.PITCH_DEG,
-                        Config.FY, Config.CY_IMG
-                    )
                 rule    = rule_col.process(vehs)
                 cnn     = self.neural.predict(frame)
                 fh, fw  = frame.shape[:2]
@@ -1169,30 +845,12 @@ class CrashDetectionEnhanced:
                 if cnn >= 0:
                     max_cnn = max(max_cnn, cnn)
 
-                ego_hits   = []
-                fault_info = None
-
-                if self.dashcam:
-                    # Dashcam mode: ego zone is the only crash trigger
-                    ego_hits = EgoZone.check(vehs, fw, fh)
-                    is_crash = len(ego_hits) > 0
+                if cnn >= 0:
+                    is_crash = (cnn >= Config.CNN_THRESH) and (len(vehs) >= 2)
                     if is_crash:
                         neural_confirmed = True
-                        fault_info = EgoZone.fault(ego_hits[0], fw)
-                        if first_fault is None:
-                            first_fault = fault_info
                 else:
-                    if cnn >= 0:
-                        is_crash = (cnn >= Config.CNN_THRESH) and (len(vehs) >= 2)
-                        if is_crash:
-                            neural_confirmed = True
-                    else:
-                        is_crash = rule['is_sustained'] and (len(vehs) >= 2)
-
-                    if is_crash and len(vehs) >= 2:
-                        fault_info = fault_det.analyze(vehs)
-                        if fault_info and first_fault is None:
-                            first_fault = fault_info
+                    is_crash = rule['is_sustained'] and (len(vehs) >= 2)
 
                 frame_count += 1
                 if is_crash:
@@ -1202,23 +860,9 @@ class CrashDetectionEnhanced:
                 max_speed_ever = max(max_speed_ever,
                                      max((v.get('speed', 0) for v in vehs), default=0))
 
-                # Render BEV minimap
-                bev_img = None
-                if self.bev is not None:
-                    bev_img = self.bev.render(
-                        vehs, ego_speed=0.0,
-                        min_ttc=rule.get('min_ttc', float('inf'))
-                    )
-
-                show_depth = getattr(disp, 'toggle_depth', False)
-                show_bev = getattr(disp, 'toggle_bev', True)
-
-                df = disp.draw_with_overlays(
+                df = disp.draw(
                     frame, tracked, is_crash, cnn, rule['min_dist'],
-                    fault_info, dashcam=self.dashcam, ego_hits=ego_hits,
-                    min_ttc=rule.get('min_ttc'),
-                    depth_map=depth_map, bev_img=bev_img,
-                    show_depth=show_depth, show_bev=show_bev
+                    min_ttc=rule.get('min_ttc')
                 )
 
                 # Init video writer on first annotated frame
@@ -1308,14 +952,13 @@ def main():
     parser = argparse.ArgumentParser(description='Crash Detection v16.0 Enhanced')
     parser.add_argument('--video',      type=str,  help='Video name (crash1, crash2, safe) or path')
     parser.add_argument('--camera',     action='store_true', help='Use live webcam')
-    parser.add_argument('--dashcam',    action='store_true', help='Dashcam mode: ego zone + CNN-only crash detection')
     parser.add_argument('--record',     action='store_true', help='Record annotated webcam video to file')
     parser.add_argument('--save-output',action='store_true', help='Save crash frames as images')
     parser.add_argument('--no-display', action='store_true', help='Suppress video window')
     parser.add_argument('--max-frames', type=int,  default=500, help='Max frames to process')
     args = parser.parse_args()
 
-    engine = CrashDetectionEnhanced(save_output=args.save_output, dashcam=args.dashcam)
+    engine = CrashDetectionEnhanced(save_output=args.save_output)
 
     if args.camera:
         engine.run_camera(display=not args.no_display, record=args.record)
