@@ -284,7 +284,7 @@ crash_detection_v2/
 │   ├── crash_model_saved/               (4.5 MB, gitignored — unexplained)
 │   ├── crash_detection_model.h5         (296 MB, gitignored — ORPHANED, see U4)
 │   └── crash_detection_model/           (197 MB, gitignored — ORPHANED, see U4)
-└── videos -> ~/Desktop/crash_detection/videos
+└── videos -> ~/dev/crash_detection/videos
     ├── crash1.mov  (48 MB, 3408×1910)
     ├── crash2.mov  (48 MB, 3408×1910)
     └── safe.mp4    (94 MB, 3840×2160)

@@ -20,13 +20,19 @@ bugs, evidence standards) is accurate and is preserved here, corrected where the
 ## 1. Working directory & how to verify state before touching anything
 
 ```
-/Users/khushpalsinghchouhan/Desktop/crash_detection/crash_detection_v2
+/Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
 ```
+
+> **RELOCATED 2026-09-11.** The project was moved out of `~/Desktop` (which is iCloud-synced and was
+> causing `Errno 60` read timeouts on cloud-evicted files) to `~/dev/crash_detection`. Git, the SSH
+> remote, all 667 Nexar clips, the 3 local videos and the model artefacts were verified intact after
+> the move. Any path referring to `~/Desktop/crash_detection` in older notes is stale.
+> **Never create Python environments or store datasets under `~/Desktop`.**
 
 Run this verification block FIRST, before changing a single file:
 
 ```bash
-cd ~/Desktop/crash_detection/crash_detection_v2
+cd ~/dev/crash_detection/crash_detection_v2
 git log --oneline | head -5
 git status --short | grep -v '^?? data/nexar'   # filter the ~500 untracked mp4s
 git diff --stat
