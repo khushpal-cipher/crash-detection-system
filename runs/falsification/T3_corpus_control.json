@@ -1,0 +1,5338 @@
+[
+  {
+    "id": "00002",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 29.7
+  },
+  {
+    "id": "00009",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 293,
+    "fps": 30.6
+  },
+  {
+    "id": "00020",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 280,
+    "fps": 30.6
+  },
+  {
+    "id": "00030",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 29.9
+  },
+  {
+    "id": "00035",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "00038",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "00045",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 326,
+    "fps": 30.5
+  },
+  {
+    "id": "00051",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "00067",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "00070",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "00075",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "00087",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 30.6
+  },
+  {
+    "id": "00091",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 304,
+    "fps": 30.6
+  },
+  {
+    "id": "00092",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 29.8
+  },
+  {
+    "id": "00094",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 29.9
+  },
+  {
+    "id": "00101",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "00107",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.5
+  },
+  {
+    "id": "00113",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 317,
+    "fps": 30.0
+  },
+  {
+    "id": "00116",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 314,
+    "fps": 30.6
+  },
+  {
+    "id": "00120",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 29.5
+  },
+  {
+    "id": "00137",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 314,
+    "fps": 29.9
+  },
+  {
+    "id": "00146",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 281,
+    "fps": 29.7
+  },
+  {
+    "id": "00156",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "00159",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 266,
+    "fps": 27.5
+  },
+  {
+    "id": "00161",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "00176",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "00185",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "00193",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.0
+  },
+  {
+    "id": "00196",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 284,
+    "fps": 29.9
+  },
+  {
+    "id": "00204",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "00211",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 29.7
+  },
+  {
+    "id": "00215",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "00219",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "00221",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 317,
+    "fps": 30.0
+  },
+  {
+    "id": "00230",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "00231",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "00258",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "00261",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 265,
+    "fps": 29.4
+  },
+  {
+    "id": "00267",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.5
+  },
+  {
+    "id": "00268",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 284,
+    "fps": 30.0
+  },
+  {
+    "id": "00277",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 29.4
+  },
+  {
+    "id": "00278",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 281,
+    "fps": 29.9
+  },
+  {
+    "id": "00279",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 29.6
+  },
+  {
+    "id": "00280",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "00297",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 29.7
+  },
+  {
+    "id": "00299",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 29.9
+  },
+  {
+    "id": "00304",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "00305",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "00316",
+    "split": "positive",
+    "label": 1,
+    "score": 0.999,
+    "decoded_frames": 309,
+    "fps": 30.6
+  },
+  {
+    "id": "00322",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "00323",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "00338",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "00346",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "00347",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.0
+  },
+  {
+    "id": "00350",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "00374",
+    "split": "positive",
+    "label": 1,
+    "score": 0.998,
+    "decoded_frames": 277,
+    "fps": 30.0
+  },
+  {
+    "id": "00385",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "00386",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "00390",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 30.0
+  },
+  {
+    "id": "00399",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.5
+  },
+  {
+    "id": "00400",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 29.3
+  },
+  {
+    "id": "00419",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9978,
+    "decoded_frames": 284,
+    "fps": 30.0
+  },
+  {
+    "id": "00421",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 326,
+    "fps": 29.9
+  },
+  {
+    "id": "00432",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.0
+  },
+  {
+    "id": "00436",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.6
+  },
+  {
+    "id": "00439",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 29.2
+  },
+  {
+    "id": "00448",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "00451",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "00462",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9926,
+    "decoded_frames": 300,
+    "fps": 30.6
+  },
+  {
+    "id": "00482",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 320,
+    "fps": 30.6
+  },
+  {
+    "id": "00484",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 29.1
+  },
+  {
+    "id": "00492",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.5
+  },
+  {
+    "id": "00511",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 283,
+    "fps": 29.3
+  },
+  {
+    "id": "00535",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 303,
+    "fps": 30.6
+  },
+  {
+    "id": "00545",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 29.6
+  },
+  {
+    "id": "00548",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 316,
+    "fps": 30.0
+  },
+  {
+    "id": "00559",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "00561",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 280,
+    "fps": 29.9
+  },
+  {
+    "id": "00572",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 288,
+    "fps": 29.2
+  },
+  {
+    "id": "00612",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 29.3
+  },
+  {
+    "id": "00619",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "00620",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.0
+  },
+  {
+    "id": "00628",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 316,
+    "fps": 30.0
+  },
+  {
+    "id": "00631",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 315,
+    "fps": 30.6
+  },
+  {
+    "id": "00649",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.4
+  },
+  {
+    "id": "00654",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 29.8
+  },
+  {
+    "id": "00681",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 29.9
+  },
+  {
+    "id": "00689",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 267,
+    "fps": 28.0
+  },
+  {
+    "id": "00708",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 29.9
+  },
+  {
+    "id": "00711",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "00717",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.6
+  },
+  {
+    "id": "00720",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "00724",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "00726",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 279,
+    "fps": 30.6
+  },
+  {
+    "id": "00728",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 270,
+    "fps": 30.0
+  },
+  {
+    "id": "00732",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "00738",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "00743",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 274,
+    "fps": 28.0
+  },
+  {
+    "id": "00756",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 274,
+    "fps": 30.0
+  },
+  {
+    "id": "00760",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "00764",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 304,
+    "fps": 30.6
+  },
+  {
+    "id": "00767",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9987,
+    "decoded_frames": 317,
+    "fps": 30.6
+  },
+  {
+    "id": "00770",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 30.0
+  },
+  {
+    "id": "00772",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 288,
+    "fps": 30.6
+  },
+  {
+    "id": "00775",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "00778",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 30.5
+  },
+  {
+    "id": "00779",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9976,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "00781",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 312,
+    "fps": 30.6
+  },
+  {
+    "id": "00799",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "00801",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 316,
+    "fps": 29.9
+  },
+  {
+    "id": "00806",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9987,
+    "decoded_frames": 286,
+    "fps": 30.5
+  },
+  {
+    "id": "00812",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "00821",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "00829",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "00853",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "00862",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 30.0
+  },
+  {
+    "id": "00878",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 320,
+    "fps": 29.9
+  },
+  {
+    "id": "00886",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "00892",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.6
+  },
+  {
+    "id": "00894",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 302,
+    "fps": 29.5
+  },
+  {
+    "id": "00908",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.6
+  },
+  {
+    "id": "00920",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "00925",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "00933",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "00946",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "00962",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 275,
+    "fps": 30.0
+  },
+  {
+    "id": "00969",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.6
+  },
+  {
+    "id": "00975",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "00984",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "00987",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.5
+  },
+  {
+    "id": "00992",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "00993",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9682,
+    "decoded_frames": 305,
+    "fps": 29.9
+  },
+  {
+    "id": "00994",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "01006",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9954,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "01007",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9984,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "01009",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "01010",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.6
+  },
+  {
+    "id": "01017",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "01023",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 284,
+    "fps": 30.0
+  },
+  {
+    "id": "01030",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 327,
+    "fps": 30.0
+  },
+  {
+    "id": "01032",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 292,
+    "fps": 30.5
+  },
+  {
+    "id": "01038",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02146",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.6
+  },
+  {
+    "id": "02151",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.6
+  },
+  {
+    "id": "02155",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 29.6
+  },
+  {
+    "id": "02160",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.6
+  },
+  {
+    "id": "02166",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 259,
+    "fps": 30.0
+  },
+  {
+    "id": "02175",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 310,
+    "fps": 30.6
+  },
+  {
+    "id": "02181",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 29.9
+  },
+  {
+    "id": "02185",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9874,
+    "decoded_frames": 319,
+    "fps": 29.9
+  },
+  {
+    "id": "02190",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 278,
+    "fps": 28.0
+  },
+  {
+    "id": "02195",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 27.5
+  },
+  {
+    "id": "02196",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 29.9
+  },
+  {
+    "id": "02199",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02200",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02202",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 29.6
+  },
+  {
+    "id": "02204",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02207",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 278,
+    "fps": 29.7
+  },
+  {
+    "id": "02209",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 303,
+    "fps": 29.2
+  },
+  {
+    "id": "02212",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02222",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 29.3
+  },
+  {
+    "id": "02233",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02234",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02236",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 29.8
+  },
+  {
+    "id": "02238",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.6
+  },
+  {
+    "id": "02241",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02242",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 29.9
+  },
+  {
+    "id": "02243",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.6
+  },
+  {
+    "id": "02253",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02257",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02259",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.0
+  },
+  {
+    "id": "02260",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02265",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9991,
+    "decoded_frames": 332,
+    "fps": 30.6
+  },
+  {
+    "id": "02266",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 314,
+    "fps": 30.0
+  },
+  {
+    "id": "02270",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.6
+  },
+  {
+    "id": "02271",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "02276",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02279",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9976,
+    "decoded_frames": 278,
+    "fps": 30.5
+  },
+  {
+    "id": "02280",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 283,
+    "fps": 30.0
+  },
+  {
+    "id": "02282",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.6
+  },
+  {
+    "id": "02283",
+    "split": "positive",
+    "label": 1,
+    "score": 0.7755,
+    "decoded_frames": 283,
+    "fps": 30.0
+  },
+  {
+    "id": "02287",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.5
+  },
+  {
+    "id": "02297",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "02305",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9848,
+    "decoded_frames": 300,
+    "fps": 30.6
+  },
+  {
+    "id": "02306",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "02316",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02319",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 311,
+    "fps": 30.6
+  },
+  {
+    "id": "02322",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 321,
+    "fps": 30.5
+  },
+  {
+    "id": "02330",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 310,
+    "fps": 30.6
+  },
+  {
+    "id": "02335",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02336",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02345",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.6
+  },
+  {
+    "id": "02354",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02366",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 267,
+    "fps": 29.5
+  },
+  {
+    "id": "02368",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02369",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 285,
+    "fps": 30.0
+  },
+  {
+    "id": "02370",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02371",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02373",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02374",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02378",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 29.7
+  },
+  {
+    "id": "02379",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02384",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 318,
+    "fps": 30.5
+  },
+  {
+    "id": "02385",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 29.8
+  },
+  {
+    "id": "02387",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02391",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 314,
+    "fps": 30.6
+  },
+  {
+    "id": "02396",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.5
+  },
+  {
+    "id": "02397",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 29.1
+  },
+  {
+    "id": "02401",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02410",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 277,
+    "fps": 30.0
+  },
+  {
+    "id": "02413",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02428",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "02429",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02433",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 29.9
+  },
+  {
+    "id": "02434",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02441",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 319,
+    "fps": 30.0
+  },
+  {
+    "id": "02442",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 29.9
+  },
+  {
+    "id": "02448",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "02454",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02459",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "02468",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 310,
+    "fps": 30.5
+  },
+  {
+    "id": "02472",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9986,
+    "decoded_frames": 281,
+    "fps": 30.0
+  },
+  {
+    "id": "02473",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 329,
+    "fps": 30.6
+  },
+  {
+    "id": "02474",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02476",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 320,
+    "fps": 30.0
+  },
+  {
+    "id": "02479",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 280,
+    "fps": 30.0
+  },
+  {
+    "id": "02482",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 315,
+    "fps": 30.0
+  },
+  {
+    "id": "02494",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "02495",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02496",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 316,
+    "fps": 30.0
+  },
+  {
+    "id": "02499",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02500",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9953,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02501",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02502",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 299,
+    "fps": 29.9
+  },
+  {
+    "id": "02505",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02509",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9984,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "02511",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02512",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02518",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 308,
+    "fps": 30.6
+  },
+  {
+    "id": "02522",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 30.6
+  },
+  {
+    "id": "02533",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 29.3
+  },
+  {
+    "id": "02537",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 299,
+    "fps": 29.3
+  },
+  {
+    "id": "02543",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 295,
+    "fps": 29.9
+  },
+  {
+    "id": "02548",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.6
+  },
+  {
+    "id": "02556",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 284,
+    "fps": 28.0
+  },
+  {
+    "id": "02557",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02561",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 29.9
+  },
+  {
+    "id": "02563",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 30.0
+  },
+  {
+    "id": "02566",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 285,
+    "fps": 29.4
+  },
+  {
+    "id": "02567",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 269,
+    "fps": 30.0
+  },
+  {
+    "id": "02579",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.0
+  },
+  {
+    "id": "02581",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02582",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 320,
+    "fps": 29.9
+  },
+  {
+    "id": "02594",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.5
+  },
+  {
+    "id": "02595",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 30.0
+  },
+  {
+    "id": "02599",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "02600",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.6
+  },
+  {
+    "id": "02608",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "02612",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02613",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 29.9
+  },
+  {
+    "id": "02615",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "02620",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.6
+  },
+  {
+    "id": "02628",
+    "split": "positive",
+    "label": 1,
+    "score": 0.711,
+    "decoded_frames": 320,
+    "fps": 30.0
+  },
+  {
+    "id": "02632",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.6
+  },
+  {
+    "id": "02635",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02636",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9982,
+    "decoded_frames": 311,
+    "fps": 30.0
+  },
+  {
+    "id": "02639",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 30.6
+  },
+  {
+    "id": "02655",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 244,
+    "fps": 30.0
+  },
+  {
+    "id": "02656",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 29.7
+  },
+  {
+    "id": "02666",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02673",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.0
+  },
+  {
+    "id": "02674",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 316,
+    "fps": 30.0
+  },
+  {
+    "id": "02683",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 285,
+    "fps": 30.0
+  },
+  {
+    "id": "02686",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.5
+  },
+  {
+    "id": "02687",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 291,
+    "fps": 30.6
+  },
+  {
+    "id": "02691",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 314,
+    "fps": 30.6
+  },
+  {
+    "id": "02692",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02693",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02695",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9995,
+    "decoded_frames": 317,
+    "fps": 30.6
+  },
+  {
+    "id": "02700",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9599,
+    "decoded_frames": 290,
+    "fps": 29.9
+  },
+  {
+    "id": "02702",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.6
+  },
+  {
+    "id": "02703",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 29.6
+  },
+  {
+    "id": "02708",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02713",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02725",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02730",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9839,
+    "decoded_frames": 318,
+    "fps": 30.6
+  },
+  {
+    "id": "02736",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 29.3
+  },
+  {
+    "id": "02739",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02741",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02744",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02745",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 324,
+    "fps": 30.5
+  },
+  {
+    "id": "02746",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 270,
+    "fps": 28.0
+  },
+  {
+    "id": "02747",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 29.9
+  },
+  {
+    "id": "02749",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02751",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 322,
+    "fps": 30.6
+  },
+  {
+    "id": "02758",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 322,
+    "fps": 30.6
+  },
+  {
+    "id": "02764",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 30.0
+  },
+  {
+    "id": "02765",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 289,
+    "fps": 29.9
+  },
+  {
+    "id": "02767",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 319,
+    "fps": 30.5
+  },
+  {
+    "id": "02769",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02771",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 30.5
+  },
+  {
+    "id": "02781",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 29.9
+  },
+  {
+    "id": "02783",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "02786",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "02787",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02793",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02794",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02800",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02801",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.5
+  },
+  {
+    "id": "02804",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.6
+  },
+  {
+    "id": "02807",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9994,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02809",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "02812",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "02816",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9999,
+    "decoded_frames": 312,
+    "fps": 29.5
+  },
+  {
+    "id": "02818",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 303,
+    "fps": 29.4
+  },
+  {
+    "id": "02828",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.0
+  },
+  {
+    "id": "02831",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02833",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9991,
+    "decoded_frames": 306,
+    "fps": 30.6
+  },
+  {
+    "id": "02836",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 262,
+    "fps": 27.5
+  },
+  {
+    "id": "02840",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 274,
+    "fps": 28.0
+  },
+  {
+    "id": "02845",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02854",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 29.8
+  },
+  {
+    "id": "02855",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9967,
+    "decoded_frames": 266,
+    "fps": 30.0
+  },
+  {
+    "id": "02856",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.0
+  },
+  {
+    "id": "02866",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 29.9
+  },
+  {
+    "id": "02868",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02870",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 254,
+    "fps": 30.0
+  },
+  {
+    "id": "02873",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9997,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02885",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02888",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 30.0
+  },
+  {
+    "id": "02889",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.5
+  },
+  {
+    "id": "02890",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02903",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02915",
+    "split": "positive",
+    "label": 1,
+    "score": 0.9996,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "01044",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 308,
+    "fps": 30.5
+  },
+  {
+    "id": "01056",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "01059",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01065",
+    "split": "negative",
+    "label": 0,
+    "score": 0.998,
+    "decoded_frames": 315,
+    "fps": 30.0
+  },
+  {
+    "id": "01068",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 29.2
+  },
+  {
+    "id": "01083",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9404,
+    "decoded_frames": 292,
+    "fps": 29.7
+  },
+  {
+    "id": "01101",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "01110",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 270,
+    "fps": 30.0
+  },
+  {
+    "id": "01113",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 280,
+    "fps": 29.3
+  },
+  {
+    "id": "01125",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "01126",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "01139",
+    "split": "negative",
+    "label": 0,
+    "score": 0.002,
+    "decoded_frames": 253,
+    "fps": 30.0
+  },
+  {
+    "id": "01143",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 312,
+    "fps": 30.6
+  },
+  {
+    "id": "01149",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "01151",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "01152",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 29.9
+  },
+  {
+    "id": "01154",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "01158",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 320,
+    "fps": 30.6
+  },
+  {
+    "id": "01166",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "01169",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 324,
+    "fps": 30.0
+  },
+  {
+    "id": "01179",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "01181",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "01201",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 250,
+    "fps": 30.0
+  },
+  {
+    "id": "01203",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9994,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "01208",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "01216",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 258,
+    "fps": 30.0
+  },
+  {
+    "id": "01239",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 299,
+    "fps": 29.9
+  },
+  {
+    "id": "01244",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 292,
+    "fps": 30.4
+  },
+  {
+    "id": "01246",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 309,
+    "fps": 30.5
+  },
+  {
+    "id": "01247",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 283,
+    "fps": 29.9
+  },
+  {
+    "id": "01253",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 305,
+    "fps": 30.6
+  },
+  {
+    "id": "01264",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "01274",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.6
+  },
+  {
+    "id": "01275",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "01297",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9969,
+    "decoded_frames": 285,
+    "fps": 29.4
+  },
+  {
+    "id": "01310",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "01312",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "01316",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "01330",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01347",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01353",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9158,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01367",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "01375",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9995,
+    "decoded_frames": 256,
+    "fps": 30.0
+  },
+  {
+    "id": "01389",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "01398",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9632,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "01409",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01410",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9995,
+    "decoded_frames": 312,
+    "fps": 30.5
+  },
+  {
+    "id": "01432",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 296,
+    "fps": 30.6
+  },
+  {
+    "id": "01450",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.5
+  },
+  {
+    "id": "01472",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 29.9
+  },
+  {
+    "id": "01479",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 257,
+    "fps": 30.0
+  },
+  {
+    "id": "01480",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "01481",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 29.6
+  },
+  {
+    "id": "01483",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9974,
+    "decoded_frames": 255,
+    "fps": 30.0
+  },
+  {
+    "id": "01502",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.6
+  },
+  {
+    "id": "01512",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 29.2
+  },
+  {
+    "id": "01513",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "01531",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 260,
+    "fps": 30.0
+  },
+  {
+    "id": "01549",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 285,
+    "fps": 30.0
+  },
+  {
+    "id": "01555",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "01561",
+    "split": "negative",
+    "label": 0,
+    "score": 0.999,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "01565",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 256,
+    "fps": 30.0
+  },
+  {
+    "id": "01567",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "01575",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "01576",
+    "split": "negative",
+    "label": 0,
+    "score": 0.999,
+    "decoded_frames": 260,
+    "fps": 30.0
+  },
+  {
+    "id": "01610",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 30.5
+  },
+  {
+    "id": "01633",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.5
+  },
+  {
+    "id": "01636",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 317,
+    "fps": 30.0
+  },
+  {
+    "id": "01644",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.6
+  },
+  {
+    "id": "01648",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.5
+  },
+  {
+    "id": "01650",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "01651",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 314,
+    "fps": 30.0
+  },
+  {
+    "id": "01668",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "01672",
+    "split": "negative",
+    "label": 0,
+    "score": 0.6032,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "01675",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9752,
+    "decoded_frames": 308,
+    "fps": 30.0
+  },
+  {
+    "id": "01676",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "01677",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "01686",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "01688",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "01692",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01715",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "01731",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 296,
+    "fps": 29.9
+  },
+  {
+    "id": "01744",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9991,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "01745",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 29.5
+  },
+  {
+    "id": "01751",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 254,
+    "fps": 30.0
+  },
+  {
+    "id": "01758",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 305,
+    "fps": 30.6
+  },
+  {
+    "id": "01764",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 30.0
+  },
+  {
+    "id": "01769",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "01774",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 268,
+    "fps": 30.0
+  },
+  {
+    "id": "01777",
+    "split": "negative",
+    "label": 0,
+    "score": 0.999,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "01782",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 314,
+    "fps": 30.0
+  },
+  {
+    "id": "01794",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 29.9
+  },
+  {
+    "id": "01804",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "01808",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 255,
+    "fps": 30.0
+  },
+  {
+    "id": "01814",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9992,
+    "decoded_frames": 269,
+    "fps": 30.0
+  },
+  {
+    "id": "01820",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01826",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "01831",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 29.9
+  },
+  {
+    "id": "01836",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.6
+  },
+  {
+    "id": "01854",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.5
+  },
+  {
+    "id": "01855",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 252,
+    "fps": 30.0
+  },
+  {
+    "id": "01856",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9832,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "01859",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "01861",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "01863",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "01873",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "01876",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 29.9
+  },
+  {
+    "id": "01877",
+    "split": "negative",
+    "label": 0,
+    "score": 0.0737,
+    "decoded_frames": 257,
+    "fps": 30.0
+  },
+  {
+    "id": "01886",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 303,
+    "fps": 29.9
+  },
+  {
+    "id": "01895",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 256,
+    "fps": 30.0
+  },
+  {
+    "id": "01898",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9988,
+    "decoded_frames": 255,
+    "fps": 30.0
+  },
+  {
+    "id": "01902",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "01905",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 309,
+    "fps": 29.6
+  },
+  {
+    "id": "01907",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9993,
+    "decoded_frames": 256,
+    "fps": 30.0
+  },
+  {
+    "id": "01927",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 340,
+    "fps": 30.0
+  },
+  {
+    "id": "01938",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 29.4
+  },
+  {
+    "id": "01940",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "01945",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.6
+  },
+  {
+    "id": "01947",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 286,
+    "fps": 30.0
+  },
+  {
+    "id": "01956",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.0
+  },
+  {
+    "id": "01965",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 323,
+    "fps": 30.6
+  },
+  {
+    "id": "01974",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "01982",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "01984",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 326,
+    "fps": 30.6
+  },
+  {
+    "id": "01993",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 285,
+    "fps": 30.0
+  },
+  {
+    "id": "01997",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 315,
+    "fps": 30.6
+  },
+  {
+    "id": "02008",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02010",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "02043",
+    "split": "negative",
+    "label": 0,
+    "score": 0.812,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02047",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 29.4
+  },
+  {
+    "id": "02057",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9977,
+    "decoded_frames": 294,
+    "fps": 30.6
+  },
+  {
+    "id": "02065",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02068",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.5
+  },
+  {
+    "id": "02073",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02082",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9968,
+    "decoded_frames": 285,
+    "fps": 29.4
+  },
+  {
+    "id": "02091",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 294,
+    "fps": 29.9
+  },
+  {
+    "id": "02093",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02098",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "02101",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02107",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.5
+  },
+  {
+    "id": "02109",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 319,
+    "fps": 30.0
+  },
+  {
+    "id": "02123",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 283,
+    "fps": 29.2
+  },
+  {
+    "id": "02140",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02141",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02142",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.6
+  },
+  {
+    "id": "02143",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02150",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02152",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 308,
+    "fps": 30.6
+  },
+  {
+    "id": "02153",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 242,
+    "fps": 30.0
+  },
+  {
+    "id": "02157",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9993,
+    "decoded_frames": 318,
+    "fps": 30.0
+  },
+  {
+    "id": "02158",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 255,
+    "fps": 30.0
+  },
+  {
+    "id": "02162",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 306,
+    "fps": 30.5
+  },
+  {
+    "id": "02164",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 289,
+    "fps": 30.6
+  },
+  {
+    "id": "02165",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 237,
+    "fps": 30.0
+  },
+  {
+    "id": "02167",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 30.0
+  },
+  {
+    "id": "02169",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 29.2
+  },
+  {
+    "id": "02170",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "02176",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 335,
+    "fps": 30.5
+  },
+  {
+    "id": "02177",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02178",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 279,
+    "fps": 30.0
+  },
+  {
+    "id": "02184",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02187",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9995,
+    "decoded_frames": 302,
+    "fps": 30.6
+  },
+  {
+    "id": "02188",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.0
+  },
+  {
+    "id": "02193",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02197",
+    "split": "negative",
+    "label": 0,
+    "score": 0.0016,
+    "decoded_frames": 238,
+    "fps": 30.0
+  },
+  {
+    "id": "02205",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 281,
+    "fps": 29.3
+  },
+  {
+    "id": "02208",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 316,
+    "fps": 30.5
+  },
+  {
+    "id": "02211",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02214",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 278,
+    "fps": 30.0
+  },
+  {
+    "id": "02215",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.0
+  },
+  {
+    "id": "02216",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02218",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02230",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02237",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 326,
+    "fps": 30.0
+  },
+  {
+    "id": "02245",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9954,
+    "decoded_frames": 301,
+    "fps": 29.4
+  },
+  {
+    "id": "02250",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 308,
+    "fps": 29.9
+  },
+  {
+    "id": "02254",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 286,
+    "fps": 30.0
+  },
+  {
+    "id": "02255",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02261",
+    "split": "negative",
+    "label": 0,
+    "score": 0.984,
+    "decoded_frames": 240,
+    "fps": 30.0
+  },
+  {
+    "id": "02262",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 317,
+    "fps": 30.5
+  },
+  {
+    "id": "02267",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 29.9
+  },
+  {
+    "id": "02273",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 29.9
+  },
+  {
+    "id": "02278",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 311,
+    "fps": 30.0
+  },
+  {
+    "id": "02289",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 30.0
+  },
+  {
+    "id": "02290",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 300,
+    "fps": 30.0
+  },
+  {
+    "id": "02292",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02299",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "02303",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 285,
+    "fps": 29.2
+  },
+  {
+    "id": "02310",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 29.4
+  },
+  {
+    "id": "02317",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9795,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02320",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02323",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 29.9
+  },
+  {
+    "id": "02331",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 308,
+    "fps": 30.5
+  },
+  {
+    "id": "02333",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9497,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "02339",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 241,
+    "fps": 30.0
+  },
+  {
+    "id": "02343",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.5
+  },
+  {
+    "id": "02347",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 235,
+    "fps": 30.0
+  },
+  {
+    "id": "02348",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 326,
+    "fps": 30.0
+  },
+  {
+    "id": "02350",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9992,
+    "decoded_frames": 284,
+    "fps": 30.0
+  },
+  {
+    "id": "02351",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02357",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 300,
+    "fps": 30.0
+  },
+  {
+    "id": "02359",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02361",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.0
+  },
+  {
+    "id": "02363",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 30.0
+  },
+  {
+    "id": "02375",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 307,
+    "fps": 29.9
+  },
+  {
+    "id": "02377",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "02382",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "02386",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 309,
+    "fps": 29.4
+  },
+  {
+    "id": "02389",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.6
+  },
+  {
+    "id": "02398",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 241,
+    "fps": 30.0
+  },
+  {
+    "id": "02400",
+    "split": "negative",
+    "label": 0,
+    "score": 0.999,
+    "decoded_frames": 245,
+    "fps": 30.0
+  },
+  {
+    "id": "02403",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02405",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 310,
+    "fps": 29.9
+  },
+  {
+    "id": "02406",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9884,
+    "decoded_frames": 314,
+    "fps": 30.0
+  },
+  {
+    "id": "02411",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 243,
+    "fps": 30.0
+  },
+  {
+    "id": "02435",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "02449",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "02451",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02452",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9992,
+    "decoded_frames": 254,
+    "fps": 30.0
+  },
+  {
+    "id": "02458",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "02461",
+    "split": "negative",
+    "label": 0,
+    "score": 0.8715,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02463",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 301,
+    "fps": 30.5
+  },
+  {
+    "id": "02467",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 286,
+    "fps": 30.0
+  },
+  {
+    "id": "02475",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 29.9
+  },
+  {
+    "id": "02477",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 294,
+    "fps": 29.6
+  },
+  {
+    "id": "02478",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9993,
+    "decoded_frames": 241,
+    "fps": 30.0
+  },
+  {
+    "id": "02484",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 245,
+    "fps": 30.0
+  },
+  {
+    "id": "02490",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 307,
+    "fps": 30.6
+  },
+  {
+    "id": "02491",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9995,
+    "decoded_frames": 299,
+    "fps": 30.5
+  },
+  {
+    "id": "02493",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "02497",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9961,
+    "decoded_frames": 309,
+    "fps": 29.4
+  },
+  {
+    "id": "02498",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "02503",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9974,
+    "decoded_frames": 240,
+    "fps": 30.0
+  },
+  {
+    "id": "02510",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02515",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "02517",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02524",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "02530",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 29.5
+  },
+  {
+    "id": "02534",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02538",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 316,
+    "fps": 30.6
+  },
+  {
+    "id": "02539",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02540",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "02541",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02544",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 253,
+    "fps": 30.0
+  },
+  {
+    "id": "02545",
+    "split": "negative",
+    "label": 0,
+    "score": 0.0737,
+    "decoded_frames": 242,
+    "fps": 30.0
+  },
+  {
+    "id": "02555",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02562",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 290,
+    "fps": 30.0
+  },
+  {
+    "id": "02565",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.0
+  },
+  {
+    "id": "02568",
+    "split": "negative",
+    "label": 0,
+    "score": 0.3143,
+    "decoded_frames": 309,
+    "fps": 29.7
+  },
+  {
+    "id": "02572",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 291,
+    "fps": 29.2
+  },
+  {
+    "id": "02573",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 291,
+    "fps": 29.9
+  },
+  {
+    "id": "02576",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 298,
+    "fps": 30.4
+  },
+  {
+    "id": "02583",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9988,
+    "decoded_frames": 275,
+    "fps": 30.0
+  },
+  {
+    "id": "02587",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 300,
+    "fps": 30.6
+  },
+  {
+    "id": "02588",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9987,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02591",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9658,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "02592",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 301,
+    "fps": 30.6
+  },
+  {
+    "id": "02603",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 240,
+    "fps": 30.0
+  },
+  {
+    "id": "02609",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 308,
+    "fps": 30.6
+  },
+  {
+    "id": "02617",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 289,
+    "fps": 29.9
+  },
+  {
+    "id": "02618",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02621",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 220,
+    "fps": 30.0
+  },
+  {
+    "id": "02623",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 29.2
+  },
+  {
+    "id": "02624",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 226,
+    "fps": 30.0
+  },
+  {
+    "id": "02630",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 313,
+    "fps": 30.4
+  },
+  {
+    "id": "02631",
+    "split": "negative",
+    "label": 0,
+    "score": 0.0016,
+    "decoded_frames": 223,
+    "fps": 30.0
+  },
+  {
+    "id": "02634",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 227,
+    "fps": 30.0
+  },
+  {
+    "id": "02640",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 289,
+    "fps": 30.0
+  },
+  {
+    "id": "02641",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02646",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 319,
+    "fps": 30.6
+  },
+  {
+    "id": "02652",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 225,
+    "fps": 30.0
+  },
+  {
+    "id": "02662",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9983,
+    "decoded_frames": 304,
+    "fps": 29.4
+  },
+  {
+    "id": "02664",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 312,
+    "fps": 30.0
+  },
+  {
+    "id": "02668",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 238,
+    "fps": 30.0
+  },
+  {
+    "id": "02672",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02681",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 222,
+    "fps": 30.0
+  },
+  {
+    "id": "02685",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 240,
+    "fps": 30.0
+  },
+  {
+    "id": "02688",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02689",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "02690",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "02694",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 296,
+    "fps": 30.0
+  },
+  {
+    "id": "02696",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 303,
+    "fps": 30.0
+  },
+  {
+    "id": "02699",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 307,
+    "fps": 30.0
+  },
+  {
+    "id": "02704",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9994,
+    "decoded_frames": 293,
+    "fps": 30.0
+  },
+  {
+    "id": "02710",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9884,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02714",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9992,
+    "decoded_frames": 239,
+    "fps": 30.0
+  },
+  {
+    "id": "02716",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 316,
+    "fps": 30.6
+  },
+  {
+    "id": "02724",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 279,
+    "fps": 29.2
+  },
+  {
+    "id": "02727",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 302,
+    "fps": 30.6
+  },
+  {
+    "id": "02728",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 29.9
+  },
+  {
+    "id": "02729",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02732",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 292,
+    "fps": 29.9
+  },
+  {
+    "id": "02733",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02734",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 308,
+    "fps": 30.6
+  },
+  {
+    "id": "02740",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9964,
+    "decoded_frames": 285,
+    "fps": 29.4
+  },
+  {
+    "id": "02753",
+    "split": "negative",
+    "label": 0,
+    "score": 0.0737,
+    "decoded_frames": 227,
+    "fps": 30.0
+  },
+  {
+    "id": "02755",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 304,
+    "fps": 30.6
+  },
+  {
+    "id": "02763",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 226,
+    "fps": 30.0
+  },
+  {
+    "id": "02770",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "02774",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 288,
+    "fps": 30.0
+  },
+  {
+    "id": "02791",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02797",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02798",
+    "split": "negative",
+    "label": 0,
+    "score": 0.998,
+    "decoded_frames": 285,
+    "fps": 30.0
+  },
+  {
+    "id": "02805",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02811",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02815",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 313,
+    "fps": 30.0
+  },
+  {
+    "id": "02821",
+    "split": "negative",
+    "label": 0,
+    "score": 0.999,
+    "decoded_frames": 230,
+    "fps": 30.0
+  },
+  {
+    "id": "02822",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 30.0
+  },
+  {
+    "id": "02823",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 295,
+    "fps": 29.9
+  },
+  {
+    "id": "02826",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 302,
+    "fps": 30.0
+  },
+  {
+    "id": "02827",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9326,
+    "decoded_frames": 291,
+    "fps": 30.0
+  },
+  {
+    "id": "02829",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 282,
+    "fps": 30.0
+  },
+  {
+    "id": "02832",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 315,
+    "fps": 30.0
+  },
+  {
+    "id": "02846",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02848",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 288,
+    "fps": 29.4
+  },
+  {
+    "id": "02851",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 299,
+    "fps": 30.0
+  },
+  {
+    "id": "02853",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 306,
+    "fps": 29.9
+  },
+  {
+    "id": "02857",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.0
+  },
+  {
+    "id": "02858",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9999,
+    "decoded_frames": 305,
+    "fps": 30.0
+  },
+  {
+    "id": "02859",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 280,
+    "fps": 29.5
+  },
+  {
+    "id": "02860",
+    "split": "negative",
+    "label": 0,
+    "score": 0.971,
+    "decoded_frames": 297,
+    "fps": 30.0
+  },
+  {
+    "id": "02862",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 287,
+    "fps": 29.2
+  },
+  {
+    "id": "02863",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 311,
+    "fps": 30.5
+  },
+  {
+    "id": "02872",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 278,
+    "fps": 30.0
+  },
+  {
+    "id": "02874",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 311,
+    "fps": 30.0
+  },
+  {
+    "id": "02877",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 320,
+    "fps": 30.5
+  },
+  {
+    "id": "02879",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9996,
+    "decoded_frames": 287,
+    "fps": 30.0
+  },
+  {
+    "id": "02883",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 298,
+    "fps": 30.5
+  },
+  {
+    "id": "02893",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 294,
+    "fps": 30.0
+  },
+  {
+    "id": "02894",
+    "split": "negative",
+    "label": 0,
+    "score": 0.984,
+    "decoded_frames": 225,
+    "fps": 30.0
+  },
+  {
+    "id": "02904",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9998,
+    "decoded_frames": 292,
+    "fps": 30.0
+  },
+  {
+    "id": "02905",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9997,
+    "decoded_frames": 295,
+    "fps": 30.0
+  },
+  {
+    "id": "02906",
+    "split": "negative",
+    "label": 0,
+    "score": 0.9647,
+    "decoded_frames": 293,
+    "fps": 30.0
+  }
+]

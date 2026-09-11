@@ -11,6 +11,8 @@
 > **The second most important correction:** recovering that evidence did **not** improve the project's standing. It made the assessment sharper and, in three specific respects, worse. See [New Findings](#new-findings-summary).
 >
 > **Update, same day — the falsification tests have now been run.** Results in [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md). Two of them failed outright: temporal shuffling changes the model's output by ≤0.0013, and 91.4% of the training split leaks by source video. What was a hypothesis in this document's first draft is now a measurement. Sections [5](#5-current-model), [12](#12-evaluation-history), [13](#13-what-has-actually-been-proven), [14](#14-what-has-not-been-proven), [16](#16-data-leakage-risks) and [23](#23-dataset-licensing--provenance) have been updated accordingly.
+>
+> **Update 2026-09-11 — T3, the corpus control, has now been run, and it settles the central question.** On Nexar test-public (667 clips, 334 positive / 333 negative, positives and negatives drawn from one corpus so the confound of [B4](#b4--the-positivenegative-classes-coincide-with-two-different-corpora) cannot operate) the shipped model scores **ROC-AUC 0.5339 and AP 0.5218** — chance. At the deployed threshold of 0.80 it fires on **97.6% of the negatives** and 99.4% of the positives: it is not a weak detector, it is an almost-always-positive one. Raw results: [`runs/falsification/T3_corpus_control.md`](runs/falsification/T3_corpus_control.md). **This is the first honest performance number in the project's history, and it is the number that retires the model.** The falsification suite is now closed: every test that was run, failed.
 
 ---
 
@@ -250,7 +252,8 @@ Five findings dominate everything else.
 | Dataset licensed for commercial use | ❌ No — see [§23](#23-dataset-licensing--provenance) |
 | Held-out test set | ❌ No |
 | Source-grouped splits | ❌ No |
-| Falsification tests run | ❌ No |
+| Falsification tests run | ✅ **Yes — T1, T2, T3, T5, T6 and B1. The model failed every one.** |
+| Measured on a corpus-controlled benchmark | ✅ **Yes — Nexar test-public: ROC-AUC 0.5339 (chance)** |
 | Calibration measured | ❌ No |
 | False-positives-per-hour measured | ❌ No (implied ≈23/h; target < 0.1/h) |
 | Deployed threshold derived from data | ❌ No |
@@ -489,7 +492,11 @@ Full method and raw output: [`runs/falsification/RESULTS.md`](runs/falsification
 
 **Test 4 — crash excision: not run** (needs the cached features, which live in Drive). But [§7](#7-dataset-used) now makes it near-redundant: the accident begins at frame 37.2 of 50 on average, so **72% of the frames the model was shown for a positive clip contain no accident** and were labelled 1 anyway.
 
-**Test 3 — corpus control: not yet run.** Blocked only on downloading the Nexar videos. After tests 1, 2 and 5, it is a formality rather than a question.
+**Test 3 — corpus control: RUN 2026-09-11, and FAILED.** On Nexar test-public — 667 clips, 334 positive / 333 negative, one corpus, one anonymisation pipeline, so no class/corpus confound is available to exploit — the shipped model scores **ROC-AUC 0.5339, AP 0.5218**. Chance is 0.50. The score distributions are near-identical and near-saturated: median **0.9998 for positives and 0.9998 for negatives**, means 0.998 and 0.977. At the deployed threshold of 0.80 the model fires on **325 of 333 negatives (FPR 97.6%)** and 332 of 334 positives (TPR 99.4%).
+
+**This is the decisive measurement, and it is worse than "does not generalise."** The model does not rank Nexar clips at all; it emits near-1.0 on essentially everything it is shown from a corpus it was not trained on. The 0.9977 val AUC on CCD was therefore measuring the corpus boundary, exactly as [B4](#b4--the-positivenegative-classes-coincide-with-two-different-corpora) predicted.
+
+**The measurement was itself falsified before being accepted.** Running the identical scoring path over `safe.mp4` and `crash1.mov` reproduces the T1/T2 figures **exactly** (0.7914 and 0.9998) — so the code discriminates when discrimination is present, and the Nexar collapse is a property of the model under corpus shift, not an artefact of the harness. Raw results: [`runs/falsification/T3_corpus_control.md`](runs/falsification/T3_corpus_control.md); method: `scripts/t3_corpus_control.py`.
 
 **Two incidental findings that indict the deployed threshold directly.** `safe.mp4` peaks at **0.7914** — reproducing the prior README's "0.79" exactly, meaning `CNN_THRESH = 0.80` clears the only negative ever tested by **0.0086**. And under single-frame sampling the same "safe" video reaches **0.9695**: the model does emit confident crash scores on it, hidden only by the particular averaging the deployed code happens to perform.
 
@@ -971,7 +978,7 @@ Reported previously: `safe.mp4` scored 0.79 against a threshold of 0.80 — a **
 | T5c label quality | accident onset at frame 37.2/50; **72% of sampled positive frames are pre-accident** | labels are wrong for most frames |
 | T6 always-negative | 0 FP/hour vs the model's ≈23 FP/hour | **the trivial baseline wins** |
 | B1 stride | `safe.mp4` 0.0241 → 0.0003 at the training stride | real, but second-order given T2 |
-| T3 corpus control | not yet run — needs the 31.4 GB Nexar download | outstanding |
+| **T3 corpus control** | **Nexar test-public, 667 clips: ROC-AUC 0.5339, AP 0.5218. FPR 97.6% / TPR 99.4% at threshold 0.80** | **FAILED — chance-level; the decisive result** |
 
 Raw output and method: [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md), `scripts/t5_source_leakage.py`, `scripts/t124_model_falsification.py`.
 
@@ -1001,12 +1008,13 @@ Stated conservatively. Each item is something you could defend in a diligence co
 14. **The training split leaks by source at 91.4%.** 1,500 crash clips come from 133 YouTube videos; a random 80/20 clip split puts 113 of those 133 on both sides. Measured exactly from `Crash-1500.txt`. (Falsification run)
 15. **72% of the frames shown for a positive clip contain no accident**, because the accident starts at frame 37.2 of 50 on average and every sampled frame was labelled 1. (Falsification run)
 16. **The Nexar dataset permits commercial use** — "use, copy, modify, and distribute", with attribution, no resale of the dataset itself, and ethical-use restrictions. (`data/nexar/LICENSE`)
+17. **On a corpus-controlled benchmark the shipped model performs at chance.** Nexar test-public, 667 clips: ROC-AUC **0.5339**, AP **0.5218**, FPR **97.6%** at the deployed threshold. The harness was validated by reproducing the T1/T2 local-video figures exactly through the same code path. **This is the only fair evaluation the model has ever had, and it is the evidence on which it can be retired.** (T3, 2026-09-11)
 
 ---
 
 ## 14. What Has NOT Been Proven
 
-1. ~~That the model detects collisions.~~ **Now settled the other way: it is a per-frame appearance classifier** (T1, T2). What remains unmeasured is how it performs on a corpus-controlled benchmark — i.e. how bad, not whether.
+1. ~~That the model detects collisions.~~ ~~What remains unmeasured is how it performs on a corpus-controlled benchmark.~~ **Both settled, and negatively.** It is a per-frame appearance classifier (T1, T2), and on a corpus-controlled benchmark it performs **at chance — ROC-AUC 0.5339** (T3). Nothing about collision detection remains to be established in its favour.
 2. ~~That the LSTM contributes anything.~~ **Settled: it does not** (T2, ≤0.0013 change under shuffling).
 3. ~~That temporal information is used at all.~~ **Settled: it is not.**
 4. **Any performance figure for the weights that actually ship.** No run is linked to that file.
@@ -1084,7 +1092,8 @@ Every problem below carries: location, evidence, why it is wrong, severity, whic
 **Expected result after fix:** a large drop on any corpus-controlled benchmark. Plan for it emotionally now; it is much cheaper to discover this week than after a pilot.
 **Blocked by:** ~~Nexar dataset access and its licence question (D1)~~ — **licence resolved 2026-09-10, access confirmed (public, 31.4 GB, 2,844 clips).** Only the download remains.
 **STATUS 2026-09-10:** T1/T2/T5 have run and failed. The corpus-control test is the last one outstanding, and it is now confirmatory rather than decisive.
-**Priority: P0.**
+**STATUS 2026-09-11 — CONFIRMED BY MEASUREMENT, AND THE BUG IS CLOSED AS "DIAGNOSED, NOT FIXABLE".** T3 ran on Nexar test-public: **ROC-AUC 0.5339, AP 0.5218, FPR 97.6%** at the deployed threshold. Removing the corpus confound removes essentially all of the model's apparent performance. This bug cannot be fixed on this model or this dataset — fix (3), *change corpus*, is the only remaining option, and fix (4), cutting within-corpus negatives from the same YouTube sources, is now moot because the model has no temporal or collision-specific signal to train against (B14). **Resolution: retire the model; retain CCD as a research corpus only.**
+**Priority: P0 — CLOSED (diagnosed).**
 
 #### B5 — The deployed threshold has no derivation
 **Where:** `code/crash_detection_enhanced.py:109` (`CNN_THRESH = 0.80`), `:1050`, `:1186`, `:1273` (`crash_pct >= 1.5`), `:1275` (`crash_pct >= 5.0`), `code/crash_detection.py:122`.
@@ -1434,7 +1443,7 @@ Ranked by certainty.
 | # | Leakage type | Status | Mechanism | Impact on reported metrics | Fix |
 |---|---|---|---|---|---|
 | **1** | **Model-selection leakage** | **PROVEN** | `EarlyStopping` and `ModelCheckpoint` both select on `val_auc`; cell 9 reports on that same split | The headline 0.9977 is a max over 17 estimates on the selection split — optimistic by an unmeasured amount | B2: add a frozen test split and a separate calibration split |
-| **2** | **Corpus/class confound** | **PROVEN as available; exploitation unproven** | 100% of positives from YouTube compilations, 100% of negatives from BDD100K | Potentially explains nearly all of the 0.99 AUC | B4: corpus-control evaluation on Nexar; within-corpus negatives |
+| **2** | **Corpus/class confound** | **PROVEN, AND PROVEN TO HAVE BEEN EXPLOITED** | 100% of positives from YouTube compilations, 100% of negatives from BDD100K | **Explains essentially all of the 0.99 AUC. Removing the confound (Nexar test-public, one corpus) drops ROC-AUC from 0.9977 to 0.5339 — chance.** | B4: corpus change. **Measured 2026-09-11 (T3); not fixable on CCD** |
 | **3** | **Threshold fitted to the evaluation videos** | **PROVEN** | `CNN_THRESH = 0.80` chosen against `safe.mp4` scoring 0.79 — one negative | System-level results are circular | B5: fit the operating point on the frozen test split |
 | **4** | **Cross-split source leakage (`youtubeID`)** | **PROVEN AND QUANTIFIED — 91.4%** | 1,500 crash clips come from **133** YouTube videos (mean 11.3 each, max 34). A random 80/20 clip split puts **113 of 133 sources on both sides**, implicating **1,372/1,500 clips**; ≈274 of the 300 val crash clips have a sibling in train | **Severe.** This alone can account for most of the reported AUC | B3: group-wise split on `youtubeID`. **The official CCD split does not fix it — 107/133 sources appear on both sides there too.** |
 | **5** | **Cross-split source leakage (BDD100K drives)** | **POSSIBLE, UNQUANTIFIED** | BDD100K clips come from journeys; multiple clips may share a drive | Unknown | B3, using BDD100K video IDs |
@@ -2128,8 +2137,8 @@ You now have the pipeline to run all four cheaply, because features are cached.
 |---|---|---|---|
 | **False positives per hour of driving** | **The metric that decides whether a fleet keeps the product.** | **< 0.1 FP/hour** | **≈23/hour (derived; see [§12](#12-evaluation-history))** |
 | Precision @ fixed recall (e.g. R = 0.80) | Operating-point honesty | Report the full curve | Never computed |
-| Average Precision (AP) | Comparable to BADAS / Nexar literature | ≥ 0.85 on Nexar | Never computed |
-| ROC-AUC | Threshold-independent ranking | ≥ 0.88 | 0.9977 on a contaminated split |
+| Average Precision (AP) | Comparable to BADAS / Nexar literature | ≥ 0.85 on Nexar | **0.5218 on Nexar test-public (T3)** — vs BADAS-Open's published 0.86 |
+| ROC-AUC | Threshold-independent ranking | ≥ 0.88 | **0.5339 on Nexar test-public (T3)**; 0.9977 on the contaminated CCD split |
 | **Time-to-detection after impact** | Latency for claims/notification | < 2 s | Never computed |
 | **mTTA** for warnings | Comparable to BADAS's 4.9 s | Report, don't optimise blindly | Never computed |
 | **Expected Calibration Error** | Is 0.8 really 80%? | < 0.05 | Never computed |
@@ -2541,7 +2550,8 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 ### PHASE 2 — Current model validation  ·  🟡 **PARTIALLY COMPLETE (2026-09-10)**
 > Done: T1 single-frame, T2 temporal shuffle, T5 source-leakage count, T6 always-negative, B1 stride measurement — see [`runs/falsification/RESULTS.md`](runs/falsification/RESULTS.md). **The model failed T1, T2 and T5.**
-> Outstanding: T3 corpus control (needs the Nexar download), T4 crash excision (needs the cached features from Drive), the source-grouped frozen test split, and the threshold derivation.
+> **Done 2026-09-11: T3 corpus control — ROC-AUC 0.5339, AP 0.5218, FPR 97.6% on Nexar test-public (667 clips).** See [`runs/falsification/T3_corpus_control.md`](runs/falsification/T3_corpus_control.md). **The falsification suite is closed; every test run has failed. The gate below is satisfied: the model now has a measured AP, ROC-AUC and false-positive rate on a genuinely held-out, corpus-controlled benchmark it was not trained on.**
+> **Dropped as dead work, with reasons:** T4 crash excision (would confirm via a fourth route a conclusion already established three ways); the source-grouped CCD split, the B1 stride fix and the `CNN_THRESH` derivation (all three exist only to evaluate or operate a CCD-trained MobileNetV2+LSTM, which §44 and T3 jointly retire — there is no operating point on a chance-level ranker). Phase 1's port of the Colab pipeline to `train/` is likewise dropped: the notebook is retained as the historical record, not as a pipeline to be maintained.
 **Objective:** find out whether the model has ever detected a collision.
 **Priority: P0 · Effort: 3 days · Depends on: Phase 1**
 

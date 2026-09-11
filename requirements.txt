@@ -1,7 +1,22 @@
-tensorflow==2.13.1
-opencv-python
-ultralytics
-torch
-scipy
+# Python 3.11 (see .python-version). Verified 2026-09-11 on macOS/arm64.
+#
+# These are the versions that can actually READ models/crash_model_weights.weights.h5.
+# The previous pin of tensorflow==2.13.1 ships Keras 2, which physically cannot load a
+# Keras 3 weights file (README bug R2) -- the pinned environment could not load the model
+# the repository ships, even if it installed. Do not lower these without running
+# tests/test_weights_load.py.
+tensorflow==2.19.1
+keras==3.15.1
+opencv-python-headless==4.10.0.84
 h5py
 numpy
+scikit-learn
+
+# NOT included, deliberately:
+#   ultralytics  -- AGPL-3.0 (README bug C6). Required only by the retired YOLO-gated
+#                   pipeline; the recommended architecture (README section 28, Channel A)
+#                   needs no detector in the primary path. Reinstate only with a resolved
+#                   licence.
+#   torch        -- needed for BADAS-Open / V-JEPA2 evaluation, which lives in its own
+#                   environment (~/envs/badas) to keep the TF and PyTorch stacks apart.
+#   scipy        -- was unused by the surviving pipeline.
