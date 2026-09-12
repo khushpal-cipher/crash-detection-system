@@ -156,28 +156,74 @@ def clip_paths():
     return out
 
 
+def _resume(path, adapter_name):
+    """Per-clip results already on disk, keyed by clip id.
+
+    The BADAS sweep is ~18 h at ~97 s/clip. Without this, any interruption -- MPS
+    fault, laptop sleep, a clip that wedges the decoder -- throws away every hour
+    spent so far. Each record carries the adapter name and a mismatch raises, so a
+    stride-2 resume can never silently inherit stride-1 scores.
+    """
+    cache = {}
+    if not os.path.exists(path):
+        return cache
+    with open(path) as f:
+        for line in f:
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if r.get("adapter") != adapter_name:
+                raise AssertionError(
+                    f"{path} holds scores from {r.get('adapter')!r}, not {adapter_name!r}. "
+                    "Move it aside rather than mixing two configurations."
+                )
+            cache[r["id"]] = r
+    return cache
+
+
 def run(adapter, ids=None, out_dir=None, threshold=0.80, progress_every=25):
     """Score every clip with `adapter`, then evaluate through the shared metric path.
 
-    Returns (metrics, records). Writes metrics.json when `out_dir` is given.
+    Returns (metrics, records). Writes metrics.json when `out_dir` is given, and
+    appends each clip to scores.jsonl as it lands so an interrupted run resumes.
     Unscorable clips are dropped from the metrics and listed in `metrics["skipped"]` --
     never silently scored as 0, which would flatter a broken adapter.
     """
     labels, paths, table = load_labels(), clip_paths(), durations()
     ids = list(ids) if ids is not None else sorted(labels)
 
+    cache, log = {}, None
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+        log_path = os.path.join(out_dir, "scores.jsonl")
+        cache = _resume(log_path, adapter.name)
+        if cache:
+            print(f"  resuming: {len(cache)}/{len(ids)} already scored in {log_path}",
+                  flush=True)
+        log = open(log_path, "a")
+
     records, skipped = [], []
     for n, cid in enumerate(ids, 1):
-        if cid not in paths:
-            skipped.append({"id": cid, "reason": "no video file"})
-            continue
-        s = adapter.score(paths[cid])
-        if s is None or not np.isfinite(s):
-            skipped.append({"id": cid, "reason": f"adapter returned {s!r}"})
-            continue
-        records.append({"id": cid, "label": labels[cid], "score": float(s)})
+        r = cache.get(cid)
+        if r is None:
+            if cid not in paths:
+                r = {"id": cid, "reason": "no video file"}
+            else:
+                s = adapter.score(paths[cid])
+                if s is None or not np.isfinite(s):
+                    r = {"id": cid, "reason": f"adapter returned {s!r}"}
+                else:
+                    r = {"id": cid, "label": labels[cid], "score": float(s)}
+            r["adapter"] = adapter.name
+            if log:
+                log.write(json.dumps(r) + "\n")
+                log.flush()
+                os.fsync(log.fileno())  # 18 h of work; an fsync per 97 s clip is free
+        (skipped if "reason" in r else records).append(r)
         if progress_every and n % progress_every == 0:
             print(f"  {adapter.name}: {n}/{len(ids)}", flush=True)
+    if log:
+        log.close()
 
     y = [r["label"] for r in records]
     p = [r["score"] for r in records]

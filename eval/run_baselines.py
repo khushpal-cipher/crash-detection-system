@@ -12,11 +12,17 @@ Usage
     # verify the BADAS adapter on a balanced subset first (~1 min/clip)
     ~/envs/badas/bin/python eval/run_baselines.py --limit 6
 
-    # the real sweep: ~10 h at stride 1, ~7.5 h with --skip-predictor
-    ~/envs/badas/bin/python eval/run_baselines.py --out runs/baselines
+    # the real sweep: ~18 h at stride 1 (~97 s/clip END-TO-END, measured over 6 clips).
+    # Do NOT quote ~10 h -- that is the compute-only figure and it ignores decode plus
+    # VJEPA2VideoProcessor, which together add ~1.8x. --skip-predictor takes ~25% off.
+    PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+        ~/envs/badas/bin/python eval/run_baselines.py --out runs/baselines
 
 `--limit N` takes N clips balanced across classes, so a subset run still produces a
 meaningful (if tiny) AP rather than a single-class degenerate one.
+
+Resumable: every clip is appended to <out>/<model>/scores.jsonl as it lands, so an
+interrupted sweep picks up where it stopped. Delete that file to force a rescore.
 """
 
 import argparse
