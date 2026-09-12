@@ -247,7 +247,7 @@ Five findings dominate everything else.
 | Aspect | Status |
 |---|---|
 | Runs from a clean clone | ❌ No — see [§17](#17-reproducibility-problems) |
-| Training code in version control | ❌ No — exists only in Colab |
+| Training code in version control | ✅ Yes — `data/ccd/Untitled0.ipynb`, committed at `c9a6fda` with outputs intact |
 | Dataset identified | ✅ Yes — CCD (as of this revision) |
 | Dataset licensed for commercial use | ❌ No — see [§23](#23-dataset-licensing--provenance) |
 | Held-out test set | ❌ No |
@@ -259,7 +259,7 @@ Five findings dominate everything else.
 | Deployed threshold derived from data | ❌ No |
 | Shipped weights traceable to a run | ❌ No |
 | Detector licence resolved | ❌ No — AGPL-3.0 |
-| Any test in the repository | ❌ No |
+| Any test in the repository | 🟡 One — `tests/test_weights_load.py` (weights load + forward pass, R2's verification). No CI, no other coverage. |
 | Persistence / API / UI | ❌ None |
 
 **Repository inventory (verified at `b539d6e`):**
@@ -2140,7 +2140,7 @@ You now have the pipeline to run all four cheaply, because features are cached.
 | Average Precision (AP) | Comparable to BADAS / Nexar literature | ≥ 0.85 on Nexar | **0.5218 on Nexar test-public (T3)** — vs BADAS-Open's published 0.86 |
 | ROC-AUC | Threshold-independent ranking | ≥ 0.88 | **0.5339 on Nexar test-public (T3)**; 0.9977 on the contaminated CCD split |
 | **Time-to-detection after impact** | Latency for claims/notification | < 2 s | Never computed |
-| **mTTA** for warnings | Comparable to BADAS's 4.9 s | Report, don't optimise blindly | Never computed |
+| **mTTA** for warnings | Comparable to BADAS's 4.9 s | Report, don't optimise blindly | **Not computable on Nexar test-public** — clips are truncated before the event (measured 2026-09-11). Needs UK footage. |
 | **Expected Calibration Error** | Is 0.8 really 80%? | < 0.05 | Never computed |
 | Per-condition breakdown | Where it fails | Night / rain / low-sun / urban / rural / motorway | Never computed — **though CCD ships the labels (B7)** |
 | Per-crash-type breakdown | Coverage gaps | Rear-end / side / head-on / VRU / single-vehicle | Never computed |
@@ -2490,11 +2490,25 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 **The governing rule: no phase begins until the previous phase's acceptance criteria are met, in writing, in the repository.** The acceptance criteria are the point of this plan. A phase that "feels done" is not done.
 
+> ### The governing rule orders each track, not the whole document  ·  **revised 2026-09-12**
+>
+> The phase numbers below are a **dependency graph, not a queue.** Read as a queue, they put the two cheapest, highest-value, least-blocked deliverables *behind* the most expensive and most-blocked one — which is the wrong shape for this project's goal and compute constraints. Three tracks run **concurrently from week 1**:
+>
+> | Track | Phases | Gated on | Why it runs in parallel |
+> |---|---|---|---|
+> | **A — Model & measurement** | 4 → 5 → 6 | The Phase 2 gate ✅ | The engineering path. Compute-bound, and under a no-GPU constraint the slowest and least certain of the three. |
+> | **B — Data & benchmark** | 7 → 8 | A consent form and ~£500 | **No technical dependency on Track A.** §40 and §45 both name this as the moat. It is also the only route to a measurable headline metric: Nexar test-public holds **0.90 hours of negative footage**, and < 0.1 FP/hour cannot be demonstrated on 54 minutes at any confidence. |
+> | **C — Customer discovery** | 30 fleet calls | Nothing at all | Zero code, zero cost, no dependencies. §45 Q2 and "If I were you" both treat this as the real critical path to a startup outcome. It was previously buried as task 5 of Phase 5. |
+>
+> **Track C's gate, since no phase owns it any more:** 30 UK fleet-operator calls written up, one question each — *"What happened the last time you trialled an AI dashcam?"* **Do not pitch.** The answers are the go-to-market.
+>
+> **Why this changed.** Tracks B and C were formerly sequenced after Track A. Nothing in Track A unblocks either of them, both produce evidence Track A cannot produce, and Track A now contains a phase (6) that this project's hardware cannot complete as originally written. Sequencing the moat last was the single biggest structural defect in this plan.
+
 ---
 
 ### PHASE 0 — Evidence recovery  ·  🟡 **MOSTLY COMPLETE (2026-09-10)**
-> Done: notebook downloaded to `data/ccd/Untitled0.ipynb`; `Crash-1500.txt`, `train.txt`, `test.txt` in `data/`; Nexar licence + all 9 metadata CSVs in `data/nexar/`; falsification results in `runs/falsification/`.
-> Outstanding: commit the notebook to git · rename it in Drive · resolve U4 (493 MB orphans) and U6 (`crash_model_cpu` weight comparison) · email the CCD authors (U7).
+> Done: notebook **committed** at `data/ccd/Untitled0.ipynb` (`c9a6fda`, outputs included); `Crash-1500.txt`, `train.txt`, `test.txt` in `data/`; Nexar licence + all 9 metadata CSVs in `data/nexar/`; falsification results in `runs/falsification/`; **U4 resolved by deletion** — the 493 MB of orphaned artefacts are gone from the tree (`ad45389`).
+> Outstanding: rename the notebook in Drive · resolve U6 (`crash_model_cpu` vs the shipped weights — now one command, since a working TF 2.19 env exists) · email the CCD authors (U7) and Berkeley DeepDrive · write `runs/legacy-colab/README.md`.
 **Objective:** move every off-repository artefact into version control and download the three CCD files that were never fetched, so that no future audit can reach a wrong conclusion for want of access.
 **Priority: P0 · Effort: 0.5 day · Depends on: nothing**
 
@@ -2514,10 +2528,10 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 **Expected output:** a repository containing the pipeline that made the model; three annotation files; an honest legacy-run record; two emails sent.
 
 **Acceptance criteria**
-- [ ] `git log -- train/` is non-empty and a fresh clone contains the notebook
-- [ ] `data/ccd/Crash-1500.txt` exists and parses to 1,500 rows with 7 fields
+- [x] A fresh clone contains the notebook — `data/ccd/Untitled0.ipynb` (`c9a6fda`). It landed in `data/ccd/` rather than `train/`, so `git log -- train/` is empty; that is a path choice, not an unmet criterion.
+- [x] `data/Crash-1500.txt` exists and parses to 1,500 rows with 7 fields (path is `data/`, not `data/ccd/`)
 - [ ] `runs/legacy-colab/README.md` explicitly states the artefact/metric disconnect
-- [ ] U4 and U6 are answered in writing
+- [ ] U6 is answered in writing (U4 is answered by deletion, `ad45389`)
 - [ ] Both emails are sent, with dates recorded
 
 ---
@@ -2612,7 +2626,8 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 **Priority: P0 · Effort: 4 days · Depends on: Phase 2**
 
 **Exact tasks**
-1. `eval/` package: source-grouped splitter, leakage test (CI-enforced), metric suite — AP, ROC-AUC, precision @ fixed recall, **FP/hour**, ECE, time-to-detection, mTTA.
+1. `eval/` package: source-grouped splitter, leakage test (CI-enforced), metric suite — AP, ROC-AUC, precision @ fixed recall, **FP/hour (always with its denominator)**, ECE.
+   ⚠️ **`time-to-detection` and `mTTA` are NOT computable on Nexar test-public** and are excluded from this phase. Measured 2026-09-11: `time_of_event` lies beyond the distributed clip for **all 334 positives** (median 20.0 s vs 9.93 s clip), and the clip's offset into the original video is not in the shipped metadata. Timing metrics need a split that carries usable timestamps — the UK footage of Phases 7–8.
 2. Per-condition breakdown driven by the manifest: `timing`, `weather`, and later road type (B7).
 3. Ego-involved vs non-ego reporting (B7).
 4. Reliability diagrams and PR curves written to `runs/<id>/plots/`.
@@ -2631,31 +2646,53 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 ---
 
-### PHASE 5 — Baseline reproduction
-**Objective:** prove your harness is correct by reproducing someone else's published number.
-**Priority: P0 · Effort: 2 days · Depends on: Phase 4, and the Phase 2 gate**
+### PHASE 5 — BADAS-Open reference baseline  ·  **TRACK A**
+**Objective:** a defensible BADAS-Open number on *your* split, with every deviation from the published setup named. **Not** a bit-for-bit reproduction of someone else's figure — see the gate note.
+**Priority: P0 · Effort: 2 days for the harness path, plus ~18 h of unattended sweep compute (measured end-to-end, see task 2) · Depends on: Phase 4's adapter, and the Phase 2 gate**
+
+> #### The gate was restated on 2026-09-12, and this is the most important revision in Part IV
+>
+> It previously read: *"within ~0.02 AP of the named published figure. If it is not, the harness is wrong — stop and fix it. Do not proceed."* **That gate is unpassable by construction**, for five reasons that have nothing to do with your harness being wrong:
+>
+> 1. **The published number is disputed.** Model card: AP 0.86 / AUC 0.88. BADAS's own `config.json`: Nexar AP 83.2 / AUC 0.85.
+> 2. **The split differs.** Both published figures are on the full 1,344-clip test set; you hold the 667-clip public half.
+> 3. **The published inference code computes the future-prediction pathway and then throws it away.** `EnhancedVideoClassifier.forward()` consumes only `last_hidden_state` (the encoder output) and discards `predictor_output`, even though training used `predictor_combination_method: "concat"` with `future_prediction_seconds: 1.0`. So the pathway is loaded, executed, billed for ~25% of every window, and ignored. **Measured 2026-09-12 — and note this corrects the earlier reading of the same symptom:** the predictor is **not** an unimplemented module and **no weights are lost**. It is V-JEPA2's own predictor, already in `transformers` as `VJEPA2Model.predictor`, and the checkpoint stores it **twice** — embedded at `backbone.predictor.*` *and* duplicated at a top-level `predictor.*`. The embedded copy loads correctly (`load_state_dict` reports **missing 0**); the 199 "unexpected" keys are the **bitwise-identical duplicate** (verified with `torch.equal` across all 199 pairs). Evidence: `scripts/badas_predictor_probe.py`.
+> 4. **Clip-score reduction is ambiguous in their own code** — `per_video` uses mean; `cli.py` and the example use max.
+> 5. **`original_fps: 4` contradicts `target_fps: 8.0`** in the config, and is unresolved.
+>
+> **And the gate's purpose is already served by other evidence.** It exists to prove the harness is correct. `eval/benchmark.py` reproduces the committed T3 figures exactly, and the T3 scoring path was itself falsified against the three local videos (`safe.mp4` → **0.7914**, reproducing the original Keras pipeline's 0.79) *before* its result was accepted. The harness has been validated twice, independently of BADAS. **Do not block the project on a number nobody can currently define.**
 
 **Exact tasks**
-1. Obtain the Nexar collision-prediction dataset (subject to Phase 3's licence answer).
-2. Load BADAS-Open; evaluate on the Nexar test split through your harness.
-3. Compare against published AP 0.86 / AUC 0.88 / mTTA 4.9 s.
-4. Record the full baseline table: BADAS-Open zero-shot · your MobileNetV2+LSTM · always-negative.
-5. Begin the first 10 UK fleet-operator discovery calls in parallel. Ask about false alarms and review time. **Do not pitch.**
+1. Obtain the Nexar collision-prediction dataset. test-public is on disk (667 clips, verified). Consider test-private (677 clips, ~3 GB) for a like-for-like 1,344-clip comparison.
+2. ~~Time one forward pass before committing to any sweep (U-B6).~~ **ANSWERED 2026-09-12 — the phase is a GO, at ~18 h.** Two figures, and the difference between them matters:
+   - **Compute only: 0.856 s/window** on MPS at 16×224×224 (`scripts/badas_smoke.py`, which feeds a synthetic tensor and deliberately bypasses video IO). `skip_predictor=True` gives **0.629 s/window**, with `last_hidden_state` bit-identical — so the no-predictor baseline is **~25% cheaper on compute for free**.
+   - **End-to-end: ~97 s/clip measured** over a 6-clip run (`eval/run_baselines.py --limit 6`, 583.7 s). Decode plus `VJEPA2VideoProcessor` adds ~1.8× on top of compute. **A full 667-clip sweep at stride 1 is therefore ≈18 h, not the ≈10 h the compute-only figure implies.** Quote the end-to-end number when planning; the per-window number is for comparing model configurations only.
+   
+   18 h is two overnight runs or one long one — feasible, and not a blocker. **Stride 2 halves it to ≈9 h** and is legitimate **only if the deviation is recorded in `metrics.json`**. Model load is **8.5 s**, not the ~9 minutes previously recorded (that was a one-time HF download).
+3. **Consume `predictor_output` in the forward pass** (gate note, reason 3). This is a **forward-path change, not a reimplementation** — the module and its trained weights are already loaded. Apply `predictor_combination_method: "concat"`; **do not guess the concat axis** — the token axis is the hypothesis, the feature axis is ruled out because `temporal_processor` takes 1024, not 2048. Evaluate **with and without** and report both: the delta measures what the published code discards.
+4. Name the authoritative published figure in `metrics.json`, and record beside it **every** deviation: split size, stride, score reduction (use `np.nanmax`, not builtin `max` — the first 16 frames are NaN), predictor present/absent, fps.
+5. Record the full baseline table: BADAS-Open zero-shot · your MobileNetV2+LSTM (**already measured: AP 0.5218 / ROC-AUC 0.5339**) · always-negative.
 
-**Files affected:** `eval/adapters/badas.py`, `runs/baselines/`
+**Files affected:** `eval/adapters/badas.py`, `runs/baselines/`, `vendor/badas-open/` (patched, every patch marked as a vendored-upstream change)
 
-**Expected output:** `runs/baselines/metrics.json` with three models on one split.
+**Expected output:** `runs/baselines/metrics.json` with three models on one split, plus a named deviation list.
 
 **Acceptance criteria**
-- [ ] **Your reproduction of BADAS-Open is within ~0.02 AP of the published figure.** If it is not, the harness is wrong — stop and fix it. Do not proceed.
+- [ ] A forward-pass timing is recorded, and the chosen stride is justified against it
+- [ ] BADAS-Open is evaluated **both with and without** the predictor path, and both numbers are recorded
+- [ ] `metrics.json` names which published figure it is compared against, and lists every deviation from that setup
 - [ ] All three baselines are recorded on identical splits with identical code
-- [ ] 10 discovery calls completed and written up
+- [ ] **If the BADAS AP lands materially below the named published figure, the deviation list explains why — or the harness is wrong and you fix it.** This is a judgement call on documented evidence, *not* a hard numeric stop.
 
 ---
 
-### PHASE 6 — Model improvement
-**Objective:** a model that beats the baselines on *your* metrics, with the outputs the product needs.
-**Priority: P1 · Effort: 5 days · Depends on: Phase 5**
+### PHASE 6 — Match Channel A, then beat it as a system  ·  **TRACK A**
+**Objective:** the outputs the product needs, and a *system* that beats BADAS-Open zero-shot even where the learned channel only matches it.
+**Priority: P1 · Effort: 5 days for the CPU-feasible parts; probe training is gated on M4 Max access · Depends on: Phase 5**
+
+> **Reframed 2026-09-12 (decision D2).** This phase previously required *"a model that beats the baselines."* **That is not achievable under this project's compute constraints, and it must not sit in the critical path as though it were.** There is no CUDA device — an M1 laptop, plus an M4 Max at college. Full V-JEPA2 backbone fine-tuning is out of reach; **probe/head training on cached frozen features is the supported path.** BADAS-Open was trained with more data and more compute than you have, so out-AP-ing its backbone is an unlikely outcome and a poor objective.
+>
+> **What you can actually win on, and therefore what this phase is for:** the **multi-head split** (collision / near-miss / ego-involvement — what the product needs and what Nexar collapses), **calibration**, and **Channel B false-positive suppression**. §28 already argues Channel B is the differentiator rather than the baseline. **The target is a system number, not a backbone number.**
 
 **Exact tasks**
 1. V-JEPA2 + attentive probe, warm-started from BADAS-Open.
@@ -2669,7 +2706,8 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 **Files affected:** `train/`, `code/` (single surviving pipeline), `eval/`
 
 **Acceptance criteria**
-- [ ] New model beats BADAS-Open zero-shot on the frozen test split, or the gap is documented and explained
+- [ ] The learned channel **matches** BADAS-Open zero-shot within a stated band on the frozen test split, or the gap is documented and explained
+- [ ] **The fused system (Channel A + Channel B) beats BADAS-Open zero-shot on FP/hour at equal recall** — this is the phase's real claim, and the only one the hardware permits
 - [ ] ECE < 0.05
 - [ ] Collision and near-miss are reported as separate heads
 - [ ] The metric output passes the `fy / frame_height ∈ [0.7, 1.5]` calibration assertion
@@ -2677,9 +2715,11 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 ---
 
-### PHASE 7 — UK data collection
+### PHASE 7 — UK data collection  ·  **TRACK B — starts week 1, in parallel with Track A**
 **Objective:** own footage nobody else has.
-**Priority: P1 · Effort: ongoing from week 5 · Depends on: Phase 3 (consent/DPA templates)**
+**Priority: P0 · Effort: ongoing from week 1 · Depends on: a consent form and a data agreement. NOT on Phases 4–6.**
+
+> **Re-sequenced 2026-09-12.** This was *"ongoing from week 5, depends on Phase 3."* It has **no technical dependency on any model phase**, it is the moat per §40, and it is the only route to a measurable FP/hour: Nexar test-public holds **0.90 hours of negative footage**, so the plan's own headline target of < 0.1 FP/hour is undemonstrable on it at any confidence. **Start this first, not fifth.** The consent form and data agreement are the only genuine prerequisite — a day of work plus a lawyer's review, which is why they should be commissioned in week 1 rather than waited on.
 
 **Exact tasks**
 1. Buy a dashcam; arrange a paid UK driver and/or 3–5 driving schools.
@@ -2689,15 +2729,18 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 5. Target 100 hours; personally review ~10.
 
 **Acceptance criteria**
+- [ ] **First ~20 hours landed by week 4** — enough to begin Phase 8 curation, which does not need the full 100
 - [ ] ≥ 100 hours of UK footage with written consent on file
 - [ ] Redaction verified on a sample
 - [ ] Every clip has a manifest row with `consent_status`
 
 ---
 
-### PHASE 8 — Hard-negative benchmark
+### PHASE 8 — Hard-negative benchmark  ·  **TRACK B**
 **Objective:** UK-HN-500, published.
-**Priority: P1 · Effort: 10 days spread over weeks 5–10 · Depends on: Phase 7**
+**Priority: P0 · Effort: 10 days spread over weeks 3–10 · Depends on: Phase 7's first ~20 hours — not its full 100**
+
+> **Re-sequenced 2026-09-12.** Curation begins on a **partial** corpus; there is no reason to wait for 100 hours before categorising the first hard negatives. §34 calls this *"the single most valuable artefact you can build in 90 days,"* and it was previously gated behind the slowest track in the plan.
 
 **Exact tasks**
 1. Curate 500 clips across the eleven categories in [§34](#34-hard-negative-benchmark).
@@ -2781,9 +2824,9 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 | 13 | Reproduce BADAS-Open baseline | **Critical** | Low | Med | 10 | **P0** | 2 d |
 | 14 | Run isolation + seeding (B8, B9) | High | Low | Low | 7 | **P1** | 0.5 d |
 | 15 | Delete forks + dead subsystems (H5, C2, H1, M1) | High | Low | Low | 7 | **P1** | 2 d |
-| 16 | UK footage collection started | **Critical** | Med | Med | — | **P1** | 5 d |
-| 17 | UK-HN-500 benchmark | **Critical** | High | Low | 16 | **P1** | 10 d |
-| 18 | Customer discovery (30 calls) | **Critical** | Med | Low | — | **P1** | ongoing |
+| 16 | UK footage collection started (**Track B, week 1**) | **Critical** | Med | Med | — | **P0** | 5 d |
+| 17 | UK-HN-500 benchmark (**Track B**) | **Critical** | High | Low | 16 (first ~20 h) | **P0** | 10 d |
+| 18 | Customer discovery (30 calls) (**Track C, week 1**) | **Critical** | Med | Low | — | **P0** | ongoing |
 | 19 | Camera calibration fix (C1) | High | Med | Low | 15 | **P1** | 3 d |
 | 20 | Multi-head fine-tune + calibration | High | Med | Med | 13, 16 | **P1** | 5 d |
 | 21 | Parse CCD annotations into the manifest (B7) | High | Low | Low | 2 | **P1** | 0.5 d |
@@ -2802,6 +2845,23 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 ---
 
 ## 43. Exact Immediate Actions
+
+> **⚠️ This list was written 2026-09-10 and items 1–8 are now done or deliberately dropped. Superseded 2026-09-12 — see the three-track block at the head of [§41](#41-90-day-action-plan-phases-011).** Kept verbatim below as the record of what the plan asked for at the time.
+>
+> | # | Status |
+> |---|---|
+> | 1 · commit the notebook | ✅ done — `data/ccd/Untitled0.ipynb` (`c9a6fda`) |
+> | 2 · download the three CCD files | ✅ done — `data/{Crash-1500,train,test}.txt` |
+> | 3 · email Nexar re licence | ✅ moot — licence retrieved directly to `data/nexar/LICENSE`, commercial use permitted |
+> | 4 · count split leakage | ✅ done — T5, 113/133 sources, 91.4% of clips |
+> | 5 · shuffle + single-frame tests | ✅ done — T1/T2, both failed |
+> | 6 · pin the environment + smoke test | 🟡 partly — TF 2.19.1/Keras 3.15.1 pinned, `tests/test_weights_load.py` passes; **no lockfile, no Dockerfile, no `make run`** |
+> | 7 · fix B1 (stride) | ⛔ dropped — T3 retired the model; there is no operating point on a chance-level ranker |
+> | 8 · delete the forks and dead subsystems | ✅ done — `code/` holds one pipeline; three forks archived under `archive/parent_repo_v1/` |
+> | 9 · build `eval/` | 🟡 in progress — `eval/benchmark.py` passes; adapter, `metrics.json` and plots outstanding |
+> | 10 · reproduce BADAS-Open | ⚠️ **gate restated** — see Phase 5 |
+>
+> **The actual next actions are now:** finish Phase 4's adapter (Track A) · commission the consent form and start UK recording (Track B) · book the first fleet calls (Track C). All three start now, in parallel.
 
 The next ten things, in order, starting now.
 
@@ -3117,7 +3177,7 @@ and requires `My Drive/CarCrashDetection/data/dataset/{Crash-1500,Normal}.zip` t
 | Dataset | Role | Size | Licence position |
 |---|---|---|---|
 | **Nexar Collision Prediction** | **Primary training + benchmark** | 1,500 train clips (2,844 total), ~40 s, 1280×720 @ 30 fps, 50/50 pos/neg, first-party consented and anonymised, with `time_of_event` / `time_of_alert` and lighting/weather/scene metadata | 🟡 `nexar-open-data-license` — three inconsistent public descriptions. **Confirm in writing, week 1.** |
-| **BADAS-Open** (model) | Baseline to reproduce and warm-start from | V-JEPA2 ViT-L + attentive probe (12 queries) + 3-layer MLP; 16 frames @ 256×256. Reports Nexar AP 0.86 / AUC 0.88 / mTTA 4.9 s; DoTA AP 0.94; DADA-2000 AP 0.87; DAD AP 0.66 | 🟢 **Apache 2.0**, commercial use with attribution; disclaimed for safety-critical use |
+| **BADAS-Open** (model) | Baseline to reproduce and warm-start from | **Read from the checkpoint itself, 2026-09-11** (`models/badas/weights/badas_open.pth`, 3.7 GB, epoch 3, val_acc 87.07). Four modules: `backbone` V-JEPA2 ViT-L (587 tensors, hidden 1024) · **`predictor`** (199 tensors, 12 layers @ 384, with `mask_tokens`; 1024→384→1024) · `temporal_processor` MultiheadAttention(1024, 8 heads)+LayerNorm+mean-pool · `classifier` 3-layer MLP (768 hidden, 2 classes). Training config: `use_future_prediction: true`, `future_prediction_seconds: 1.0`, `predictor_combination_method: "concat"`, `frame_count: 16`, `img_size: 224`, `temperature: 2.0`, trained on 2-second balanced clips. **Sliding window at inference: 16 frames @ 224×224, 8 fps, stride 1.** ⚠️ **The published inference code does NOT implement the predictor pathway** — `EnhancedVideoClassifier.forward()` is `backbone → temporal_processor → classifier` only, and `load_state_dict(strict=False)` silently discards all 199 `predictor.*` tensors. A naive load-and-run therefore evaluates a model missing its entire future-prediction pathway; any AP from it is not BADAS-Open's AP (progress.md §6.9, 2026-09-11). Reports Nexar AP 0.86 / AUC 0.88 / mTTA 4.9 s (model card) but its own `config.json` says AP 83.2 / AUC 0.85; DoTA 0.94 vs 95.9; DADA 0.87 vs 92.9; DAD 0.66 vs 60.9 | 🟢 **Apache 2.0**, commercial use with attribution; disclaimed for safety-critical use |
 | **V-JEPA 2** (backbone) | Encoder | — | 🟢 **MIT** (majority; some utility files Apache-2.0) |
 | **DoTA** | Pretraining + eval | 4,677 videos with temporal, spatial and categorical annotations | 🟡 repo MIT; **videos from YouTube** |
 | **DADA-2000** | Augmentation | 2,000 sequences, 658,476 frames, 1584×660, ~6.1 h | 🟡 East Asian bias; YouTube-derived |

@@ -7,6 +7,10 @@ Raw output: `T5_source_leakage.txt`, `T124_local_videos.json`.
 **Verdict: the model is an image classifier. The LSTM contributes nothing measurable, and the
 training split leaks at 91%. Neither result is marginal.**
 
+**Updated 2026-09-11 — T3 has since been run and is the decisive result: ROC-AUC 0.5339 on a
+corpus-controlled benchmark, i.e. chance. See the T3 section below. The suite is closed; every test
+that was run, failed.**
+
 ---
 
 ## T1 — Single-frame test · **FAILED**
@@ -89,9 +93,33 @@ driving (720/hour) that is **≈23 false alarms per driving hour**. An always-ne
 
 ---
 
-## T3 — Corpus control · **NOT YET RUN**
-Blocked on downloading the Nexar videos (31.4 GB). Licence resolved — see below. This is the one
-remaining test, and after T1/T2/T5 it is now a formality rather than a question.
+## T3 — Corpus control · **RUN 2026-09-11 · FAILED — and it is the decisive result**
+
+Full method and raw output: [`T3_corpus_control.md`](T3_corpus_control.md), `T3_corpus_control.json`,
+`scripts/t3_corpus_control.py`.
+
+Nexar test-public, **667 clips** (334 positive / 333 negative), positives and negatives from one
+corpus and one anonymisation pipeline, so the class/corpus confound cannot operate:
+
+| Metric | Value |
+|---|---|
+| **ROC-AUC** | **0.5339** (chance = 0.50) |
+| **AP** | **0.5218** |
+| At threshold 0.80 | TP 332 · FP 325 · FN 2 · TN 8 |
+| **TPR / FPR** | **0.994 / 0.976** |
+
+**This is worse than "does not generalise."** The model does not rank Nexar clips at all — it emits
+near-1.0 on essentially everything from a corpus it was not trained on. Median score is **0.9998 for
+positives and 0.9998 for negatives**. It is not a weak detector; it is an almost-always-positive one.
+
+**The measurement was falsified before being accepted.** Running the identical scoring path over
+`safe.mp4` and `crash1.mov` reproduces the T1/T2 figures **exactly** (0.7914 and 0.9998), so the code
+discriminates when discrimination is present. The collapse is a property of the model under corpus
+shift, not an artefact of the harness.
+
+**The 0.9977 val AUC on CCD was measuring the corpus boundary.** B4 is confirmed by measurement and
+closed as "diagnosed, not fixable" — the resolution is to retire the model and keep CCD as a research
+corpus only. **The falsification suite is closed: every test that was run, failed.**
 
 ---
 
