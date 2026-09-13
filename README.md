@@ -295,6 +295,19 @@ crash_detection_v2/
 
 **16 tracked files. 6 Python files. 3 videos. 493 MB of orphaned model artefacts. Zero tests. Zero training code.**
 
+> **⚠️ The inventory above is a snapshot of `b539d6e` and is retained as the dated audit record. The working tree has since moved. Verified 2026-09-12:**
+>
+> | Audit said | Now |
+> |---|---|
+> | `camera_detect.py`, `code/crash_detection.py`, `code/crash_detection_linux.py`, `code/depth_estimator.py`, `code/bev_renderer.py` | **all five deleted** (`e58885d`, `7640950`); `code/` holds one pipeline, the forks are under `archive/parent_repo_v1/` |
+> | `crash_detection_enhanced.py` — 1,334 lines | **977 lines.** Every `enhanced.py:NNNN` reference in §15/§19/§21/§47 predates the shrink and is off by the deleted blocks — `CNN_THRESH` is now `:97`, the decision gate `:754`/`:849`. Treat those line numbers as historical pointers, not as addresses. |
+> | `models/crash_detection_model.h5` + `crash_detection_model/` — 493 MB orphaned | **deleted** (`ad45389`). U4 is resolved by deletion. |
+> | Zero tests | **two, both passing** — `tests/test_weights_load.py`, `tests/test_score_regression.py` |
+> | Zero training code | the Colab notebook is committed at `data/ccd/Untitled0.ipynb` with outputs (`c9a6fda`) |
+> | 16 tracked files | **81** — `eval/`, `scripts/`, `vendor/badas-open/`, `data/nexar/`, `runs/` all landed since |
+>
+> The audit body is **not** rewritten to match. It documents what was true when it was written, which is the point of an audit; this note is the delta.
+
 **Off-repository assets (newly catalogued):**
 
 | Asset | Location | Status |

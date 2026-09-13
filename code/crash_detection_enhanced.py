@@ -719,7 +719,6 @@ class CrashDetectionEnhanced:
         max_cnn = 0.0
         min_dist_ever = float('inf')
         max_speed_ever = 0.0
-        first_fault = None
         output_dir = Config.OUTPUT_DIR / path.stem
         if self.save_output:
             output_dir.mkdir(exist_ok=True)
@@ -792,7 +791,7 @@ class CrashDetectionEnhanced:
             disp.close()
             self._report(path.name, frame_count, crash_frames,
                          neural_confirmed, max_cnn, min_dist_ever,
-                         max_speed_ever, time.time() - t0, first_fault)
+                         max_speed_ever, time.time() - t0)
 
     def run_camera(self, display=True, record=False):
         Log.head("LIVE CAMERA MODE")
@@ -819,7 +818,6 @@ class CrashDetectionEnhanced:
         max_cnn = 0.0
         min_dist_ever = float('inf')
         max_speed_ever = 0.0
-        first_fault = None
         writer = None
         t0 = time.time()
 
@@ -891,11 +889,11 @@ class CrashDetectionEnhanced:
                 Log.ok("Recording saved.")
             self._report("webcam", frame_count, crash_frames,
                          neural_confirmed, max_cnn, min_dist_ever,
-                         max_speed_ever, time.time() - t0, first_fault)
+                         max_speed_ever, time.time() - t0)
 
     def _report(self, name, frame_count, crash_frames,
                 neural_confirmed, max_cnn, min_dist_ever,
-                max_speed_ever, elapsed, fault_info=None):
+                max_speed_ever, elapsed):
         fps_proc = frame_count / elapsed if elapsed > 0 else 0
         crash_pct = (crash_frames / frame_count * 100) if frame_count > 0 else 0
 
@@ -930,16 +928,6 @@ class CrashDetectionEnhanced:
         else:
             print(f"VERDICT: ✅ NO CRASH")
             print(f"Confidence: HIGH")
-
-        if is_crash and fault_info:
-            print(f"\n⚠️  Fault Detection:")
-            print(f"   Collision type : {fault_info.get('collision_type', 'unknown')}")
-            print(f"   At fault       : {fault_info['at_fault']}")
-            print(f"   Reason         : {fault_info['reason']}")
-            v2 = fault_info['v2']
-            print(f"   V{fault_info['v1']} speed      : {fault_info['v1_speed']:.0f} km/h")
-            if v2 != 'ego':
-                print(f"   V{v2} speed      : {fault_info['v2_speed']:.0f} km/h")
 
         print(f"{'='*70}")
 

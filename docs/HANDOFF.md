@@ -1,5 +1,13 @@
 # HANDOFF — AI Crash Detection project (paste this into the new Claude Code session)
 
+> # ⚠️ SUPERSEDED — this is the SESSION 1 handoff. Read `progress.md` instead.
+>
+> Kept as the historical record of what was known at the end of session 1. Sessions 2–4 have
+> since run T3, vendored BADAS-Open, built `eval/`, and started the 667-clip baseline sweep.
+> **`progress.md` is the live execution state; `README.md` is the master plan.** Individual
+> "not yet done" claims below are stale by construction — the three most misleading have been
+> corrected in place and marked, but do not treat anything here as current status.
+
 ## 0. READ THIS FIRST — identity correction
 
 The handoff request that generated this document described a project called
@@ -179,7 +187,9 @@ Val FPR 19/600 = **3.17%** → as 5-second windows over continuous driving (720/
 **23 false alarms per driving hour**. Target for a shippable system: **< 0.1/hour**.
 An always-negative baseline scores 0. **On the metric that matters, the trivial baseline wins.**
 
-### T3 — Corpus control: **NOT YET RUN** (the one remaining test; needs the Nexar download)
+### T3 — Corpus control: ✅ **RUN 2026-09-11 — ROC-AUC 0.5339, AP 0.5218, FPR 97.6%** on Nexar
+test-public (667 clips). **The model is at chance.** This is the project's headline result;
+see `runs/falsification/T3_corpus_control.md` and `RESULTS.md`. *(corrected 2026-09-12)*
 ### T4 — Crash excision: **NOT RUN** (needs the cached `.npy` features, which live in Google Drive)
 
 ---
@@ -388,7 +398,8 @@ README Phase 1 work and is worth doing once rather than repeatedly.
 
 ## 15. What has NOT been done
 
-- T3 corpus control (blocked on the download finishing) · T4 crash excision (needs Drive features)
+- ~~T3 corpus control~~ **DONE 2026-09-11, the model failed it** · T4 crash excision — **dropped as
+  dead work**, it would confirm via a fourth route what T1/T2/T5 already establish *(corrected 2026-09-12)*
 - Source-grouped, frozen test split · calibration split · threshold derivation from a PR curve
 - Reproducing BADAS-Open · any Nexar evaluation
 - Fixing camera calibration (C1) · replacing the tracker (H2) · resolving AGPL (C6)
@@ -403,7 +414,8 @@ README Phase 1 work and is worth doing once rather than repeatedly.
 2. Reconcile README with what actually shipped.
 3. Rebuild the environment at a stable non-iCloud path; pin TF 2.19 / Keras 3.
 4. ~~Finish the Nexar test-public download~~ — **DONE, 667/667, verified.**
-5. **T3 corpus control** — evaluate the existing CCD-trained model on Nexar test-public (already
+5. ~~**T3 corpus control**~~ — **DONE 2026-09-11: ROC-AUC 0.5339. Original text follows.**
+   Evaluate the existing CCD-trained model on Nexar test-public (already
    downloaded, 667 clips), where positives and negatives share a corpus. This is the last
    falsification test, and it is now fully unblocked. Reuse the NumPy forward-pass approach in
    `scripts/t124_model_falsification.py` so no Keras-3 runtime is strictly required. Expect a large

@@ -1,8 +1,67 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-12, ~04:00 IST**, end of **session 3** (handoff pass).
+Last updated: **2026-09-12, 23:15 IST**, end of **session 5** (handoff pass).
 
+> # ⏳ A LONG BACKGROUND JOB IS RUNNING RIGHT NOW — READ THIS BEFORE ANYTHING ELSE
+>
+> **PID 88180**, launched 2026-09-12 20:17 IST, `caffeinate -i`, ~3 h elapsed at handoff.
+> ```
+> PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+>     ~/envs/badas/bin/python eval/run_baselines.py --out runs/baselines
+> ```
+> It is the **667-clip BADAS-Open sweep** — Phase 5's entire input. **535/667 done as of
+> 2026-09-13 09:13 IST**, 12 h 57 m elapsed, measured ~118 s/clip. **ETA ≈ 13:30 IST today.**
+>
+> - **DO NOT kill it, and do NOT run anything else on MPS** — a second model on the GPU will slow or
+>   fault it. Everything CPU-only (the TF env, doc work) is safe to run alongside.
+> - **It is resumable.** Every clip is appended+fsynced to `runs/baselines/badas-open/scores.jsonl`.
+>   If it dies, relaunch the *same* command; it prints `resuming: N/667` and continues.
+> - **Check it without touching it:** `~/envs/crashdet/bin/python eval/peek.py`
+> - When it finishes it writes `runs/baselines/baseline_table.json` + per-model `metrics.json`.
+
+> # SESSION 5 SUMMARY — READ THIS, then §3, §6.15–6.19, §13
+>
+> **Sessions 4 and 5 both happened after progress.md was last written. Neither was recorded until
+> now.** Session 4 is reconstructed from git; session 5 is this session.
+>
+> 1. **⚠️ progress.md was ONE SESSION STALE.** It said the BADAS sweep was "not started, awaiting the
+>    user's stride decision". **A session 4 had already launched it** (commits `e488a05`, `4204bf2`,
+>    `cc13966`; sweep started 13:48). The stride question is now **moot** — stride 1 is running and
+>    ~230 clips are banked at that setting (§6.15).
+> 2. **🔴 THE SWEEP WAS SCORING ALL 334 POSITIVES BEFORE ANY NEGATIVE — FIXED.** `balanced_ids()`
+>    returned `sorted(labels)`, and in Nexar test-public every positive id sorts below every negative.
+>    AP/ROC-AUC/FP-h are undefined until both classes are present, so the run would have produced
+>    **no computable metric for ~9 hours**. Now interleaved. Restarted; the 140 banked clips resumed
+>    instantly. **Metrics are order-independent, so the final numbers are unchanged** (§6.16, D15).
+> 3. **FIRST REAL BADAS SIGNAL — partial, at 230/667 clips (140 pos / 90 neg):
+>    AP 0.9274 · ROC-AUC 0.8988 · ECE 0.2794 · TP/FP/FN/TN 138/58/2/32 @thr 0.80.**
+>    **PARTIAL, NOT A RESULT — do not commit or quote it** (§6.17). But it clears README Phase 5's
+>    "AP ≈ 0.5 = something is broken" branch decisively.
+> 4. **U-B7 RESOLVED — `original_fps: 4` vs `target_fps: 8.0` is NOT a contradiction, and the running
+>    sweep is configured correctly.** `target_fps` is the video rate; `original_fps` is the
+>    post-tubelet **token** rate. 16 frames @ 8 fps = 2.0 s → tubelet 2 → 8 tokens → 4 tokens/s.
+>    Every checkpoint number reconciles. **No B1-style temporal mismatch.** Evidence:
+>    `scripts/badas_fps_probe.py` (§6.18).
+> 5. **U6 ANSWERED — Phase 0 acceptance item closed.** `models/crash_model_cpu/` and the shipped
+>    `crash_model_weights.weights.h5` are **bit-identical across all 12 weight arrays**. Evidence:
+>    `scripts/u6_compare_weights.py` (§6.19).
+> 6. **`runs/legacy-colab/` WRITTEN — the last Phase 0 acceptance item.** Training log + val metrics
+>    extracted verbatim from the committed notebook, plus a README stating why `val AUC 0.9977` does
+>    not describe the shipped weights.
+> 7. **Phase 3's own grep criterion now PASSES.** Deleted the unreachable fault-reporting block in
+>    `code/crash_detection_enhanced.py`. `grep -rn "at_fault\|FaultDetector\|EgoZone" code/` is clean.
+> 8. **§18's documentation contradictions 1–5 are FIXED** (§18 is updated in place).
+> 9. **README was edited — ONE note only** (a dated delta table under the §2 inventory). Not a plan
+>    change. See §16.
+> 10. **NOTHING IS COMMITTED.** HEAD is still `cc13966`. See §8.
+> 11. **claude-mem is DOWN** — observer allowance exhausted since 2026-09-11T22:17Z. No memories were
+>    captured this session. Do not restart the worker; it clears a backoff.
+
+---
+
+> # SESSION 3 SUMMARY (history — superseded by the block above)
+>
 > # SESSION 3 SUMMARY — READ THIS FIRST, then §3, §6.11–6.14, §13
 >
 > **Nothing is blocked. Phase 5 is a GO. Phase 4's headline criterion is met. Nothing is committed.**
@@ -98,12 +157,16 @@ technical audit plus product strategy. **Currently executing README §41 Phase 4
 Track A.** Since session 3, README §41 defines **three parallel tracks**, not a queue:
 Track A = model/measurement (Phases 4→5→6), Track B = data/benchmark (7→8), Track C = 30 fleet calls.
 
+**Status as of end of SESSION 5 (2026-09-12 23:15 IST). This table is the truth; everything below
+labelled "this session" for sessions 1–3 is history.**
+
 | | |
 |---|---|
+| **Phase 0 — Evidence recovery** | **COMPLETE as of session 5.** U6 answered (§6.19); `runs/legacy-colab/README.md` written. Only the two licence emails (U7, BDD100K) remain, and they are external, not blocking. |
 | **Phase 2 — Current model validation** | **COMPLETE** (session 1). Gate satisfied by T3 (§6.1). |
-| **Phase 4 — Evaluation harness** | **~60% DONE. Acceptance criterion #1 IS MET (session 3):** three models evaluate through one code path (§6.13). Built: `eval/benchmark.py`, `eval/adapters.py`, `eval/run_baselines.py`. **Outstanding:** reliability diagrams + PR curves to `runs/<id>/plots/` (matplotlib is in NEITHER env), and `metrics.json` written from a real full run. |
-| **Phase 5 — BADAS-Open reference baseline** | **UNBLOCKED, DE-RISKED, NOT STARTED.** U-B6 answered (§6.12): ~18 h end-to-end sweep, feasible. Predictor is NOT a reimplementation (§6.11). Adapter exists and passed a 6-clip smoke test. **No real BADAS number exists yet.** |
-| **Current objective** | Run the full 667-clip BADAS sweep to produce the third row of the baseline table. ~18 h unattended. **Awaiting the user's stride decision — see §13.** |
+| **Phase 4 — Evaluation harness** | **~90% DONE.** AC #1 met session 3 (three models, one code path, §6.13). `eval/plots.py` added session 4. `eval/peek.py` added session 5. **Outstanding: only the `metrics.json` + plots from the finished full run** — which is the sweep now in flight. |
+| **Phase 5 — BADAS-Open reference baseline** | **IN FLIGHT, 535/667 (80%) at 2026-09-13 09:13.** Sweep running since 20:17 (PID 88180), **ETA ≈ 13:30 IST 2026-09-13**. Partial AP 0.8464 / AUC 0.8579 on a balanced 268/267 split — **between both published figures; partial, not a result** (§6.17). |
+| **Current objective** | **Let the sweep finish, then close Phase 4 and judge Phase 5's gate.** See §13. |
 
 **Phases with outstanding items (none blocking Phase 4 or 5):**
 
@@ -141,7 +204,7 @@ Track A = model/measurement (Phases 4→5→6), Track B = data/benchmark (7→8)
 
 ---
 
-## 4. EVERYTHING COMPLETED (§4.1–4.8 = SESSION 1 · §4.9 = SESSION 2 · §4.10 = SESSION 3)
+## 4. EVERYTHING COMPLETED (§4.1–4.8 = S1 · §4.9 = S2 · §4.10 = S3 · **§4.11 = S4 · §4.12 = S5**)
 
 ### 4.1 State verification (no changes made)
 
@@ -324,6 +387,54 @@ Full detail in §6.11–6.14. Compact checklist:
   `scipy`, none installed in `~/envs/crashdet`. Unchanged finding, now explicitly re-verified.
 
 **Nothing was committed.** Git HEAD is still `420ef17`.
+
+---
+
+### 4.11 Everything completed in SESSION 4 (reconstructed from git — it left no handoff)
+
+Session 4 ran ~13:36–15:22 IST on 2026-09-12, after progress.md was last written at 13:14. It
+**committed three times and updated nothing in this file.** Verified from `git log`/`git show`:
+
+| Commit | Time | What |
+|---|---|---|
+| `e488a05` | 13:36 | **Made the sweep resumable.** `benchmark.run()` now appends+fsyncs every clip to `<out>/scores.jsonl` and `_resume()` reads it back on restart. `_resume` raises if a record's `adapter` name differs, so a stride-2 resume can never silently inherit stride-1 scores. (+64/-11 across `eval/benchmark.py`, `eval/run_baselines.py`.) **This is what saved 6 hours of work when session 5 restarted the sweep.** |
+| `4204bf2` | 13:43 | **`eval/plots.py` (119 lines)** — PR curves + reliability diagrams, README §41 Phase 4 task 4. Standalone by design: it reads a finished `metrics.json` rather than drawing from inside the scoring loop, because matplotlib lives only in `~/envs/crashdet` while the sweep runs in `~/envs/badas`. An 18 h sweep can therefore never die on a plotting import. |
+| `cc13966` | 15:22 | **Committed `progress.md`** (1,809 lines) to git for the first time — but committed it *unchanged*, still stamped "end of session 3". |
+
+Session 4 also **launched the BADAS sweep at 13:48** at stride 1, without recording the launch
+anywhere. Session 5 found it running.
+
+---
+
+### 4.12 Everything completed in SESSION 5 (2026-09-12, ~19:50–23:15 IST) — THIS SESSION
+
+Full detail in §6.15–6.19. Compact checklist:
+
+1. **Deep project recovery.** Read README §§1–2, 41–44 and all of progress.md; verified every
+   material claim against the repo rather than trusting the handoff. Found progress.md one session
+   stale (§6.15).
+2. **Found and fixed the clip-ordering flaw** in `eval/run_baselines.py::balanced_ids` (§6.16, D15).
+   Killed PID 67741, patched, relaunched as PID 88180. Verified `resuming: 140/667`.
+3. **Corrected the sweep ETA docstring** in `eval/run_baselines.py` — the ~97 s/clip / ~18 h figures
+   were measured on a 6-clip smoke run and are too optimistic. Measured over 140 clips of the live
+   run: **~167 s/clip**; measured over session 5's own 90 clips after restart: **~117 s/clip**.
+4. **Wrote `eval/peek.py` (55 lines)** — reads the live `scores.jsonl` and prints metrics on whatever
+   has landed, clearly marked PARTIAL. Needed because `benchmark.run()` deliberately writes
+   `metrics.json` only on completion.
+5. **Resolved U-B7** (the `original_fps` question) and wrote `scripts/badas_fps_probe.py` (§6.18).
+6. **Resolved U6** and wrote `scripts/u6_compare_weights.py` (§6.19). Phase 0 acceptance item.
+7. **Wrote `runs/legacy-colab/`** — `training_log.txt`, `metrics_val.txt` (both extracted verbatim
+   from `data/ccd/Untitled0.ipynb`) and a `README.md` explaining the artefact/metric disconnect.
+   Phase 0 acceptance item.
+8. **Deleted the unreachable fault-reporting block** in `code/crash_detection_enhanced.py` — the
+   block, the `fault_info` parameter, both call-site arguments and both dead `first_fault = None`
+   locals. Phase 3's own grep criterion now passes. Both tests re-run and still pass.
+9. **Fixed documentation contradictions §18 items 1–5** — a dated delta note in README §2, and a
+   superseded banner + three in-place corrections in `docs/HANDOFF.md`.
+10. **Re-verified the environment:** `eval/benchmark.py` self-check PASSES (reproduces T3 exactly);
+    `tests/test_weights_load.py` PASSES; `tests/test_score_regression.py` PASSES (safe.mp4 → 0.7914).
+
+**Nothing was committed.** HEAD is still `cc13966`.
 
 ---
 
@@ -720,6 +831,164 @@ badas-open(stride=1,fps=8.0,img=224)   AP 1.0000  AUC 1.0000  FP/h 120.5 over 0.
   builtin `max(predictions)`, which returns **NaN** whenever a NaN is seen first — and their own
   windowing guarantees leading NaNs. Our adapter uses **`np.nanmax`** (U-B5). Do not "simplify" it back.
 
+### 6.15 progress.md was ONE SESSION STALE (CONFIRMED, session 5)
+
+**Claim in §13 as written:** *"THE EXACT NEXT ACTION — run the full BADAS sweep"*, with a pending
+user decision on stride 1 vs stride 2.
+
+**Reality found at 20:05 session 5:** the sweep had been running since **13:48** (PID 67741,
+`caffeinate -i`, stride 1, no `--skip-predictor`), 135 clips deep. Three commits from a session 4 —
+`e488a05`, `4204bf2`, `cc13966` — postdate progress.md's last write at 13:14.
+
+**Consequences, both acted on:**
+- **The stride decision is moot.** Stride 1 is running and ~230 clips are banked at that setting.
+  Switching now would invalidate the whole cache (`_resume` raises on an adapter-name mismatch, by
+  design). Stride 1 is also the faithful comparison. **Treat stride 1 as settled.**
+- **The ~18 h ETA was wrong.** Measured over the first 140 clips: **~167 s/clip → ≈31 h**, not the
+  ~97 s/clip → ≈18 h projected from a 6-clip smoke run. After the session-5 restart the observed rate
+  improved to **~117 s/clip** over 90 clips. `eval/run_baselines.py`'s module docstring now carries
+  the measured figure.
+
+**Lesson for the next session: verify the running-process state before trusting §13.** A handoff
+cannot record what happened after it was written.
+
+---
+
+### 6.16 🔴 THE SWEEP WAS SCORING ALL POSITIVES FIRST — found and fixed (CONFIRMED, session 5)
+
+**The defect.** `eval/run_baselines.py::balanced_ids(None)` returned `sorted(labels)`. In Nexar
+test-public **every one of the 334 positive clip ids sorts below every one of the 333 negatives** —
+verified: the first 140 sorted ids are 140/140 positive. So the sweep scored positives exclusively
+for its first ~9 hours.
+
+**Why that is not cosmetic.** AP, ROC-AUC, precision@recall and FP/hour are **all undefined with one
+class present** — `benchmark.evaluate()` cannot produce a number. So a ~31 h run would have yielded
+**zero diagnostic signal until hour ~9**. README §41 Phase 5's own gate note lists five unresolved
+ambiguities in this setup (disputed published figure, split size, predictor path, score reduction,
+fps). Any of them could make the number wrong. Discovering that at hour 31 instead of hour 2 is a
+pure, avoidable loss — and if the laptop had needed a reboot first, the run would have produced
+nothing usable at all.
+
+**The fix.** `balanced_ids` now interleaves `pos[0], neg[0], pos[1], neg[1], …` via
+`itertools.zip_longest` (334 vs 333 handled). `--limit N` still yields a balanced subset.
+
+**Safety of the restart, verified before acting:**
+- `scores.jsonl` ended with a newline and all 140 lines parsed cleanly — no torn record.
+- Killed PID 67743 (caffeinate) + 67741 (python); relaunched; log printed
+  **`resuming: 140/667 already scored`**. Nothing was re-scored.
+- **Metrics are order-independent** (AP/AUC/ECE operate on arrays, not visit order), so the completed
+  numbers are identical to what the original ordering would have produced. This is a **visiting-order
+  change only** — it is not a change to the measurement.
+
+**Immediate payoff:** the first negative landed within 2 minutes of the restart instead of ~9 hours
+later, and a partial AP was readable within 3 hours (§6.17).
+
+---
+
+### 6.17 FIRST REAL BADAS-OPEN SIGNAL — ⚠️ PARTIAL, NOT A RESULT (session 5)
+
+**Two readings, both partial. The later one is far more informative because the classes are
+balanced by then — this is exactly the payoff of the interleaving fix in §6.16.**
+
+| Metric | @ 230/667 (140 pos / 90 neg) | **@ 535/667 (268 pos / 267 neg)** |
+|---|---|---|
+| Average precision | 0.9274 | **0.8464** |
+| ROC-AUC | 0.8988 | **0.8579** |
+| ECE | 0.2794 | **0.3425** |
+| FP/hour @ thr 0.80 | 236.8 over 0.24 h | 226.9 over **0.72 h** |
+| TP / FP / FN / TN @ 0.80 | 138 / 58 / 2 / 32 | 258 / 164 / 10 / 103 |
+| precision @ recall 0.80 | 0.8984 | **0.7883** |
+
+**The drop from 0.9274 to 0.8464 is expected and healthy**, not a regression: the first reading had
+all 140 positives against only 90 negatives, so it was biased upward exactly as §6.17 predicted.
+
+**⚠️ Where the 535-clip reading sits against the disputed published figures — this is the Phase 5
+gate evidence:**
+
+| Source | AP | AUC |
+|---|---|---|
+| Model card | 0.86 | 0.88 |
+| Vendored `badas/config.json` (Nexar) | 0.832 | 0.85 |
+| **Ours, partial @ 535, 667-clip public half** | **0.8464** | **0.8579** |
+
+**It lands between the two published numbers on both metrics.** That is the outcome that says the
+harness is correct — and it makes README §41 Phase 5's "AP ≈ 0.8+ → harness trustworthy" branch the
+live one. **Still partial. Confirm against the full 667 before recording anything.**
+
+**Classification: NEEDS VERIFICATION. Do NOT commit, quote, or put this in `metrics.json`.** The
+clips scored so far are a **prefix of the visiting order, not a random sample** — all 140 positives
+are in, but only 90 of 333 negatives, so the negative set is heavily under-represented and AP is
+biased upward. The final number will move, most likely down.
+
+**What it does legitimately tell us — README §41 Phase 5's own interpretation ladder:**
+- *AP ≈ 0.5 → "something in our setup is broken, fix before anything else"* — **decisively cleared.**
+- *AP ≈ 0.6 → "stop, either the harness is wrong or the published figures do not transfer"* —
+  **cleared.**
+- *AP ≈ 0.8+ → harness trustworthy, Phase 5 passes* — **on track, pending the full run.**
+
+**Also observable and worth carrying forward:** positive scores are saturated near 0.995 (median
+0.9949 over the first 140), which is why **ECE is poor (0.2794)**. Calibration is a named Phase 6
+deliverable (temperature scaling, target ECE < 0.05) and this is early evidence it will be needed.
+**FP/hour 236.8 is a ceiling artefact printed to prove the denominator is carried, not a rate** —
+0.24 h of negatives cannot evidence anything near the < 0.1/h product target.
+
+---
+
+### 6.18 U-B7 RESOLVED — `original_fps: 4` vs `target_fps: 8.0` is NOT a contradiction (CONFIRMED)
+
+README §41 Phase 5's gate note, reason 5, states this is *"unresolved"*. **It is now resolved, and it
+was never a conflict.** The two keys count different things:
+
+```
+16 frames @ target_fps 8.0          = 2.0 s        <- matches data_root "balanced_dataset_2s"
+V-JEPA2 tubelet_size 2              -> 8 tokens
+8 tokens / 2.0 s                    = 4 tokens/s   <- THIS is original_fps
+future_prediction_seconds 1.0 x 4   = 4 token steps ahead
+```
+
+`target_fps` is the **video** sampling rate; `original_fps` is the post-tubelet **token** rate, used
+only to convert `future_prediction_seconds` into a token offset. Every number in the BADAS training
+config reconciles simultaneously, with no contradiction left over.
+
+**Evidence** (`scripts/badas_fps_probe.py`, which *asserts* the reconciliation rather than asserting
+a reading of it):
+- Checkpoint `config`: `frame_count 16`, `original_fps 4`, `future_prediction_seconds 1.0`,
+  `data_root ".../balanced_dataset_2s"`, `predictor_combination_method "concat"`, `temperature 2.0`,
+  `epochs 15` (stopped at **epoch 3**, `val_acc 87.07`).
+- `AutoConfig` for `facebook/vjepa2-vitl-fpc16-256-ssv2`: **`tubelet_size: 2`**, `frames_per_clip: 16`.
+- Upstream's own `badas/badas_loader.py` defaults, README and example all use
+  **`target_fps=8.0, num_frames=16, window_stride=1`** — exactly what `eval/adapters.py` runs.
+
+**Why this was checked before anything else:** a genuine 2× mismatch here would be this project's own
+**B1 bug** (README §15 — the old model trained on 5 s spans and run on 0.33 s ones) repeated on a new
+backbone, and it would have invalidated the entire multi-hour run. **It is not. The sweep's
+configuration is faithful to training.**
+
+---
+
+### 6.19 U6 ANSWERED — `crash_model_cpu/` IS the shipped artefact (CONFIRMED, session 5)
+
+README §41 Phase 0 task 7, open since the audit. **Answer: SAME RUN.** All **12 of 12** weight arrays
+are identical (`np.allclose`, atol 1e-6; r = +1.0000 on every array with size > 1), 578,689 parameters
+on both sides.
+
+**Method** (`scripts/u6_compare_weights.py`): matched by an **explicit name-pair table**, not by
+shape. A first attempt matched on shape and its own guard correctly refused to run — `(256,)` is both
+the `dense` bias and the `lstm_1` bias, so shape is not a unique key. The script asserts every pair's
+shapes agree, so a wrong pairing fails loudly instead of printing a false correlation.
+
+**The mechanism, now established.** Notebook cell 11 (CPU re-save) and cell 12 (`save_weights`) both
+**`load_model()` the same `best_crash_model.keras` file from Drive** rather than using the in-memory
+model — cell 12 is literally `load_model(...)` → `save_weights(...)`. `ModelCheckpoint` writes that
+path and **overwrites in place**, with no run id and no artefact hash.
+
+**What this changes:** combined with README §1 finding 3 (the `best_crash_model.keras` committed at
+`c63e307` differs from the shipped weights, `feat_reduce` kernel r = 0.0073), the evidence now shows
+**exactly two distinct runs, not three**. U1/U2 — *which* run produced the shipped weights and what
+its metrics were — remain **permanently UNRESOLVABLE** retrospectively, as the README already states.
+
+---
+
 ### 6.6 Prior-session results (preserved — do NOT re-run, do NOT delete)
 
 From `runs/falsification/RESULTS.md`, `T124_local_videos.json`, `T5_source_leakage.txt`:
@@ -766,37 +1035,71 @@ From `runs/falsification/RESULTS.md`, `T124_local_videos.json`, `T5_source_leaka
 
 ---
 
+### 7.1 Files changed in SESSIONS 4 and 5 (verified against `git status` / `git diff`)
+
+| Path | Session | State | What it now does |
+|---|---|---|---|
+| `eval/benchmark.py` | 4 | **COMMITTED** `e488a05` | Sweep is resumable: per-clip append+fsync to `scores.jsonl`, `_resume()` on restart, adapter-name mismatch raises. Self-check still reproduces T3 exactly. |
+| `eval/plots.py` (119 ln) | 4 | **COMMITTED** `4204bf2` | PR curves + reliability diagrams on shared axes. Reads a finished `metrics.json`. Run from `~/envs/crashdet` (matplotlib is not in `~/envs/badas`). |
+| `eval/run_baselines.py` | 4 + 5 | **MODIFIED, uncommitted** | Session 4 wired in resume. **Session 5: `balanced_ids` now interleaves pos/neg** (§6.16) via `itertools.zip_longest`, and the module docstring carries the **measured** ~167 s/clip / ~31 h instead of the smoke-run ~97 s / ~18 h. |
+| `eval/peek.py` (55 ln) | 5 | **NEW, untracked** | Reads the live `scores.jsonl` and prints metrics on whatever has landed, marked PARTIAL. The safe way to check an in-flight sweep. `~/envs/crashdet/bin/python eval/peek.py` |
+| `scripts/u6_compare_weights.py` (85 ln) | 5 | **NEW, untracked** | Answers U6 by explicit name-pair comparison of the SavedModel checkpoint against the `.h5` (§6.19). |
+| `scripts/badas_fps_probe.py` (68 ln) | 5 | **NEW, untracked** | Answers U-B7; asserts the fps/token reconciliation against the checkpoint + `AutoConfig` + upstream defaults (§6.18). |
+| `runs/legacy-colab/README.md` | 5 | **NEW, untracked** | Phase 0 acceptance item: states plainly why `Best val AUC : 0.9977` does not describe the shipped weights — wrong run, selection-contaminated, leaking split, corpus-aligned classes — and gives the T3 counter-number. |
+| `runs/legacy-colab/training_log.txt` · `metrics_val.txt` | 5 | **NEW, untracked** | Notebook cell 8 + cell 9 outputs, verbatim, extracted from the committed `data/ccd/Untitled0.ipynb`. |
+| `runs/baselines/` (40 KB) | 4 + 5 | **NEW, untracked, LIVE** | `sweep.log` + `badas-open/scores.jsonl`. **A RUNNING PROCESS IS APPENDING TO THIS.** Do not edit, move or delete. |
+| `code/crash_detection_enhanced.py` | 5 | **MODIFIED, uncommitted** | 977 → 965 lines. Removed the unreachable fault-reporting block, the `fault_info` parameter, both call-site arguments and both dead `first_fault = None` locals. `grep -rn "at_fault\|FaultDetector\|EgoZone" code/` is now **clean** — Phase 3's own acceptance criterion, previously failing. Still cannot import (no torch/ultralytics/scipy); `ast.parse` clean. |
+| `docs/HANDOFF.md` | 5 | **MODIFIED, uncommitted** | Superseded banner at the top pointing to progress.md, plus three in-place corrections where it claimed "T3 — Corpus control: NOT YET RUN". That file is committed and was contradicting the project's headline result. |
+| `README.md` | 5 | **MODIFIED, uncommitted** | **One added note only** — a dated delta table under the §2 `b539d6e` inventory. See §16. |
+| `progress.md` | 4 + 5 | `cc13966` then **MODIFIED** | Committed unchanged by session 4; rewritten by session 5 (this handoff). |
+
+---
+
 ## 8. GIT STATE
 
-- **Branch:** `main`
-- **HEAD:** `420ef17` — "T3 corpus control: the shipped model performs at chance (AUC 0.5339)" (unchanged since session 1 — **nothing has been committed in session 2**)
-- **In sync with `origin/main`** (0 ahead, 0 behind) as of `420ef17`.
-- **Working tree (session 2 end):**
-  ```
-  M  .gitignore
-  M  README.md
-  ?? eval/
-  ?? progress.md
-  ?? scripts/badas_smoke.py
-  ?? vendor/
-  ```
-  `models/badas/` does **not** appear above because it was gitignored in the same session it was
-  created — verified with `git check-ignore -v models/badas/weights/badas_open.pth`.
-- **Nothing has been committed this session.** Committing is the user's call, not made automatically.
+**Verified at 2026-09-12 23:15 IST, not remembered.**
 
-**Commit history (newest first, unchanged since session 1):**
+- **Branch:** `main`
+- **HEAD:** `cc13966` — "Track progress.md — the session handoff state" (Sat 2026-09-12 15:22 +0530)
+- **SESSION 5 COMMITTED NOTHING.** Sessions 1 and 4 committed; sessions 2, 3 and 5 did not.
+- **Working tree:**
+  ```
+   M README.md                        (session 5: +13 lines, one note — §16)
+   M code/crash_detection_enhanced.py (session 5: +3/-15, dead fault code removed)
+   M docs/HANDOFF.md                  (session 5: +15/-3, superseded banner + T3 fixes)
+   M eval/run_baselines.py            (session 5: +17/-7, interleaving + measured ETA)
+  ?? eval/peek.py
+  ?? runs/baselines/                  <- LIVE, a running process is writing here
+  ?? runs/legacy-colab/
+  ?? scripts/badas_fps_probe.py
+  ?? scripts/u6_compare_weights.py
+  ```
+- **Committing is the user's call.** They were asked at the end of session 5 and the session ended
+  before an answer. **Do not push to the remote without asking** — session 1's approval does not carry.
+
+**Commit history (newest first):**
 
 ```
-420ef17  T3 corpus control: the shipped model performs at chance (AUC 0.5339)   <- HEAD
+cc13966  Track progress.md — the session handoff state                          <- HEAD  (session 4)
+4204bf2  Add PR curves and reliability diagrams (Phase 4 task 4)                          (session 4)
+e488a05  Make the sweep resumable: append each clip to scores.jsonl as it lands           (session 4)
+869934c  Record T3 in RESULTS.md, restate the Phase 5 gate, ignore the BADAS weights
+bbea10f  Add BADAS probes and the safe.mp4 score-regression guard
+be82313  Add eval/ harness: three models through one code path (Phase 4 AC #1)
+836c856  Vendor BADAS-Open source (Apache-2.0) with one transformers 5.x patch
+420ef17  T3 corpus control: the shipped model performs at chance (AUC 0.5339)
 08d9453  Relocate project out of iCloud-synced Desktop to ~/dev/crash_detection
 7640950  Fix crash_detection_enhanced.py: remove dangling depth_est/bev refs
 e58885d  Finish dead-code deletion in crash_detection_enhanced.py; remove dead forks
 ad45389  Consolidate project into crash_detection_v2; reclaim 5.8 GB
 c9a6fda  Audit rev2: recover training pipeline, run falsification tests
-c995fd7  update readme                                                          <- was origin/main
+c995fd7  update readme
 ```
 
 **Be careful not to overwrite:**
+- **`runs/baselines/badas-open/scores.jsonl` — A RUNNING PROCESS (PID 88180) IS APPENDING TO IT.**
+  It holds hours of GPU work and is the only thing that makes the sweep resumable. Do not edit, move,
+  truncate or delete it. Do not `git checkout` over it.
 - Anything in `runs/falsification/` — this is the project's evidence base, and README §17 and the
   user's standing instruction both forbid destroying it.
 - `scripts/t124_model_falsification.py` and `scripts/t5_source_leakage.py` — refactoring these would
@@ -1024,6 +1327,26 @@ on that machine before starting the download.
   (§6.4). Determine whether the train split differs or the README is imprecise. Affects any
   duration-based metric (FP/hour, mTTA).
 
+### SESSION 5 STATE — blocked vs merely unfinished (read this before the older lists)
+
+**NOTHING IS BLOCKED.** Distinguishing carefully, because the older subsections below predate this:
+
+| Item | Class | Note |
+|---|---|---|
+| BADAS full-run AP | **UNFINISHED, not blocked** | 230/667 at handoff. Just needs wall-clock. Partial AP 0.9274 (§6.17) |
+| U-B2 — which published BADAS figure is authoritative | **UNKNOWN, open** | Model card AP 0.86 / AUC 0.88 vs vendored `config.json` Nexar AP 83.2 / AUC 0.85. Must be named in `metrics.json` (Phase 5 task 4) |
+| Phase 5 task 3 — consume `predictor_output` | **NOT STARTED** | Needs the GPU; cannot start until the sweep ends. Not blocked, queued |
+| U1 / U2 — which run made the shipped weights | **UNRESOLVABLE** | Confirmed again by U6 (§6.19): ModelCheckpoint overwrote in place, no run ids. Two runs in evidence, neither attributable |
+| U7 — CCD licence text · BDD100K terms | **WAITING ON EXTERNAL** | Emails never sent. Not blocking any code |
+| mTTA / time-to-detection on Nexar test-public | **BLOCKED PERMANENTLY on this data** | `time_of_event` lies beyond the clip for all 334 positives (§6.7) |
+| Tracks B and C | **NOT STARTED** | Zero dependencies, zero compute, zero code. README §40/§45 call them the critical path |
+| U5 — how `feature_extractor_saved/` was produced | **UNKNOWN, low priority** | README says regenerate deterministically rather than preserve |
+
+**Non-blocking environment note:** claude-mem's observer allowance is exhausted (since
+2026-09-11T22:17Z). No session memories are being captured. **Do not restart the worker.**
+
+---
+
 ### UNKNOWN (carried from README §18, unchanged this session)
 
 - **U1/U2** — which training run produced the shipped weights, and its metrics. Unresolvable
@@ -1132,6 +1455,27 @@ Do not reverse these without new evidence.
   bit-identical and upstream discards the predictor output anyway. It must be reported as a named
   configuration, not silently substituted.
 
+### Decisions made in SESSION 5 (D15–D18)
+
+- **D15 — Clip visiting order is pos/neg INTERLEAVED, never `sorted(labels)`.** Because in Nexar
+  test-public every positive id sorts below every negative, so a plain sort makes AP/AUC/FP-h
+  undefined for the first half of any run (§6.16). This is a **visiting-order** decision only;
+  metrics are order-independent, so no measurement changes. Do not "simplify" `balanced_ids` back to
+  a sort — the docstring says why.
+- **D16 — Stride 1 is settled; the stride question is closed.** Session 4 launched at stride 1 and
+  ~230 clips are banked at that setting. `_resume` raises on an adapter-name mismatch by design, so
+  switching to stride 2 would discard every banked clip. Stride 1 is also the faithful comparison.
+  **Do not re-open this with the user.**
+- **D17 — Partial sweep numbers are diagnostic, never results.** `eval/peek.py` exists so an
+  in-flight run can be sanity-checked, and it prints `PARTIAL` for that reason. `benchmark.run()`
+  deliberately writes `metrics.json` only on completion, so a partial file can never be mistaken for
+  a result. Do not commit or quote a partial AP.
+- **D18 — The README audit body is NOT rewritten to match the current tree; it gets a dated delta
+  note instead.** The §2 inventory is explicitly labelled "verified at `b539d6e`", which makes it a
+  dated record rather than an error. Rewriting 49 stale `enhanced.py:NNNN` references and the file
+  inventory would destroy what an audit is for. The note carries the corrected pointers
+  (`CNN_THRESH` → `:97`, decision gate → `:754`/`:849`) in one place. See §16.
+
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
@@ -1173,6 +1517,29 @@ Do not reverse these without new evidence.
 - **Do not push to the remote without asking the user.** Session 1's push was explicitly approved;
   that approval does not carry forward. **Session 3 committed nothing at all.**
 
+**Added after SESSION 5 — do NOT redo these, and do NOT undo them:**
+
+- **🔴 Do not kill PID 88180, and do not run any other model on MPS while it lives.** It is the
+  667-clip BADAS sweep, ~3 h in at handoff, ETA Sunday early afternoon. Check it with
+  `eval/peek.py`, never by attaching to it.
+- **Do not delete or rewrite `runs/baselines/badas-open/scores.jsonl`.** It is the resume log and it
+  represents hours of GPU time.
+- **Do not change `balanced_ids` back to `sorted(labels)`** (D15) and **do not switch stride** (D16).
+- **Do not quote the partial AP 0.9274 / AUC 0.8988 as a result** (§6.17, D17). It is 140 positives
+  against only 90 of 333 negatives and is biased upward.
+- **Do not re-measure U6.** Answered: 12/12 arrays identical, `crash_model_cpu/` IS the shipped
+  artefact (§6.19). **Do not conclude there are three runs** — there are two.
+- **Do not re-open the `original_fps: 4` vs `target_fps: 8.0` question.** Resolved: they are the
+  token rate and the video rate respectively, and they agree (§6.18). The sweep config is faithful.
+- **Do not re-run `scripts/u6_compare_weights.py` or `scripts/badas_fps_probe.py` to "check"** —
+  both assert their own conclusions and both passed.
+- **Do not rewrite the README audit body to fix stale line numbers** (D18). The delta note in §2
+  covers it.
+- **Do not re-derive the ~18 h sweep estimate.** Measured: **~167 s/clip** over the first 140 clips,
+  **~117 s/clip** over session 5's 90. Both are in `eval/run_baselines.py`'s docstring.
+- **Do not restart the claude-mem worker.** Its provider allowance is exhausted (since
+  2026-09-11T22:17Z) and restarting clears the backoff that stops it hammering the provider.
+
 **Added after SESSION 3 — do NOT redo these:**
 
 - **Do not reimplement the BADAS `predictor` module.** It exists, the weights load, nothing is lost
@@ -1192,7 +1559,73 @@ Do not reverse these without new evidence.
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **rewritten end of SESSION 3**
+## 13. EXACT NEXT ACTION  ·  **rewritten end of SESSION 5**
+
+### Nothing is blocked. A long job is in flight. Session 3's §13 is superseded — it is below as §13-S3.
+
+### STEP 0 — BEFORE ANYTHING ELSE, establish whether the sweep is still alive
+
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+ps -p 88180 -o pid,etime,comm          # is it still running?
+~/envs/crashdet/bin/python eval/peek.py   # how far has it got?
+```
+
+- **If `peek.py` says `667/667`** → the sweep finished. Go to THE EXACT NEXT ACTION below.
+- **If it says fewer and PID 88180 is alive** → it is still working. **Leave it alone.** Do CPU-only
+  work meanwhile (the "safe to do in parallel" list below). Re-check periodically.
+- **If it says fewer and PID 88180 is GONE** → it died. **Relaunch the identical command**; it will
+  print `resuming: N/667` and continue from the log. Nothing is lost.
+
+  ```bash
+  PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+      ~/envs/badas/bin/python eval/run_baselines.py --out runs/baselines
+  ```
+
+### THE EXACT NEXT ACTION — close Phase 4, then judge Phase 5's gate
+
+Once `runs/baselines/baseline_table.json` and the per-model `metrics.json` exist:
+
+```bash
+~/envs/crashdet/bin/python eval/plots.py runs/baselines/*/metrics.json --out runs/baselines/plots
+```
+
+**That single command closes README §41 Phase 4's last outstanding acceptance criterion** (task 4 —
+reliability diagrams and PR curves, on shared axes, for all three models). `eval/plots.py` already
+exists and is committed; it has **never been run against real data**, because until now no finished
+`metrics.json` existed. Note it must run from `~/envs/crashdet` — matplotlib is not in `~/envs/badas`.
+
+**Then judge the Phase 5 gate, using README §41 Phase 5's own ladder (NOT a ±0.02 numeric stop —
+that hard gate was removed in session 3 because it is unpassable by construction):**
+
+| Full-run BADAS AP | Verdict |
+|---|---|
+| **≈ 0.8+** | Harness trustworthy. Phase 5 passes. Proceed. |
+| **≈ 0.6** | Stop. Either the harness is wrong or the published figures do not transfer. Investigate; do not build on it. |
+| **≈ 0.5** | Something in our setup is broken. Fix before anything else. |
+
+**Partial evidence at handoff (230/667) put AP at 0.9274 — so the ≈0.5 and ≈0.6 branches are already
+effectively excluded. Expect the final AP to land lower than 0.9274** (the negative class is
+under-represented in the partial), but the gate should pass.
+
+**Record in `metrics.json`, per Phase 5 task 4 — this is an acceptance criterion, not optional:**
+- **Which published figure is authoritative** (U-B2, still open): model card **AP 0.86 / AUC 0.88**
+  vs the vendored `badas/config.json` **Nexar AP 83.2 / AUC 0.85**. Name one; record both.
+- **Every deviation** from that published setup: split size **667 (public half) vs their 1,344**,
+  **stride 1**, score reduction **`np.nanmax`**, predictor **present (faithful)**,
+  `target_fps 8.0 / frame_count 16` (**faithful — confirmed §6.18**).
+
+### Safe to do in parallel while the sweep runs (CPU-only, no MPS)
+
+- Commit the session-4/5 work if the user agrees (§8) — **ask first, and do not push**.
+- The two Phase 0 licence emails: the CCD authors (U7, Wentao Bao / RIT) and Berkeley DeepDrive.
+- Track B and Track C (below) — zero code, zero compute, zero dependency on any of this.
+
+---
+
+## 13-S3. Session 3's next action (SUPERSEDED — kept for history)
+
+
 
 ### Nothing is blocked. Everything needed is on disk. Session 2's §13 is superseded — ignore it.
 
@@ -1318,22 +1751,37 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14. NEXT 3–5 ACTIONS  ·  **updated end of SESSION 3**
+## 14. NEXT 3–5 ACTIONS  ·  **updated end of SESSION 5**
 
-1. **Run the full BADAS sweep** — §13. ~18 h background. Produces the third baseline row.
-2. **Close Phase 4** — install matplotlib, write plots + `metrics.json`, commit.
-3. **Phase 5 task 3** — consume `predictor_output`, report with/without (D9).
-4. **Track B + Track C in parallel, starting now** — consent form + dashcam + UK driver; 30 fleet
-   calls. Zero progress so far; README §40/§45 call these the real critical path.
-5. **Phase 6 (only after Phase 5's gate)** — multi-head split (collision / near-miss / ego-involvement),
-   temperature scaling on a dedicated calibration split, Channel B revival for FP suppression. Reframed
-   session 3 (D2 + README Phase 6): the target is a **system** number, not a backbone number, because
-   no CUDA device exists.
+Straight from README §41's roadmap. No new roadmap is invented here.
 
-> **Sequencing note, unchanged and reinforced:** if forced to choose between engineering (1–3, 5) and
-> data/customers (4), README §40 and §45 both argue for **4**. Probe training will not beat BADAS-Open,
-> which had more data and more compute. The value is the multi-head split and the UK data, not a better
-> headline AP.
+1. **Close Phase 4** — §13: run `eval/plots.py` on the finished `metrics.json`, commit
+   `runs/baselines/` with the plots. That is Phase 4's last acceptance criterion.
+2. **Judge and record Phase 5** — the gate ladder in §13; name the authoritative published figure
+   (U-B2) and list every deviation in `metrics.json` (Phase 5 task 4).
+3. **Phase 5 task 3 — consume `predictor_output`** in `EnhancedVideoClassifier.forward()` (D9).
+   It currently computes the predictor, is billed ~25% of every window for it, and **discards it**.
+   Apply `predictor_combination_method: "concat"`; **do not guess the concat axis** — the token axis
+   is the hypothesis, the feature axis is ruled out because `temporal_processor` takes 1024, not 2048.
+   **Evaluate with and without and report both** — that delta measures what the published code throws
+   away. Needs the GPU, so it cannot start until the sweep is done.
+4. **Track B + Track C, in parallel, still at ZERO progress.** README §41 re-sequenced both to
+   **P0/week 1** and §40/§45 call them the real critical path. Track B: commission the consent form,
+   buy a dashcam, arrange a paid UK driver — it is the only fix for the **0.90-hour** negative-footage
+   ceiling that caps every FP/hour claim this project can make. Track C: 30 UK fleet calls, one
+   question — *"What happened the last time you trialled an AI dashcam?"* **Do not pitch.**
+   The user deferred Track C in session 2 ("skip that for now"); it is **still open, not declined.**
+   Raise it again.
+5. **Phase 6, only after Phase 5's gate** — multi-head split (collision / near-miss /
+   ego-involvement), temperature scaling on a dedicated calibration split, Channel B revival for FP
+   suppression. Per D2 and README Phase 6: **the target is a system number, not a backbone number**,
+   because no CUDA device exists. Session 5's partial ECE of **0.2794** is early evidence that
+   calibration (target ECE < 0.05) will be real work.
+
+> **Sequencing note, unchanged and reinforced by session 5:** if forced to choose between engineering
+> (1–3, 5) and data/customers (4), README §40 and §45 both argue for **4**. Probe training will not
+> beat BADAS-Open, which had more data and more compute. The value is the multi-head split and the UK
+> data, not a better headline AP.
 
 ---
 
@@ -1418,7 +1866,20 @@ test, and this file. **`models/badas/` (3.7 GB) is correctly gitignored — veri
 
 ---
 
-## 18. DOCUMENTATION CONTRADICTIONS FOUND IN SESSION 3 (all still unfixed)
+## 18. DOCUMENTATION CONTRADICTIONS — FOUND SESSION 3, **ITEMS 1–5 AND 7 FIXED IN SESSION 5**
+
+> **Status at end of session 5:**
+> - **Items 1–4 (README staleness): FIXED**, by a single dated delta note under the §2 inventory
+>   rather than by rewriting the audit body (D18). The note carries the corrected pointers.
+> - **Item 5 (`docs/HANDOFF.md` "T3 NOT YET RUN"): FIXED** — superseded banner at the top plus three
+>   in-place corrections. This was the dangerous one; that file is committed.
+> - **Item 6 (§6.9 is wrong): unchanged and correct as written** — §6.9 is retained as history and
+>   §6.11 corrects it. Read §6.11 first.
+> - **Item 7 (`at_fault` remnant): FIXED** — the unreachable block, the parameter, both call-site
+>   arguments and both dead locals are deleted. `grep -rn "at_fault\|FaultDetector\|EgoZone" code/`
+>   now returns nothing, satisfying Phase 3's own acceptance criterion.
+>
+> The original session-3 text follows, unaltered, as the record of what was found.
 
 Verified against the filesystem. **These will mislead the next session if not handled.** The user was
 offered the fixes at the end of session 3 and did not answer.
@@ -1444,7 +1905,37 @@ mechanical pass would clear 1–5.
 
 ## 15. CONTEXT-WINDOW HANDOFF
 
-### SESSION 3 END STATE (read this; the session-1 text below is history)
+### SESSION 5 END STATE — read this (session 3's text below is history)
+
+**Exactly what was happening when session 5 stopped:** **a GPU job was still running.** The
+667-clip BADAS-Open sweep, PID 88180, 3 h 07 m elapsed, **235/667 clips visited** at 23:24 IST.
+It was left running deliberately. The last technical acts were writing this handoff and confirming
+the sweep was still healthy.
+
+**Why the session ended:** the user's own rule is to start a fresh session at ~200k context. The
+session was at 199.2k of a 1M window (20%). This was explained, the user reaffirmed the rule, and the
+handoff was written on their instruction. **Nothing was left half-edited.**
+
+**Partially completed, stated plainly — do NOT record any of these as done:**
+- **The BADAS sweep is 34% complete.** No final number exists. §13 STEP 0 tells you how to check
+  whether it survived.
+- **Phase 4 is ~90% done, NOT done.** Its last acceptance criterion needs `eval/plots.py` run against
+  a finished `metrics.json`, which has never existed.
+- **Phase 5 is IN FLIGHT, not passed.** The partial AP 0.9274 is not a result (D17).
+- **Phase 5 task 3 (consume `predictor_output`) has not been started.**
+- **Nothing is committed.** 4 modified files, 5 untracked paths (§8). The user was asked about
+  committing and the session ended before an answer.
+- **One live offer to the user is unanswered:** whether to edit README §41 Phase 5's gate note,
+  reason 5, which still calls the fps question "unresolved" after session 5 resolved it (§16).
+
+**Environment reminder:** two envs, keep them separate — `~/envs/crashdet` (TF 2.19.1 / Keras 3.15.1
+/ matplotlib / sklearn — for the old model, `eval/benchmark.py`, `eval/peek.py`, `eval/plots.py`,
+both tests) and `~/envs/badas` (torch 2.14.0 / transformers 5.17.0 / sklearn — for BADAS only).
+**Do NOT rebuild either.**
+
+---
+
+### SESSION 3 END STATE (history)
 
 **Exactly what was happening when session 3 stopped:** nothing was running. The last technical act was
 verifying that `eval/benchmark.py`'s self-check still passes after the extension (it does). The user
@@ -1487,6 +1978,36 @@ never made**, and §13 records the recommendation (unknowns first, with the reas
 ---
 
 ## 16. README MODIFICATION STATUS
+
+## SESSION 5 — README CHANGED THIS SESSION: **YES, one note. Not a plan change.**
+
+**Exactly what changed:** one blockquote inserted in **§2 Project Status**, immediately below the
+repository-inventory code block (+13 lines, the only diff to README.md this session). It is a dated
+delta table: *"The inventory above is a snapshot of `b539d6e` and is retained as the dated audit
+record. The working tree has since moved. Verified 2026-09-12"* — then five deleted files, the
+1,334 → **977** line-count correction with the corrected pointers (`CNN_THRESH` → `:97`, decision gate
+→ `:754`/`:849`), the 493 MB deletion, "zero tests" → **two, both passing**, "zero training code" →
+the notebook is committed, and 16 → **81** tracked files. It closes with: *"The audit body is **not**
+rewritten to match."*
+
+**Why this was necessary, and why it is not a plan change:** progress.md §18 items 1–4 recorded that
+README §2 describes a tree that no longer exists, and that every `enhanced.py:NNNN` reference is off
+by the deleted blocks. That is a **factual** defect that actively misleads — but the roadmap, the
+phases, the gates and the acceptance criteria are **untouched**. No priority moved, no criterion was
+added or removed, no phase was re-sequenced. Per the README rule, this is a correction to the audit
+record, not progress logging and not a roadmap edit.
+
+**Deliberately NOT changed, and flagged to the user instead:** README §41 Phase 5's gate note,
+reason 5, still says *"`original_fps: 4` contradicts `target_fps: 8.0` in the config, and is
+unresolved."* Session 5 **resolved it** (§6.18) — but the gate itself is unchanged by that, so
+editing the plan's reasoning was offered to the user rather than done unilaterally. **The user did
+not answer before the session ended. This is a live, one-line offer for the next session.**
+
+**Also changed (not the README):** `docs/HANDOFF.md` — superseded banner + three T3 corrections (§18).
+
+---
+
+## 16-OLD. Sessions 1–3 README modification status (history)
 
 ## README CHANGED THIS SESSION: **YES.**
 
@@ -1595,30 +2116,41 @@ not in `README.md`.**
 
 ---
 
-## 17. FINAL HANDOFF CHECK  ·  **updated end of SESSION 3**
+## 17. FINAL HANDOFF CHECK  ·  **updated end of SESSION 5**
 
 | Question | Answered where |
 |---|---|
 | 1. What are we building? | §1 · §3 header |
 | 2. What does README.md say the plan is? | §2 (pointer; not copied). Three tracks: §3 header |
-| 3. Which phase are we in? | §3 — **Phase 4, ~60%**; Phase 5 unblocked, not started |
-| 4. What has actually been completed? | §4 (4.1–4.8 s1 · 4.9 s2 · **4.10 s3**), §7 |
-| 5. What evidence/results do we have? | §6 — **read §6.11–6.14 for session 3**; §6.1 for T3 |
-| 6. What is broken or uncertain? | §5, §10, **§18 (doc contradictions)** |
-| 7. What decisions are already made? | §11 — **D1–D8 (s1/s2), D9–D14 (s3)** |
-| 8. What files changed? | §7, §8, **§14B (verified git + file state)** |
-| 9. What is the exact next action? | **§13** — run the full BADAS sweep. §13-OLD is superseded |
-| 10. What must NOT be redone? | §12 — see the "Added after SESSION 3" block |
-| 11. Did README change, and why? | §16 — **YES**, two passes, per-row justification |
-| 12. What failed / what is a negative result? | §6.1 (T3 chance-level), §6.13 (trivial baseline wins on FP/h), §6.12 (own 10 h → 18 h correction) |
-| 13. What is genuinely UNKNOWN vs BLOCKED? | §10 + §6.14. **UNKNOWN:** BADAS's real AP. **BLOCKED (permanently on this data):** mTTA / time-to-detection |
+| 3. Which phase are we in? | §3 — **Phase 4 ~90%; Phase 5 IN FLIGHT at 230/667** |
+| 4. What has actually been completed? | §4 (4.1–4.8 s1 · 4.9 s2 · 4.10 s3 · **4.11 s4 · 4.12 s5**), §7 + **§7.1** |
+| 5. What evidence/results do we have? | §6 — **read §6.15–6.19 for session 5**; §6.1 for T3 |
+| 6. What is broken or uncertain? | §5, §10, §18 (**items 1–5, 7 now fixed**) |
+| 7. What decisions are already made? | §11 — D1–D8 (s1/s2), D9–D14 (s3), **D15–D18 (s5)** |
+| 8. What files changed? | **§7.1** (sessions 4+5), §8 (verified git state), §14B (s3) |
+| 9. What is the exact next action? | **§13 — START AT STEP 0: check whether PID 88180 is alive** |
+| 10. What must NOT be redone? | §12 — read the **"Added after SESSION 5"** block first |
+| 11. Did README change, and why? | §16 — **YES, one delta note; not a plan change.** One live offer pending |
+| 12. What failed / what is a negative result? | §6.1 (T3 chance-level), §6.13 (trivial baseline wins on FP/h), §6.16 (**the sweep's ordering flaw — our own bug, caught at hour 6**), §6.17 (ECE 0.2794 — poorly calibrated) |
+| 13. What is genuinely UNKNOWN vs BLOCKED? | **UNKNOWN (just not finished):** BADAS's real full-run AP — 34% done. **UNKNOWN (open):** U-B2, which published figure is authoritative. **UNRESOLVABLE:** U1/U2, which run made the shipped weights. **BLOCKED permanently on this data:** mTTA / time-to-detection. **NOT BLOCKED, just not started:** Tracks B and C |
 
 ### What a brand-new Claude should read, in order
 
-1. **README.md §41** — the roadmap and the three-track block. Then §30–§31 for the metric rules.
-2. **This file: the SESSION 3 SUMMARY at the top → §3 → §6.11–6.14 → §13.**
-3. **§12** before touching anything, and **§18** before trusting any line number in the README.
-4. `runs/falsification/` — the committed evidence. Never delete or "tidy" it.
+1. **The ⏳ running-job block at the very top of this file.** A ~14 h GPU job may still be in flight.
+2. **README.md §41** — the roadmap and the three-track block. Then §30–§31 for the metric rules.
+3. **This file: SESSION 5 SUMMARY → §3 → §6.15–6.19 → §13.**
+4. **§12** before touching anything — especially the "Added after SESSION 5" block.
+5. `runs/falsification/` — the committed evidence. Never delete or "tidy" it.
+
+### Honest statement of what is NOT finished
+
+- **The BADAS sweep is 34% done.** Its headline number does not exist yet. Everything in §13 after
+  STEP 0 is contingent on it completing.
+- **Nothing from sessions 4 (partially) and 5 is committed.** Four modified files, five untracked
+  paths (§8).
+- **`eval/plots.py` has never been run against real data** — no finished `metrics.json` has existed.
+- **Tracks B and C remain at literally zero.** No UK footage, no fleet calls.
+- **Phase 5 task 3 (consume `predictor_output`) has not been started.**
 
 ---
 
@@ -1643,6 +2175,31 @@ not in `README.md`.**
 ## SESSION TIMELINE
 
 ```text
+2026-09-12 (SESSION 5, ~19:50-23:15 IST)
+- Deep recovery: read README SS1-2/41-44 + all of progress.md; verified claims against the repo.
+  Result: progress.md was ONE SESSION STALE. A session 4 had already launched the BADAS sweep at
+  13:48 and committed e488a05 / 4204bf2 / cc13966 without updating the handoff.
+- Verified live state: benchmark.py self-check PASSES (reproduces T3 exactly); both tests PASS;
+  sweep running as PID 67741, 135/667, ~167 s/clip => ~31 h, not the planned ~18 h.
+- FOUND A REAL DEFECT: balanced_ids() returned sorted(labels), and every Nexar positive id sorts
+  below every negative -> all 140 scored clips were positives -> AP/AUC/FP-h undefined for ~9 more
+  hours. Fixed by interleaving; killed 67741, relaunched as 88180.
+  Result: "resuming: 140/667" - nothing re-scored. First negative landed within 2 minutes.
+- Wrote eval/peek.py to read an in-flight sweep without touching it.
+- Resolved U-B7 (original_fps 4 vs target_fps 8.0). Result: NOT a contradiction - token rate vs
+  video rate. 16 frames @ 8 fps = 2.0 s -> tubelet 2 -> 8 tokens -> 4 tokens/s. Sweep config is
+  faithful to training; no B1-style mismatch. Evidence: scripts/badas_fps_probe.py.
+- Resolved U6. Result: 12/12 weight arrays IDENTICAL - crash_model_cpu/ IS the shipped artefact.
+  Two runs in evidence, not three. Evidence: scripts/u6_compare_weights.py. Phase 0 item closed.
+- Wrote runs/legacy-colab/ (training_log.txt, metrics_val.txt extracted verbatim from the committed
+  notebook, plus a README on the artefact/metric disconnect). Last Phase 0 acceptance item closed.
+- Deleted the unreachable fault-reporting block in crash_detection_enhanced.py (block, parameter,
+  both call sites, both dead locals). Result: Phase 3's own grep criterion now passes; tests still pass.
+- Fixed doc contradictions 1-5: dated delta note in README S2; superseded banner + three T3
+  corrections in docs/HANDOFF.md.
+- 23:15 handoff written. Sweep at 230/667, partial AP 0.9274 / AUC 0.8988 (PARTIAL, not a result).
+  Nothing committed.
+
 2026-09-11
 - Ran docs/HANDOFF.md §1 verification block.
   Result: no discrepancies. 667/667 Nexar clips; tree clean; dead-code deletion confirmed finished.
