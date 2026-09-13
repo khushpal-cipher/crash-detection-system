@@ -102,6 +102,29 @@ def evaluate(y, p, neg_hours, threshold=0.80):
     }
 
 
+def threshold_sweep(y, p, neg_hours, thresholds=None):
+    """FP/hour and recall as a function of threshold -- the operating-point curve that
+    evaluate()'s single fixed threshold=0.80 throws away. Cheap: reuses the same
+    confusion-matrix arithmetic per threshold, no re-scoring."""
+    y, p = np.asarray(y, int), np.asarray(p, float)
+    if thresholds is None:
+        thresholds = [0.5, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999, 0.9995, 0.9999]
+    rows = []
+    for t in thresholds:
+        pred = p >= t
+        tp = int((pred & (y == 1)).sum())
+        fp = int((pred & (y == 0)).sum())
+        fn = int((~pred & (y == 1)).sum())
+        tn = int((~pred & (y == 0)).sum())
+        rows.append({
+            "threshold": t, "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+            "recall": tp / max(tp + fn, 1),
+            "precision": tp / max(tp + fp, 1),
+            "fp_per_hour": fp / neg_hours,
+        })
+    return rows
+
+
 def by_condition(y, p, ids, metadata, field):
     """{field_value: {n, n_pos, average_precision}} -- AP only where both classes present."""
     out = {}
@@ -228,9 +251,11 @@ def run(adapter, ids=None, out_dir=None, threshold=0.80, progress_every=25):
     y = [r["label"] for r in records]
     p = [r["score"] for r in records]
     neg_ids = [r["id"] for r in records if r["label"] == 0]
-    m = evaluate(y, p, hours(neg_ids, table), threshold=threshold)
+    neg_hours = hours(neg_ids, table)
+    m = evaluate(y, p, neg_hours, threshold=threshold)
     m["model"] = adapter.name
     m["skipped"] = skipped
+    m["threshold_sweep"] = threshold_sweep(y, p, neg_hours)
 
     md = load_metadata()
     m["by_condition"] = {

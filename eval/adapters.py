@@ -76,15 +76,23 @@ class BadasOpen:
     MODEL_NAME = "facebook/vjepa2-vitl-fpc16-256-ssv2"
 
     def __init__(self, device="mps", stride=1, frame_count=16, img_size=224,
-                 target_fps=8.0, checkpoint=None):
+                 target_fps=8.0, checkpoint=None, skip_predictor=False,
+                 save_frames_dir=None):
         self.name = f"badas-open(stride={stride},fps={target_fps},img={img_size})"
         self.stride = stride
         self._ckpt = checkpoint or os.path.join(
             ROOT, "models", "badas", "weights", "badas_open.pth"
         )
         self._cfg = dict(device=device, stride=stride, frame_count=frame_count,
-                         img_size=img_size, target_fps=target_fps)
+                         img_size=img_size, target_fps=target_fps,
+                         skip_predictor=skip_predictor)
         self._model = None
+        # ponytail: per-frame scores from the 18h sweep were discarded (one nanmax per
+        # clip). Saving them here is free (~1.6 MB/667 clips) and is what unlocks
+        # mean-vs-max reduction and t_start/t_peak/t_end without re-running the model.
+        self._save_frames_dir = save_frames_dir
+        if save_frames_dir:
+            os.makedirs(save_frames_dir, exist_ok=True)
 
     def load(self):
         """Deferred so constructing an adapter stays free. ~8.5 s once the HF cache is warm."""
@@ -102,6 +110,7 @@ class BadasOpen:
             target_fps=c["target_fps"],
             use_sliding_window=True,
             device=c["device"],
+            skip_predictor=c["skip_predictor"],
         )
         self._model.load()
         return self
@@ -110,6 +119,11 @@ class BadasOpen:
         if self._model is None:
             self.load()
         per_frame = np.asarray(self._model.predict(clip_path), dtype=float)
+        if self._save_frames_dir:
+            clip_id = os.path.splitext(os.path.basename(clip_path))[0]
+            np.savez(os.path.join(self._save_frames_dir, f"{clip_id}.npz"),
+                     scores=per_frame, target_fps=self._cfg["target_fps"],
+                     stride=self._cfg["stride"], frame_count=self._cfg["frame_count"])
         if per_frame.size == 0 or np.all(np.isnan(per_frame)):
             return None
         return float(np.nanmax(per_frame))

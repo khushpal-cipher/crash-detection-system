@@ -162,6 +162,11 @@ class EnhancedVideoClassifier(nn.Module):
             num_classes=num_classes,
             dropout=head_dropout,
         )
+        # ponytail: attribute, not a forward() kwarg, because the sliding-window closure in
+        # vjepa.py calls self.model(processed_frames) positionally. skip_predictor=True saves
+        # ~25% compute; last_hidden_state is bit-identical either way since forward() below
+        # never reads predictor_output (README §41 Phase 5 gate note reason 3).
+        self.skip_predictor = False
 
     def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
         """
@@ -177,7 +182,7 @@ class EnhancedVideoClassifier(nn.Module):
         # pins >=4.40.0, so this breaks on any modern install). Verified against
         # inspect.signature(VJEPA2Model.forward) on transformers 5.17.0.
         # Upgrade path: drop this patch if upstream ever pins/supports 5.x itself.
-        outputs = self.backbone(pixel_values_videos=pixel_values)
+        outputs = self.backbone(pixel_values_videos=pixel_values, skip_predictor=self.skip_predictor)
         # last_hidden_state: (B, N, D) — patch tokens from the encoder
         hidden = outputs.last_hidden_state
         pooled = self.temporal_processor(hidden)  # (B, D)

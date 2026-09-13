@@ -1,0 +1,557 @@
+[
+  {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.8498318677959396,
+    "average_precision": 0.8349234385624276,
+    "precision_at_recall_0.80": 0.7635327635327636,
+    "ece": 0.3286321576038233,
+    "threshold": 0.8,
+    "tp": 318,
+    "fp": 195,
+    "fn": 16,
+    "tn": 138,
+    "tpr": 0.9520958083832335,
+    "fpr": 0.5855855855855856,
+    "fp_per_hour": 216.86199875926886,
+    "negative_hours": 0.899189351364703,
+    "model": "badas-open(stride=1,fps=8.0,img=224)",
+    "skipped": [],
+    "threshold_sweep": [
+      {
+        "threshold": 0.5,
+        "tp": 328,
+        "fp": 234,
+        "fn": 6,
+        "tn": 99,
+        "recall": 0.9820359281437125,
+        "precision": 0.5836298932384342,
+        "fp_per_hour": 260.23439851112266
+      },
+      {
+        "threshold": 0.8,
+        "tp": 318,
+        "fp": 195,
+        "fn": 16,
+        "tn": 138,
+        "recall": 0.9520958083832335,
+        "precision": 0.6198830409356725,
+        "fp_per_hour": 216.86199875926886
+      },
+      {
+        "threshold": 0.9,
+        "tp": 311,
+        "fp": 161,
+        "fn": 23,
+        "tn": 172,
+        "recall": 0.9311377245508982,
+        "precision": 0.6588983050847458,
+        "fp_per_hour": 179.05016307816558
+      },
+      {
+        "threshold": 0.95,
+        "tp": 289,
+        "fp": 120,
+        "fn": 45,
+        "tn": 213,
+        "recall": 0.8652694610778443,
+        "precision": 0.706601466992665,
+        "fp_per_hour": 133.45353769801162
+      },
+      {
+        "threshold": 0.99,
+        "tp": 188,
+        "fp": 29,
+        "fn": 146,
+        "tn": 304,
+        "recall": 0.562874251497006,
+        "precision": 0.8663594470046083,
+        "fp_per_hour": 32.2512716103528
+      },
+      {
+        "threshold": 0.995,
+        "tp": 88,
+        "fp": 11,
+        "fn": 246,
+        "tn": 322,
+        "recall": 0.2634730538922156,
+        "precision": 0.8888888888888888,
+        "fp_per_hour": 12.233240955651064
+      },
+      {
+        "threshold": 0.999,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.9995,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.9999,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      }
+    ],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.8415830629492429
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.7756589079292672
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.9578519315599788
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.923005382987681
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.3595238095238096
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.9160287081339713
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.9999999999999999
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.6438727441734373
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.8298109828066335
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 1.0
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.8326149736047171
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.8342844682156276
+        }
+      }
+    },
+    "elapsed_seconds": 0.0
+  },
+  {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.5339366312420204,
+    "average_precision": 0.5217892175500111,
+    "precision_at_recall_0.80": 0.5245346869712352,
+    "ece": 0.4879863568215893,
+    "threshold": 0.8,
+    "tp": 332,
+    "fp": 325,
+    "fn": 2,
+    "tn": 8,
+    "tpr": 0.9940119760479041,
+    "fpr": 0.975975975975976,
+    "fp_per_hour": 361.4366645987814,
+    "negative_hours": 0.899189351364703,
+    "model": "mobilenetv2-lstm (CCD-trained, retired)",
+    "skipped": [],
+    "threshold_sweep": [
+      {
+        "threshold": 0.5,
+        "tp": 334,
+        "fp": 326,
+        "fn": 0,
+        "tn": 7,
+        "recall": 1.0,
+        "precision": 0.5060606060606061,
+        "fp_per_hour": 362.54877741293154
+      },
+      {
+        "threshold": 0.8,
+        "tp": 332,
+        "fp": 325,
+        "fn": 2,
+        "tn": 8,
+        "recall": 0.9940119760479041,
+        "precision": 0.5053272450532724,
+        "fp_per_hour": 361.4366645987814
+      },
+      {
+        "threshold": 0.9,
+        "tp": 332,
+        "fp": 323,
+        "fn": 2,
+        "tn": 10,
+        "recall": 0.9940119760479041,
+        "precision": 0.5068702290076336,
+        "fp_per_hour": 359.21243897048123
+      },
+      {
+        "threshold": 0.95,
+        "tp": 332,
+        "fp": 319,
+        "fn": 2,
+        "tn": 14,
+        "recall": 0.9940119760479041,
+        "precision": 0.5099846390168971,
+        "fp_per_hour": 354.76398771388085
+      },
+      {
+        "threshold": 0.99,
+        "tp": 327,
+        "fp": 308,
+        "fn": 7,
+        "tn": 25,
+        "recall": 0.9790419161676647,
+        "precision": 0.5149606299212598,
+        "fp_per_hour": 342.5307467582298
+      },
+      {
+        "threshold": 0.995,
+        "tp": 326,
+        "fp": 308,
+        "fn": 8,
+        "tn": 25,
+        "recall": 0.9760479041916168,
+        "precision": 0.5141955835962145,
+        "fp_per_hour": 342.5307467582298
+      },
+      {
+        "threshold": 0.999,
+        "tp": 313,
+        "fp": 294,
+        "fn": 21,
+        "tn": 39,
+        "recall": 0.937125748502994,
+        "precision": 0.515650741350906,
+        "fp_per_hour": 326.96116736012846
+      },
+      {
+        "threshold": 0.9995,
+        "tp": 299,
+        "fp": 279,
+        "fn": 35,
+        "tn": 54,
+        "recall": 0.8952095808383234,
+        "precision": 0.5173010380622838,
+        "fp_per_hour": 310.279475147877
+      },
+      {
+        "threshold": 0.9999,
+        "tp": 10,
+        "fp": 21,
+        "fn": 324,
+        "tn": 312,
+        "recall": 0.029940119760479042,
+        "precision": 0.3225806451612903,
+        "fp_per_hour": 23.35436909715203
+      }
+    ],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.5426123368092024
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.4233837999260234
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.8762939958592132
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.6099931264470502
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.3
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.6145933014354068
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.6583333333333333
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.28231887358637187
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.5896935148215877
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 0.2777777777777778
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.5294928753272178
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.5321428571428571
+        }
+      }
+    },
+    "elapsed_seconds": 0.0
+  },
+  {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.5,
+    "average_precision": 0.5007496251874063,
+    "precision_at_recall_0.80": 0.5008,
+    "ece": 0.5007496251874063,
+    "threshold": 0.8,
+    "tp": 0,
+    "fp": 0,
+    "fn": 334,
+    "tn": 333,
+    "tpr": 0.0,
+    "fpr": 0.0,
+    "fp_per_hour": 0.0,
+    "negative_hours": 0.899189351364703,
+    "model": "always-negative",
+    "skipped": [],
+    "threshold_sweep": [
+      {
+        "threshold": 0.5,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.8,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.9,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.95,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.99,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.995,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.999,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.9995,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      },
+      {
+        "threshold": 0.9999,
+        "tp": 0,
+        "fp": 0,
+        "fn": 334,
+        "tn": 333,
+        "recall": 0.0,
+        "precision": 0.0,
+        "fp_per_hour": 0.0
+      }
+    ],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.5109170305676856
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.4463276836158192
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.65625
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.5355191256830601
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.25
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.4782608695652174
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.625
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.288135593220339
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.5650793650793651
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 0.23809523809523808
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.506578947368421
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.5142857142857142
+        }
+      }
+    },
+    "elapsed_seconds": 0.0
+  }
+]

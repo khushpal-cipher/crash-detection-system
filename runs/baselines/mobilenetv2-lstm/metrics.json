@@ -1,0 +1,4190 @@
+{
+  "metrics": {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.5339366312420204,
+    "average_precision": 0.5217892175500111,
+    "precision_at_recall_0.80": 0.5245346869712352,
+    "ece": 0.4879863568215893,
+    "threshold": 0.8,
+    "tp": 332,
+    "fp": 325,
+    "fn": 2,
+    "tn": 8,
+    "tpr": 0.9940119760479041,
+    "fpr": 0.975975975975976,
+    "fp_per_hour": 361.4366645987814,
+    "negative_hours": 0.899189351364703,
+    "model": "mobilenetv2-lstm (CCD-trained, retired)",
+    "skipped": [],
+    "threshold_sweep": [
+      {
+        "threshold": 0.5,
+        "tp": 334,
+        "fp": 326,
+        "fn": 0,
+        "tn": 7,
+        "recall": 1.0,
+        "precision": 0.5060606060606061,
+        "fp_per_hour": 362.54877741293154
+      },
+      {
+        "threshold": 0.8,
+        "tp": 332,
+        "fp": 325,
+        "fn": 2,
+        "tn": 8,
+        "recall": 0.9940119760479041,
+        "precision": 0.5053272450532724,
+        "fp_per_hour": 361.4366645987814
+      },
+      {
+        "threshold": 0.9,
+        "tp": 332,
+        "fp": 323,
+        "fn": 2,
+        "tn": 10,
+        "recall": 0.9940119760479041,
+        "precision": 0.5068702290076336,
+        "fp_per_hour": 359.21243897048123
+      },
+      {
+        "threshold": 0.95,
+        "tp": 332,
+        "fp": 319,
+        "fn": 2,
+        "tn": 14,
+        "recall": 0.9940119760479041,
+        "precision": 0.5099846390168971,
+        "fp_per_hour": 354.76398771388085
+      },
+      {
+        "threshold": 0.99,
+        "tp": 327,
+        "fp": 308,
+        "fn": 7,
+        "tn": 25,
+        "recall": 0.9790419161676647,
+        "precision": 0.5149606299212598,
+        "fp_per_hour": 342.5307467582298
+      },
+      {
+        "threshold": 0.995,
+        "tp": 326,
+        "fp": 308,
+        "fn": 8,
+        "tn": 25,
+        "recall": 0.9760479041916168,
+        "precision": 0.5141955835962145,
+        "fp_per_hour": 342.5307467582298
+      },
+      {
+        "threshold": 0.999,
+        "tp": 313,
+        "fp": 294,
+        "fn": 21,
+        "tn": 39,
+        "recall": 0.937125748502994,
+        "precision": 0.515650741350906,
+        "fp_per_hour": 326.96116736012846
+      },
+      {
+        "threshold": 0.9995,
+        "tp": 299,
+        "fp": 279,
+        "fn": 35,
+        "tn": 54,
+        "recall": 0.8952095808383234,
+        "precision": 0.5173010380622838,
+        "fp_per_hour": 310.279475147877
+      },
+      {
+        "threshold": 0.9999,
+        "tp": 10,
+        "fp": 21,
+        "fn": 324,
+        "tn": 312,
+        "recall": 0.029940119760479042,
+        "precision": 0.3225806451612903,
+        "fp_per_hour": 23.35436909715203
+      }
+    ],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.5426123368092024
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.4233837999260234
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.8762939958592132
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.6099931264470502
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.3
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.6145933014354068
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.6583333333333333
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.28231887358637187
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.5896935148215877
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 0.2777777777777778
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.5294928753272178
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.5321428571428571
+        }
+      }
+    }
+  },
+  "records": [
+    {
+      "id": "00002",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01044",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00009",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01056",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00020",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01059",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00030",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01065",
+      "label": 0,
+      "score": 0.998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00035",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01068",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00038",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01083",
+      "label": 0,
+      "score": 0.9404,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00045",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01101",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00051",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01110",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00067",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01113",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00070",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01125",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00075",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01126",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00087",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01139",
+      "label": 0,
+      "score": 0.002,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00091",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01143",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00092",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01149",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00094",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01151",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00101",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01152",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00107",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01154",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00113",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01158",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00116",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01166",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00120",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01169",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00137",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01179",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00146",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01181",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00156",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01201",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00159",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01203",
+      "label": 0,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00161",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01208",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00176",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01216",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00185",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01239",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00193",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01244",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00196",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01246",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00204",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01247",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00211",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01253",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00215",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01264",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00219",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01274",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00221",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01275",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00230",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01297",
+      "label": 0,
+      "score": 0.9969,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00231",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01310",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00258",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01312",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00261",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01316",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00267",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01330",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00268",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01347",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00277",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01353",
+      "label": 0,
+      "score": 0.9158,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00278",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01367",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00279",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01375",
+      "label": 0,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00280",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01389",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00297",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01398",
+      "label": 0,
+      "score": 0.9632,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00299",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01409",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00304",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01410",
+      "label": 0,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00305",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01432",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00316",
+      "label": 1,
+      "score": 0.999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01450",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00322",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01472",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00323",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01479",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00338",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01480",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00346",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01481",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00347",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01483",
+      "label": 0,
+      "score": 0.9974,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00350",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01502",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00374",
+      "label": 1,
+      "score": 0.998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01512",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00385",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01513",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00386",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01531",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00390",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01549",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00399",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01555",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00400",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01561",
+      "label": 0,
+      "score": 0.999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00419",
+      "label": 1,
+      "score": 0.9978,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01565",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00421",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01567",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00432",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01575",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00436",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01576",
+      "label": 0,
+      "score": 0.999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00439",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01610",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00448",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01633",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00451",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01636",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00462",
+      "label": 1,
+      "score": 0.9926,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01644",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00482",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01648",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00484",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01650",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00492",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01651",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00511",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01668",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00535",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01672",
+      "label": 0,
+      "score": 0.6032,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00545",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01675",
+      "label": 0,
+      "score": 0.9752,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00548",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01676",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00559",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01677",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00561",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01686",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00572",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01688",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00612",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01692",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00619",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01715",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00620",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01731",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00628",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01744",
+      "label": 0,
+      "score": 0.9991,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00631",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01745",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00649",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01751",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00654",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01758",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00681",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01764",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00689",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01769",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00708",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01774",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00711",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01777",
+      "label": 0,
+      "score": 0.999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00717",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01782",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00720",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01794",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00724",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01804",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00726",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01808",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00728",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01814",
+      "label": 0,
+      "score": 0.9992,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00732",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01820",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00738",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01826",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00743",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01831",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00756",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01836",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00760",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01854",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00764",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01855",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00767",
+      "label": 1,
+      "score": 0.9987,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01856",
+      "label": 0,
+      "score": 0.9832,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00770",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01859",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00772",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01861",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00775",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01863",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00778",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01873",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00779",
+      "label": 1,
+      "score": 0.9976,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01876",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00781",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01877",
+      "label": 0,
+      "score": 0.0737,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00799",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01886",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00801",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01895",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00806",
+      "label": 1,
+      "score": 0.9987,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01898",
+      "label": 0,
+      "score": 0.9988,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00812",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01902",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00821",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01905",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00829",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01907",
+      "label": 0,
+      "score": 0.9993,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00853",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01927",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00862",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01938",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00878",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01940",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00886",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01945",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00892",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01947",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00894",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01956",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00908",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01965",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00920",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01974",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00925",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01982",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00933",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01984",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00946",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01993",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00962",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01997",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00969",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02008",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00975",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02010",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00984",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02043",
+      "label": 0,
+      "score": 0.812,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00987",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02047",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00992",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02057",
+      "label": 0,
+      "score": 0.9977,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00993",
+      "label": 1,
+      "score": 0.9682,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02065",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "00994",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02068",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01006",
+      "label": 1,
+      "score": 0.9954,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02073",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01007",
+      "label": 1,
+      "score": 0.9984,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02082",
+      "label": 0,
+      "score": 0.9968,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01009",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02091",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01010",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02093",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01017",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02098",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01023",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02101",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01030",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02107",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01032",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02109",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "01038",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02123",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02146",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02140",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02151",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02141",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02155",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02142",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02160",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02143",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02166",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02150",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02175",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02152",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02181",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02153",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02185",
+      "label": 1,
+      "score": 0.9874,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02157",
+      "label": 0,
+      "score": 0.9993,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02190",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02158",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02195",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02162",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02196",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02164",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02199",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02165",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02200",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02167",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02202",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02169",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02204",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02170",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02207",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02176",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02209",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02177",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02212",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02178",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02222",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02184",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02233",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02187",
+      "label": 0,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02234",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02188",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02236",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02193",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02238",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02197",
+      "label": 0,
+      "score": 0.0016,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02241",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02205",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02242",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02208",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02243",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02211",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02253",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02214",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02257",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02215",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02259",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02216",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02260",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02218",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02265",
+      "label": 1,
+      "score": 0.9991,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02230",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02266",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02237",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02270",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02245",
+      "label": 0,
+      "score": 0.9954,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02271",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02250",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02276",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02254",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02279",
+      "label": 1,
+      "score": 0.9976,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02255",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02280",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02261",
+      "label": 0,
+      "score": 0.984,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02282",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02262",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02283",
+      "label": 1,
+      "score": 0.7755,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02267",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02287",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02273",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02297",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02278",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02305",
+      "label": 1,
+      "score": 0.9848,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02289",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02306",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02290",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02316",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02292",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02319",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02299",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02322",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02303",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02330",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02310",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02335",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02317",
+      "label": 0,
+      "score": 0.9795,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02336",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02320",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02345",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02323",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02354",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02331",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02366",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02333",
+      "label": 0,
+      "score": 0.9497,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02368",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02339",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02369",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02343",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02370",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02347",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02371",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02348",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02373",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02350",
+      "label": 0,
+      "score": 0.9992,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02374",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02351",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02378",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02357",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02379",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02359",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02384",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02361",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02385",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02363",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02387",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02375",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02391",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02377",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02396",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02382",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02397",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02386",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02401",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02389",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02410",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02398",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02413",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02400",
+      "label": 0,
+      "score": 0.999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02428",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02403",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02429",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02405",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02433",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02406",
+      "label": 0,
+      "score": 0.9884,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02434",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02411",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02441",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02435",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02442",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02449",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02448",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02451",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02454",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02452",
+      "label": 0,
+      "score": 0.9992,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02459",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02458",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02468",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02461",
+      "label": 0,
+      "score": 0.8715,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02472",
+      "label": 1,
+      "score": 0.9986,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02463",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02473",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02467",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02474",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02475",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02476",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02477",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02479",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02478",
+      "label": 0,
+      "score": 0.9993,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02482",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02484",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02494",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02490",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02495",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02491",
+      "label": 0,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02496",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02493",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02499",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02497",
+      "label": 0,
+      "score": 0.9961,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02500",
+      "label": 1,
+      "score": 0.9953,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02498",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02501",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02503",
+      "label": 0,
+      "score": 0.9974,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02502",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02510",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02505",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02515",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02509",
+      "label": 1,
+      "score": 0.9984,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02517",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02511",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02524",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02512",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02530",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02518",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02534",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02522",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02538",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02533",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02539",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02537",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02540",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02543",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02541",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02548",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02544",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02556",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02545",
+      "label": 0,
+      "score": 0.0737,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02557",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02555",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02561",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02562",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02563",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02565",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02566",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02568",
+      "label": 0,
+      "score": 0.3143,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02567",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02572",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02579",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02573",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02581",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02576",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02582",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02583",
+      "label": 0,
+      "score": 0.9988,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02594",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02587",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02595",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02588",
+      "label": 0,
+      "score": 0.9987,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02599",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02591",
+      "label": 0,
+      "score": 0.9658,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02600",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02592",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02608",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02603",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02612",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02609",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02613",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02617",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02615",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02618",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02620",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02621",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02628",
+      "label": 1,
+      "score": 0.711,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02623",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02632",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02624",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02635",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02630",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02636",
+      "label": 1,
+      "score": 0.9982,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02631",
+      "label": 0,
+      "score": 0.0016,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02639",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02634",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02655",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02640",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02656",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02641",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02666",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02646",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02673",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02652",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02674",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02662",
+      "label": 0,
+      "score": 0.9983,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02683",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02664",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02686",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02668",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02687",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02672",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02691",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02681",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02692",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02685",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02693",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02688",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02695",
+      "label": 1,
+      "score": 0.9995,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02689",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02700",
+      "label": 1,
+      "score": 0.9599,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02690",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02702",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02694",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02703",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02696",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02708",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02699",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02713",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02704",
+      "label": 0,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02725",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02710",
+      "label": 0,
+      "score": 0.9884,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02730",
+      "label": 1,
+      "score": 0.9839,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02714",
+      "label": 0,
+      "score": 0.9992,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02736",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02716",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02739",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02724",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02741",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02727",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02744",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02728",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02745",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02729",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02746",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02732",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02747",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02733",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02749",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02734",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02751",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02740",
+      "label": 0,
+      "score": 0.9964,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02758",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02753",
+      "label": 0,
+      "score": 0.0737,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02764",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02755",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02765",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02763",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02767",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02770",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02769",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02774",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02771",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02791",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02781",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02797",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02783",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02798",
+      "label": 0,
+      "score": 0.998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02786",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02805",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02787",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02811",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02793",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02815",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02794",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02821",
+      "label": 0,
+      "score": 0.999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02800",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02822",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02801",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02823",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02804",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02826",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02807",
+      "label": 1,
+      "score": 0.9994,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02827",
+      "label": 0,
+      "score": 0.9326,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02809",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02829",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02812",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02832",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02816",
+      "label": 1,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02846",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02818",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02848",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02828",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02851",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02831",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02853",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02833",
+      "label": 1,
+      "score": 0.9991,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02857",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02836",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02858",
+      "label": 0,
+      "score": 0.9999,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02840",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02859",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02845",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02860",
+      "label": 0,
+      "score": 0.971,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02854",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02862",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02855",
+      "label": 1,
+      "score": 0.9967,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02863",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02856",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02872",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02866",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02874",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02868",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02877",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02870",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02879",
+      "label": 0,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02873",
+      "label": 1,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02883",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02885",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02893",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02888",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02894",
+      "label": 0,
+      "score": 0.984,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02889",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02904",
+      "label": 0,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02890",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02905",
+      "label": 0,
+      "score": 0.9997,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02903",
+      "label": 1,
+      "score": 0.9998,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02906",
+      "label": 0,
+      "score": 0.9647,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    },
+    {
+      "id": "02915",
+      "label": 1,
+      "score": 0.9996,
+      "adapter": "mobilenetv2-lstm (CCD-trained, retired)"
+    }
+  ]
+}

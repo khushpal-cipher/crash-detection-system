@@ -37,7 +37,9 @@ class VJEPAModel(BaseModel):
         window_stride: int = 16,
         save_preprocessed_tensors: bool = False,
         fill_value=None,
+        skip_predictor: bool = False,
     ):
+        self.skip_predictor = skip_predictor
         self.model_name = model_name
         self.checkpoint_path = checkpoint_path
         self.device = torch.device(device) if device else get_device()
@@ -72,6 +74,7 @@ class VJEPAModel(BaseModel):
             self.model = load_vjepa_model(
                 model_name=self.model_name, checkpoint_path=self.checkpoint_path, device=self.device
             )
+            self.model.skip_predictor = self.skip_predictor
 
             # Get processor and transform
             self.processor = get_processor_for_model(self.model_name)

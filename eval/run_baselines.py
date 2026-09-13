@@ -74,6 +74,9 @@ def main():
     ap.add_argument("--stride", type=int, default=1)
     ap.add_argument("--skip-predictor", action="store_true",
                     help="~25%% faster; upstream discards the predictor output anyway")
+    ap.add_argument("--save-frames-dir", default=None,
+                    help="persist per-frame BADAS scores per clip (.npz), so reduction "
+                         "(mean vs max) and timing can be recomputed without a re-run")
     args = ap.parse_args()
 
     np.seterr(all="ignore")
@@ -85,7 +88,9 @@ def main():
         AlwaysNegative(),
     ]
     if not args.no_badas:
-        adapters.insert(0, BadasOpen(device=args.device, stride=args.stride))
+        adapters.insert(0, BadasOpen(device=args.device, stride=args.stride,
+                                      skip_predictor=args.skip_predictor,
+                                      save_frames_dir=args.save_frames_dir))
 
     table = []
     for ad in adapters:

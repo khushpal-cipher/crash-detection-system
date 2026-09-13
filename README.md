@@ -2642,7 +2642,8 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 1. `eval/` package: source-grouped splitter, leakage test (CI-enforced), metric suite — AP, ROC-AUC, precision @ fixed recall, **FP/hour (always with its denominator)**, ECE.
    ⚠️ **`time-to-detection` and `mTTA` are NOT computable on Nexar test-public** and are excluded from this phase. Measured 2026-09-11: `time_of_event` lies beyond the distributed clip for **all 334 positives** (median 20.0 s vs 9.93 s clip), and the clip's offset into the original video is not in the shipped metadata. Timing metrics need a split that carries usable timestamps — the UK footage of Phases 7–8.
 2. Per-condition breakdown driven by the manifest: `timing`, `weather`, and later road type (B7).
-3. Ego-involved vs non-ego reporting (B7).
+3. ~~Ego-involved vs non-ego reporting (B7).~~
+   ⚠️ **NOT COMPUTABLE ON NEXAR TEST-PUBLIC — struck 2026-09-13, same shape as the mTTA finding above.** Verified: `data/nexar/{test-public,train}/*/metadata.csv` columns are `file_name, time_of_event, time_of_alert, light_conditions, weather, scene, time_to_accident` — no ego-involvement field exists anywhere in the shipped metadata, for either split. This is a labelling gap in the dataset, not a code gap: `by_condition()` in `eval/benchmark.py` already handles any manifest field generically and would report this the moment a field existed. Deliverable once the UK footage (Phases 7–8) ships with an ego label.
 4. Reliability diagrams and PR curves written to `runs/<id>/plots/`.
 5. A model-agnostic adapter interface so BADAS-Open, your old model and any new model are all evaluated by identical code.
 6. **Ban accuracy from all reports** — assert it is absent from `metrics.json`.
@@ -2653,7 +2654,7 @@ Do not claim Tesla-level anything. Do not claim partnerships that are conversati
 
 **Acceptance criteria**
 - [ ] Three different models evaluate through one code path
-- [ ] `metrics.json` contains AP, AUC, FP/hour, ECE, per-condition and ego/non-ego rows
+- [ ] `metrics.json` contains AP, AUC, FP/hour, ECE and per-condition rows (ego/non-ego rows dropped from this criterion — not computable on test-public, see task 3)
 - [ ] The leakage test fails the build on an injected violation
 - [ ] Raw accuracy appears nowhere in any generated report
 
