@@ -12,9 +12,10 @@ Usage
     # verify the BADAS adapter on a balanced subset first (~1 min/clip)
     ~/envs/badas/bin/python eval/run_baselines.py --limit 6
 
-    # the real sweep: ~18 h at stride 1 (~97 s/clip END-TO-END, measured over 6 clips).
-    # Do NOT quote ~10 h -- that is the compute-only figure and it ignores decode plus
-    # VJEPA2VideoProcessor, which together add ~1.8x. --skip-predictor takes ~25% off.
+    # the real sweep: ~31 h at stride 1. MEASURED over 140 clips of the live run =
+    # ~167 s/clip end-to-end. The earlier ~97 s/clip (6-clip smoke) and ~10 h
+    # (compute-only) figures are both too optimistic -- do not plan against them.
+    # --skip-predictor takes ~25% off.
     PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
         ~/envs/badas/bin/python eval/run_baselines.py --out runs/baselines
 
@@ -30,6 +31,7 @@ import json
 import os
 import sys
 import time
+from itertools import zip_longest
 
 import numpy as np
 
@@ -44,13 +46,21 @@ T3_JSON = os.path.join(ROOT, "runs", "falsification", "T3_corpus_control.json")
 
 
 def balanced_ids(limit=None):
+    """Clip ids in positive/negative-interleaved order.
+
+    Deliberately NOT `sorted(labels)`. In Nexar test-public every positive id sorts below
+    every negative, so a plain sort scores all 334 positives before the first negative --
+    and AP, ROC-AUC and FP/hour are all undefined until both classes are present. On a
+    ~30 h sweep that is ~9 h producing no computable metric and no way to catch a broken
+    harness early. Interleaving makes a partial run readable from the second clip onward.
+
+    Metrics are order-independent, so the completed numbers are identical either way.
+    """
     labels = B.load_labels()
-    if limit is None:
-        return sorted(labels)
     pos = sorted(i for i in labels if labels[i] == 1)
     neg = sorted(i for i in labels if labels[i] == 0)
-    k = max(1, limit // 2)
-    return pos[:k] + neg[:k]
+    ids = [i for pair in zip_longest(pos, neg) for i in pair if i is not None]
+    return ids if limit is None else ids[:limit]
 
 
 def main():
