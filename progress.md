@@ -1,13 +1,24 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-13, 14:45 IST**, end of **session 6** (handoff pass).
+Last updated: **2026-09-14, 00:55 IST**, end of **session 7** (planning + measurement; handoff pass).
 
-> # ⏳ A SECOND LONG BACKGROUND JOB IS RUNNING RIGHT NOW — READ THIS BEFORE ANYTHING ELSE
+> **⚠️ SESSION 7 RAN AS TWO PARALLEL CLAUDE WINDOWS BY ACCIDENT.** The user gave the same red-team
+> brief to two sessions at once. Both wrote plans. They have been **reconciled** — see the
+> CONSOLIDATED block below. Anywhere this file says "this session" inside the older SESSION 7 SUMMARY,
+> it means *one* of the two windows, and three of its statements were false and are corrected inline.
+
+> # ⏳ THE SAME SECOND BACKGROUND JOB IS STILL RUNNING RIGHT NOW — READ THIS BEFORE ANYTHING ELSE
 >
-> **This is a NEW sweep, not the one session 5 described.** That one (PID 88180, `runs/baselines/`)
-> **finished and is committed** (`e7ac3e6`) — see the SESSION 6 SUMMARY below. This is a deliberate
-> second run, started immediately after, into a different directory.
+> **Nothing about this job changed since session 6 wrote the paragraph below — it is still the same
+> run, just further along.** PID 75682 (`caffeinate` wrapper PID 75684) is **CONFIRMED ALIVE** as of
+> session 7's end (`ps aux` checked directly, not assumed). Progress: **377/667 done at 10h24m
+> elapsed, 2026-09-14 00:55 IST** (`wc -l runs/baselines2/badas-open/scores.jsonl`; the `frames/`
+> dir matches at 377 `.npz`). Trajectory across session 7: 14 → 194 → 222 → 261 → 268 → 377.
+> Measured rate ≈ **99 s/clip**, so the remaining 290 clips ≈ **8 h**, finishing roughly
+> 2026-09-14 09:00 IST. Do the arithmetic yourself with `eval/peek.py` before trusting this — this
+> project has already recorded one bad ETA extrapolation (session 6's 14-clip sample) and 222→261 across
+> session 7 is a real second data point if you want to refit the rate.
 >
 > **PID 75682** (`caffeinate` wrapper PID 75684), launched 2026-09-13 14:28 IST.
 > ```
@@ -19,11 +30,6 @@ Last updated: **2026-09-13, 14:45 IST**, end of **session 6** (handoff pass).
 > verified bit-identical score, ~14–25% faster — see D19) and `--save-frames-dir` (persists **every**
 > per-frame score to `<id>.npz`, not just the one `nanmax` per clip that the first sweep kept). This
 > is what unlocks mean-vs-max reduction and `t_start`/`t_peak`/`t_end` timing **without a third sweep**.
-> ETA at handoff: **14/667 done after 22m 23s ≈ 96 s/clip → projected ~17.8 h total**, i.e. `skip_predictor`
-> is NOT delivering a large end-to-end saving here (video decode/IO likely dominates over the ~25%
-> compute saving, same pattern as D10's compute-vs-end-to-end gap). Recompute from more clips before
-> trusting this — n=14 is noisy — but do not assume this run finishes meaningfully faster than the
-> first one.
 >
 > - **DO NOT kill it, and do NOT run anything else on MPS.**
 > - **Resumable**, same mechanism: `runs/baselines2/badas-open/scores.jsonl`. Relaunch the identical
@@ -31,6 +37,141 @@ Last updated: **2026-09-13, 14:45 IST**, end of **session 6** (handoff pass).
 > - **Check it without touching it:** `~/envs/crashdet/bin/python eval/peek.py runs/baselines2/badas-open/scores.jsonl`
 >   (note: **not** the bare `eval/peek.py` — that defaults to `runs/baselines/`, the finished run).
 > - When it finishes: `runs/baselines2/badas-open/metrics.json` + `.npz` per-frame files. See §13.
+> - **🔴 THIS SWEEP IS NOW THE CRITICAL PATH.** Two separate findings are gated on it reaching 667/667:
+>   F3 (temporal smoothing hurts) and — more importantly — the **+0.033 AP last-window reduction
+>   finding (§21.1 item 2)**, which is currently measured on only 268 clips and is the single largest
+>   potential detection improvement identified so far. **The first thing the next session should do
+>   once this finishes is re-run §21.1's reduction comparison on all 667.**
+
+> # SESSION 7 — CONSOLIDATED SUMMARY (2026-09-13/14) · READ THIS FIRST, then §21.1, then §13
+>
+> **Read order for a brand-new Claude: this block → §21.1 (the measured findings) → `NEW_PLAN.md`
+> → §13 (exact next action) → §12 (what not to redo).**
+>
+> ### What this session was
+> A **planning and measurement** session. **No production code was written. Nothing was committed.
+> No model was run.** All measurements were read-only analyses over *already-committed* scores and
+> the in-flight sweep's `.npz` files, executed in-conversation. The background sweep ran unattended
+> throughout and advanced 14 → 377 of 667.
+>
+> ### The accident, and how it was resolved
+> The user gave the same red-team brief to **two Claude Code windows simultaneously**. Both produced
+> a revised plan, neither could see the other. Result on disk was two competing documents whose names
+> implied the wrong order (`NEW_PLAN_v2.md` was *older* and parallel, not successive), plus a handoff
+> written by the window that had done no measurements.
+> **Resolved 2026-09-14:** merged into **one authoritative plan, `NEW_PLAN.md`**. The parallel document
+> was moved to `archive/NEW_PLAN_v2_parallel_session.md` (moved, **not** deleted). Its one genuinely
+> additive idea — the **IMU/CAN false-positive rejection channel** — was folded in as **R9**, with its
+> three-way partition discipline. Its C4/C6/C7 were rejected with written reasons in `NEW_PLAN.md` §4.
+> Three false statements in the older SESSION 7 SUMMARY block below are corrected inline (❌/✅).
+>
+> ### The five things that actually matter from this session
+>
+> 1. **A statistical bar now exists. CONFIRMED.** AP 0.8349 has a bootstrap 95% CI of
+>    **[0.7910, 0.8734]**. **Any unpaired improvement under ~0.04 AP is invisible at n=667.** Several
+>    claims made earlier in this project are smaller than their own error bar. All future comparisons
+>    must use *paired* bootstrap. (§21.1 item 1)
+> 2. **A candidate detection improvement worth ~+0.033 AP. PROVISIONAL.** Replacing the `nanmax`
+>    clip reduction with **last-window** (or `√(max·last)`) beat max with a paired CI excluding zero,
+>    on 268 clips. **This is the first idea in the project's history that would move AP rather than
+>    presentation.** It is NOT yet confirmed — see §21.1 items 2–4 for the mechanism, the checks that
+>    passed, and the selection-risk caveat.
+> 3. **Calibration is solved on paper but has no committed code.** Beta calibration: ECE
+>    0.3286 → 0.0498, AP unchanged. **`eval/calibration.py` DOES NOT EXIST** — the numbers came from
+>    an in-conversation script. **Do not quote them in any external document until the script is
+>    committed and reproducible.** Also: beta-vs-Platt (0.0026) is NOT a meaningful difference.
+> 4. **Nexar's train split is BADAS-Open's own training data, and is not downloaded.** The BADAS paper
+>    and model card state BADAS-Open was *"trained solely on Nexar's public dataset (1,500 videos)."*
+>    On disk, `data/nexar/train/` is metadata-only (zero `.mp4`), as is `test-private/`. **It is
+>    therefore unusable for calibration and handicapped for probe training.** (§21.1, `NEW_PLAN.md` F1)
+> 5. **Two items this file previously recorded as permanently impossible are not.**
+>    `vendor/badas-open/annotation/` already contains consensus re-annotations for DAD (165),
+>    DADA2000-small (221) and DoTA (598) — **984 clips carrying ego-involvement flags and
+>    collision/alert timestamps.** That is the data D23 (ego/non-ego breakdown) and the mTTA strike
+>    were declared blocked for lack of. They are blocked **on Nexar**, not in general. **The videos are
+>    not downloaded.** (`NEW_PLAN.md` F4)
+>
+> ### Status of the plan
+> **`NEW_PLAN.md` is a PROPOSAL. It has not been accepted, started, or merged into `README.md`.**
+> The next session must get an explicit accept/reject/revise decision from the user before executing
+> any of it. `README.md` was **not** modified this session (§16).
+
+> # SESSION 7 SUMMARY (2026-09-13, planning-only session) — the block below was written by ONE of the
+> # two parallel windows; corrections are inline. The CONSOLIDATED block above supersedes it.
+>
+> **🔴 CORRECTED 2026-09-14. The block below was written by ONE of TWO Claude sessions that ran in
+> parallel on 2026-09-13 — the user gave the same red-team brief to two windows by mistake. The
+> session that wrote this had no visibility into the other, and three of its statements are FALSE.
+> Corrections are inline and marked ❌/✅. Read §21 for the reconciled state.**
+>
+> ❌ *"No code was written or run this session. No experiments ran."* — **False for the parallel
+> session.** That window ran five read-only measurement experiments whose results are now the single
+> most important evidence the project has (§21.1). No files were *written* by it other than a plan,
+> but real measurements were made. ✅ Correct statement: **no production code was written or
+> committed this session; read-only analysis scripts were run in-conversation and their results are
+> recorded in §21.1.**
+>
+> 1. **User asked for a general explanation of the project** (a "teach me from scratch, what to learn
+>    on YouTube" style question, conversational only, no files touched) — answered in conversation:
+>    pointed at CNN backbones/transfer learning, LSTM/sequence models, YOLO/object detection, ViT +
+>    V-JEPA2/self-supervised video models, MiDaS/Kalman/TTC classical CV, and model calibration, in
+>    that priority order, with V-JEPA2/ViT flagged as highest-leverage since it's the model actually in
+>    use now. No files changed.
+> 2. **User then gave a formal 10-point red-team brief** asking for `NEW_PLAN.md` (session 6's earlier
+>    output — see §21 below, it predates this numbered list) to be revised: close leakage/hardware/
+>    provisional-finding loopholes, find genuine detection-improvement paths beyond calibration, and
+>    answer a specific "best one-month sequence" question — **explicitly against the user's REAL
+>    hardware (M4 MacBook Air 24/7, Mac Studio M4 Max ~2–4h weekdays / ~10h weekends), not the richer
+>    assumed budget `NEW_PLAN.md` and this file's own compute language had been implicitly using.**
+>    **IMPORTANT CAVEAT the user should know:** the brief referred to "your 10 points" as a pre-existing
+>    red-team finding from a prior session. **That artifact was searched for and NOT FOUND** — not in
+>    this file, not in `README.md`, not in `NEW_PLAN.md`, no prior-session record located. The revision
+>    was built directly from the 10 numbered requirements in the user's own brief instead, cross-
+>    referenced against `NEW_PLAN.md`'s F1–F6 findings (which turned out to cover the same failure
+>    modes). **If a real prior "10 points" document exists outside this session/repo, it must be
+>    supplied and `NEW_PLAN_v2.md` re-diffed against it — this is an open item, not resolved.**
+>
+>    ❌ **RESOLVED 2026-09-14 — the "10 points" artifact was real and is NOT missing.** It was an
+>    adversarial self-review of `NEW_PLAN.md` produced in the *other* parallel window, which the user
+>    then quoted back. It never existed as a file, which is why the search failed. ✅ Its ten points
+>    are now closed in `NEW_PLAN.md` §2 (the closure index). **This is no longer an open item — do not
+>    go looking for this document again.**
+> 3. **Produced `NEW_PLAN_v2.md`** (repo root, ~450 lines, untracked, proposal-only — see §21 for full
+>    contents summary). It supersedes `NEW_PLAN.md` as the active proposal but, per the user's own
+>    instruction, **does not modify `README.md` or this file's plan content** — planning-document
+>    status only until reviewed and accepted.
+>
+>    ❌ **Two claims here are wrong.** (a) `NEW_PLAN.md` is **not** session 6's output — it was written
+>    by the parallel session on the same day, and its current content is *newer* than this file's.
+>    (b) `NEW_PLAN_v2.md` does **not** supersede it. ✅ **Reconciled 2026-09-14:** the two documents
+>    were merged. **`NEW_PLAN.md` is now the single authoritative plan**; the parallel document was
+>    moved to `archive/NEW_PLAN_v2_parallel_session.md`, with its one genuinely additive idea (the
+>    IMU/CAN rejection channel, its C2) folded into `NEW_PLAN.md` as **R9**, and its C4/C6/C7
+>    explicitly rejected with reasons in that file's §4.
+> 4. **Repo/data state was verified, not assumed, as part of writing that document** — this produced
+>    real findings worth keeping even independent of the plan itself:
+>    - `eval/calibration.py` **does not exist**. `NEW_PLAN.md`'s F2 calibration table (beta calibration
+>      ECE 0.0498 etc.) was produced by an **ad hoc, uncommitted script** — not reproducible by a third
+>      party. Flagged as a P0 gap to close before quoting that table again.
+>    - `scripts/badas_fps_probe.py` exists but only checks config coherence, **not** end-to-end
+>      throughput. The only real timing numbers on record (0.856 s/window MPS compute-only;
+>      ~97 s/clip end-to-end from a 6-clip sample) were never confirmed to have run on either of the
+>      user's two actual target machines (M4 Air / M4 Max Studio). A new script, `scripts/hw_bench.py`,
+>      is specified (not yet written) to close this.
+>    - `vendor/badas-open/annotation/` row counts confirmed: DAD 165 (164 data rows), DADA2000-small
+>      221 (220), DoTA 598 (597) — these are the externally-annotated clips proposed for the C1
+>      candidate in `NEW_PLAN_v2.md`, and **none of the underlying videos are downloaded yet.**
+>    - The in-flight sweep (banner above) was at 222/667 mid-session, now 261/667 at handoff —
+>      confirmed alive both times via direct process/file inspection, not assumed continuing.
+> 5. **User then asked to end the session and asked for this handoff.** This entry and §21 are the
+>    result. `README.md` was **not** touched this session (see §16 below — NO change, correctly, per
+>    the user's own rule that only master-plan-level discoveries justify a README edit, and everything
+>    found this session is proposal/verification-level, living in `NEW_PLAN_v2.md` instead).
+>
+> **The one thing a new Claude must not do: treat `NEW_PLAN_v2.md` as accepted or in progress.** It is
+> a reviewed-by-nobody-yet proposal sitting next to `NEW_PLAN.md` (also still just a proposal, itself
+> never merged into README/progress). Confirm with the user whether it's accepted before starting any
+> of its §13-ranked items.
 
 > # SESSION 6 SUMMARY — READ THIS, then §3, §13
 >
@@ -1677,6 +1818,28 @@ Do not reverse these without new evidence.
   resume event). Same treatment as `runs/falsification/`. Do not add a blanket exception to
   `.gitignore` for `*.log` — most logs really should stay ignored; force-add case by case.
 
+### Session 7 decisions (2026-09-14)
+
+- **D25 — One plan document, not two.** The two parallel red-team revisions were merged into
+  `NEW_PLAN.md`; the other was archived rather than deleted. **Why:** two competing documents with
+  misleading names (`NEW_PLAN_v2.md` was older than `NEW_PLAN.md`) is a guaranteed source of a future
+  session acting on the wrong one. Nothing was lost — the archived file is intact and its one
+  additive idea was carried across as R9.
+- **D26 — Paired bootstrap is now the mandatory instrument for every model comparison.**
+  **Why:** the unpaired 95% CI on AP is [0.7910, 0.8734], i.e. ±0.04. Unpaired testing cannot resolve
+  any improvement this project is realistically going to produce. Several past claims are smaller
+  than their own error bar. Do not reverse this by quoting a bare point estimate.
+- **D27 — No performance claim without a measurement on the user's own hardware.** **Why:** every
+  timing on record (0.856 s/window; ~97 s/clip) is MPS-only, some from synthetic tensors, some from a
+  6-clip sample, and none was ever run on the M4 Air or M4 Max the product would ship against.
+- **D28 — Calibration is demoted from headline result to credibility infrastructure.** **Why:**
+  monotone calibration provably cannot change AP or AUC. It makes probabilities usable and the
+  operating point principled; it is not a detection improvement and must not be presented as one.
+  This corrects the framing in the earlier plan.
+
+**NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
+Those are **proposals** pending the user's explicit acceptance; they become D29+ only if accepted.
+
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
@@ -1717,6 +1880,28 @@ Do not reverse these without new evidence.
 - **Do not create Python environments or store datasets under `~/Desktop`** (iCloud eviction).
 - **Do not push to the remote without asking the user.** Session 1's push was explicitly approved;
   that approval does not carry forward. **Session 3 committed nothing at all.**
+
+**Added after SESSION 7 (2026-09-14) — do NOT redo these:**
+
+- **Do not re-derive §21.1's measurements.** The bootstrap bar, the reduction comparison, the
+  length-leakage check, the split-half replication and the calibration table are all recorded there
+  with exact numbers. **Re-running the reduction comparison on the FULL 667 is required and is the
+  next action — that is not a redo, it is the confirmation step.**
+- **Do not go looking for the user's "10 points" red-team document.** It was never a file; it was an
+  adversarial self-review produced in conversation in the parallel window. Its ten points are closed
+  in `NEW_PLAN.md` §2. A previous session burned time searching for it and recorded it as missing.
+- **Do not un-archive or resurrect `archive/NEW_PLAN_v2_parallel_session.md` as a competing plan.**
+  It was merged into `NEW_PLAN.md`; its C2 became R9; C4/C6/C7 were rejected with written reasons.
+  Two competing plan documents is the exact confusion that was just cleaned up.
+- **Do not quote the ECE 0.3286 → 0.0498 calibration result externally until `eval/calibration.py`
+  exists.** It is currently unreproducible. And **do not claim beta beats Platt** — 0.0026 apart,
+  well inside the CI.
+- **Do not claim "real-time" or "CPU-capable" anywhere.** Every timing on record is MPS, most from a
+  6-clip sample, none measured on the user's actual M4 Air or M4 Max.
+- **Do not plan to train a calibrator or probe on the Nexar train split.** It is BADAS-Open's own
+  training data *and* it is not downloaded (metadata only, zero `.mp4`).
+- **Do not treat the last-window reduction finding as settled.** n=268, non-random order, and it was
+  selected by looking at test-public. See `NEW_PLAN.md` R1 for the three promotion conditions.
 
 **Added after SESSION 6 — do NOT redo these, and do NOT undo them:**
 
@@ -1786,7 +1971,35 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **rewritten end of SESSION 6**
+## 13. EXACT NEXT ACTION  ·  **content below is session 6's, still valid — session 7 added a step 0.5**
+
+### ══ THE ONE EXACT NEXT ACTION (rewritten 2026-09-14, end of session 7) ══
+###
+### **Check whether the sweep has reached 667/667. If it has, re-run the reduction comparison from
+### §21.1 item 2 on all 667 clips, using a paired bootstrap, and decide whether the +0.033 AP
+### last-window finding survives.**
+###
+### ```bash
+### ps -p 75682 -o etime=                                      # alive?
+### wc -l runs/baselines2/badas-open/scores.jsonl               # 667 = done
+### ls runs/baselines2/badas-open/frames/*.npz | wc -l          # should match
+### ```
+###
+### - **If 667/667:** run the reduction comparison (max vs last-window vs max×last vs mean vs
+###   persistence) with a **paired** bootstrap CI on ΔAP. This is the highest-value single action
+###   available — it either confirms the project's first real detection improvement or kills it.
+###   Promotion criteria are in `NEW_PLAN.md` R1; **do not promote on the point estimate alone.**
+### - **If < 667 and PID 75682 alive:** leave it alone, do CPU-only work (below). Re-check later.
+### - **If < 667 and PID gone:** relaunch the identical command (next block). It resumes; nothing lost.
+###
+### **Before executing any of `NEW_PLAN.md`'s ranked items, get an explicit accept/reject/revise
+### decision from the user.** It is a proposal, not an accepted plan. If accepted, its two
+### zero-compute openers are `eval/calibration.py` (the F2 numbers currently have NO committed,
+### reproducible script — this is a P0 credibility gap) and a hardware benchmark for M4 Air CPU vs
+### MPS (no timing on record was ever measured on the user's actual machines).
+###
+### Everything below this line is session 6's still-valid guidance for the ORIGINAL master-plan track
+### (Phase 4/5 closure, the sweep, Tracks B/C) and remains the fallback regardless of the proposal.
 
 ### Phase 4 is COMPLETE and Phase 5's gate has PASSED. Nothing about the master plan is blocked. A
 ### second, non-required sweep is in flight. Session 5's §13 is superseded — it is below as §13-S5.
@@ -2047,7 +2260,22 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14. NEXT 3–5 ACTIONS  ·  **updated end of SESSION 6**
+## 14. NEXT 3–5 ACTIONS  ·  **updated end of SESSION 6, session 7 note added**
+
+**SESSION 7 NOTE (corrected 2026-09-14):** the relevant proposal is **`NEW_PLAN.md`**, not
+`NEW_PLAN_v2.md` (archived). **If and only if the user accepts it**, its §7.4 timeline and §10 ranking
+supersede the ordering below for what it covers (reduction, calibration, ensembling, external corpora,
+negatives) — but it does **not** cover Tracks B/C, which remain governed by `README.md` and item 2
+below. If it is not accepted, the list below is unchanged and still current.
+
+**The next 3–5 actions, if the proposal is accepted, are:**
+1. Confirm or kill the last-window reduction on the full 667 (paired bootstrap) — §13.
+2. Write `eval/calibration.py` so the ECE 0.33 → 0.05 result becomes reproducible. Zero compute.
+3. Benchmark M4 Air CPU vs MPS throughput. **No "real-time" or "CPU-capable" claim may be made
+   anywhere until this exists** — every timing on record is MPS-only and from a 6-clip sample.
+4. Flip-TTA pilot on ~100 clips, then multi-temporal-scale ensembling (4/8/16 fps).
+5. Acquire DAD (smallest external corpus, 165 annotated clips) and run the **falsification test** for
+   the reduction finding — on untruncated external data, last-window should perform *worse* than max.
 
 Straight from README §41's roadmap. No new roadmap is invented here.
 
@@ -2204,7 +2432,224 @@ mechanical pass would clear 1–5.
 
 ---
 
+## 21.1 SESSION 7's MEASURED FINDINGS — added 2026-09-14, missing from the block below
+
+**These were produced by the parallel session and are the most important evidence in this file after
+T3. They are read-only measurements over already-committed scores — no model was run, the sweep was
+never touched. All are reproducible from `runs/baselines/badas-open/scores.jsonl` and
+`runs/baselines2/badas-open/frames/*.npz`.**
+
+**1. The statistical bar. CONFIRMED.** Bootstrap on the committed 667-clip run:
+AP 0.8349, 95% CI **[0.7910, 0.8734]** (width 0.082); AUC 0.8498, CI [0.8195, 0.8774].
+**Consequence: any unpaired improvement below ~0.04 AP is invisible at n=667.** Every future model
+comparison must use a *paired* bootstrap on the same clips. This bar did not exist before and several
+past claims in this file are smaller than it.
+
+**2. A reduction change worth ~+0.033 AP. PROVISIONAL (n=268 of 667).** Paired bootstrap vs `nanmax`:
+
+| reduction | AP | ΔAP vs max | paired 95% CI |
+|---|---|---|---|
+| max (current) | 0.8809 | — | — |
+| **last window** | 0.9140 | **+0.0330** | **[+0.0008, +0.0744]** excludes zero |
+| **max×last (geometric)** | 0.9158 | **+0.0349** | **[+0.0027, +0.0729]** excludes zero |
+| top-3 mean | 0.8585 | −0.0224 | [−0.0383, −0.0073] worse |
+| p90 | 0.8154 | −0.0656 | [−0.1041, −0.0293] worse |
+
+**3. The mechanism, CONFIRMED.** Position of each clip's score peak (0 = start, 1 = end):
+**positives median 0.984**, negatives median 0.782. Peak in the final 10% of clip: **83.0% of
+positives vs 42.5% of negatives.** Nexar test clips are truncated 500–1500 ms *before* the event, so
+for a positive the last window is the aligned one; for a negative `max` wanders and grabs a spurious
+mid-clip peak. **Last-window wins by suppressing false peaks on negatives, not by boosting positives.**
+
+**4. Adversarial checks on finding 2.**
+- **Clip length does NOT leak the label. CONFIRMED.** AP(length) = 0.5330, AUC 0.5483 — chance.
+  Correlation of length with the last-window score is +0.109. Not a duration artefact.
+- **Split-half replication: 5 of 6 halves positive, spread −0.009 to +0.075.** Direction consistent,
+  **magnitude NOT established.** → stays PROVISIONAL until 667/667.
+- **NEEDS VERIFICATION / known risk:** the reduction was selected by looking at test-public. Promotion
+  requires (a) the full 667, (b) a held-out-half confirmation, and (c) the falsification test in
+  `NEW_PLAN.md` R1 — *on untruncated external data (DoTA/DADA) last-window should perform WORSE than
+  max.* If it helps there too, the mechanism is wrong and the Nexar gain is suspect.
+
+**5. Calibration. CONFIRMED, but see the caveat.** 5-fold cross-fitted on the 667 committed scores:
+beta calibration takes **ECE 0.3286 → 0.0498** (bootstrap CI [0.040, 0.087]), Brier 0.3069 → 0.1601,
+NLL 1.1348 → 0.4903, **AP unchanged within 0.002**. Platt 0.0524, isotonic 0.0528 *but loses 0.02 AP*,
+temperature only 0.2002. **Caveat the parallel session correctly raised: beta-vs-Platt (0.0026) is
+well inside the CI and is NOT a meaningful difference — do not claim beta "wins".** Also **CONFIRMED:
+`eval/calibration.py` does not exist**; these numbers came from an in-conversation script and must be
+committed before being quoted anywhere.
+
+**6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
+persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.2 DATA / LICENSING STATE — verified from primary sources, session 7
+
+| Asset | Licence | Train | Eval | Commercial product | Status on disk |
+|---|---|---|---|---|---|
+| Nexar collision dataset | `nexar-open-data-license` | ✅ | ✅ | ✅ **with attribution** | test-public only (667 clips, 2.7 GB). train + test-private are **metadata-only** |
+| BADAS-Open weights + code | **Apache-2.0** | — | ✅ | ✅ | on disk (3.7 GB) + vendored source |
+| comma2k19 | **MIT** | ✅ | ✅ | ✅ | **not downloaded** — 33 h, California highway, ships CAN+IMU (verify per release) |
+| Zenseact ZOD | **CC BY-SA 4.0** | ✅ | ✅ | ✅ | **not downloaded** — 1,473 × 20 s + 29 drives, European, diverse weather |
+| DAD / DADA-2000 / DoTA | varies; DoTA repo says MIT but videos are YouTube-sourced | verify | ✅ | verify | **videos not downloaded**; consensus annotations ARE vendored (984 clips) |
+| BDD100K | research / non-profit only | ❌ | grey | ❌ needs UC Berkeley OTL | not downloaded — **excluded on licence grounds** |
+
+**⚠️ CORRECTION of an error made and then caught within session 7:** it was briefly stated that
+Nexar's licence forbids commercial use. **That is wrong.** `data/nexar/LICENSE` grants the right to
+"use, copy, modify, and distribute the Dataset"; the No-Resale clause forbids selling or
+redistributing **the dataset itself**, not products built from it. README §43's "commercial use
+permitted" was correct. The ethical-use restrictions (no weaponisation, no reidentification, no
+predatory insurance) are all compatible with this product.
+
+**The practical shape of it:** the *model* is commercially usable (Apache-2.0) and the Nexar *data*
+permits commercial model training with attribution. comma2k19 and ZOD are the two permissively
+licensed sources that could underpin a shipped product. DAD/DADA/DoTA/BDD100K are evaluation-side
+only. **comma2k19 is highway-only and would flatter any FP/hour number — it is a stress test, not a
+general rate.**
+
+---
+
+## 21. `NEW_PLAN_v2.md` — SESSION 7's OUTPUT, UNREVIEWED PROPOSAL, NOT YET ACCEPTED
+
+> **🔴 SUPERSEDED 2026-09-14.** This section describes `NEW_PLAN_v2.md`, which has been **merged into
+> `NEW_PLAN.md` and moved to `archive/NEW_PLAN_v2_parallel_session.md`.** `NEW_PLAN.md` is now the
+> single authoritative proposal. The section is kept below because its per-candidate reasoning
+> (C1–C7) is still useful, and because its C2 became `NEW_PLAN.md`'s R9. **Where this section and
+> `NEW_PLAN.md` disagree, `NEW_PLAN.md` is correct.** Both remain PROPOSALS — neither is accepted.
+
+**File: `NEW_PLAN_v2.md`, repo root, ~450 lines, untracked. Supersedes `NEW_PLAN.md` (session 6's
+output, also still just a proposal — never merged into README or this file) as the active proposal.
+Neither `NEW_PLAN.md` nor `NEW_PLAN_v2.md` have been accepted, started, or reflected in README.md.**
+
+**Why it exists:** the user gave a 10-point red-team brief (see SESSION 7 SUMMARY above) demanding
+`NEW_PLAN.md` be revised for leakage/hardware/provisional-finding rigor and for genuine
+detection-improvement candidates beyond calibration, scoped against the user's REAL compute (M4
+MacBook Air 24/7, Mac Studio M4 Max ~2–4h weekdays / ~10h weekends — **NOT** the richer, unstated
+budget this file's own compute language elsewhere implicitly assumes; see below, this is a real
+correction the next session should propagate if `NEW_PLAN_v2.md` is accepted).
+
+**Contents summary (read the file directly for full detail — this is a pointer, not a replacement):**
+
+- **§0–1**: notes the user's referenced "10 points" prior artifact was not found in this session
+  (open item — supply it and re-diff if it exists); recomputes the realistic Studio budget at
+  ~25–30h/week (a ~4–5× reduction from prior implicit assumptions) and states its consequence for the
+  in-flight sweep and any future full-corpus sweep (default to stride 2 unless stride 1 required).
+- **§4**: seven detection-improvement candidates (C1–C7), each with hypothesis/mechanism/data/compute/
+  cost/expected-gain/failure-condition/leakage-risk/validation fields. Standouts: **C2** (comma2k19
+  IMU/CAN-informed hard-negative rejection classifier — the only candidate adding a signal BADAS's
+  video-only backbone structurally cannot use) ranked highest expected value; **C1** (supervised head
+  on DAD/DADA/DoTA external annotations, 984 clips, none downloaded yet) ranked second but flagged as
+  the plan's highest leakage risk since BADAS's own authors report published figures on those exact
+  benchmarks; **C5** (probe trained on Nexar train) re-examined and **kept killed** — Nexar train is
+  literally BADAS-Open's own training data (confirmed on disk this session: train/test-private are
+  metadata-only, zero `.mp4`, consistent with `NEW_PLAN.md`'s F1).
+- **§5**: formal calibration protocol — 5-fold nested cross-fitting **within `test-public` only**
+  (the only labeled video data on disk), with an explicit statement of what it does/doesn't prove;
+  external-transfer (DAD/DADA/DoTA) calibration is scoped as a separate, weaker generalization claim.
+  **P0 action: `eval/calibration.py` does not exist yet** — the committed F2 calibration numbers in
+  `NEW_PLAN.md` came from an uncommitted, unreproducible script. Write it before quoting that table
+  again.
+- **§6**: comma2k19 reclassified as hard-negative/stress-test data only, never a general FP/hour
+  claim; Zenseact ZOD proposed as a second, geographically distinct source (not yet scoped/acquired).
+- **§7**: every "real-time"/"CPU-capable" claim in the repo audited — most rest on a synthetic-tensor
+  timing (`badas_smoke.py`) or a 6-clip sample, neither confirmed on either of the user's actual two
+  machines. **New required script, not yet written: `scripts/hw_bench.py`** — benchmarks real
+  end-to-end throughput on M4 Air (MPS + forced-CPU) and M4 Max Studio (MPS) separately, with
+  bootstrap CIs. This gates every timeline estimate downstream of it.
+- **§9**: week-by-week timeline built off the real budget; explicitly states DoTA acquisition is a
+  two-weekend item and that comma2k19/DAD-DADA scoring will contend for the same weekend Studio slots.
+- **§10**: F3 (temporal smoothing hurts — `max` beats mean/persistence) re-examined and **kept
+  provisional** (trace sweep was 222/667 at time of writing, now 261/667 per the banner above) with
+  three explicit, written promotion criteria (full 667/667, bootstrap CI excluding zero, reproduced
+  through the committed eval path) — corrects `NEW_PLAN.md`'s own language, which had called this
+  "Settled: max."
+- **§11**: Track C (30 UK fleet calls) — recommends executing with a forcing weekly quota, but
+  explicitly flags that it has sat at zero for **six-plus sessions now** despite zero cost, which the
+  plan states is evidence of an unnamed blocker (contact access? confidence? scheduling?) that only
+  the user can diagnose — not resolved, an open question.
+- **§12**: uncertainty audit of existing deltas — notably reclassifies `NEW_PLAN.md`'s beta-vs-Platt
+  calibration "win" (ECE 0.0498 vs 0.0524, a 0.0026 delta) as **not meaningful**, well within beta's
+  own stated bootstrap CI [0.040, 0.087].
+- **§13–15**: ranked plan (by expected gain ÷ Studio-hours, not ease — C2 ranked #1 by value despite
+  not being the cheapest item), a **hybrid** keep/rebuild verdict (keep BADAS-Open frozen as
+  backbone/ranker, no fine-tuning — no CUDA anywhere, MobileNetV2+LSTM confirmed chance-level per T3 —
+  but explicitly reject "calibration is the ceiling" and commit to C2 and, more cautiously, C1 as
+  real evidence-gated additions), and a decisive one-month answer: commit calibration protocol +
+  `hw_bench.py` first (zero Studio cost, week 1), freeze F3, run the free C3 temporal head, then spend
+  the bulk of the month's Studio budget on C2.
+- **§16**: a self-adversarial second pass — found and fixed one real timeline overcommitment (an
+  earlier draft had DAD+DADA+DoTA all landing by week 3, which doesn't fit the recomputed budget;
+  fixed by deferring DoTA to weeks 5–6), added a missing cross-reference (C3's temporal-head training
+  must reuse calibration's clip-level split, not create a new ad hoc one), and softened one
+  overconfident claim to match the document's own CI-or-caveat discipline.
+
+**What the next session must do with this:** get an explicit accept/reject/revise decision from the
+user before starting any of its ranked items (§13's `eval/calibration.py` and `scripts/hw_bench.py`
+are the two zero-cost, zero-risk items if accepted — reasonable to propose starting there). Do **not**
+assume acceptance and do not silently merge its content into `README.md` — the user's own rule (§16
+below) is that README changes require either an explicit README instruction or a master-plan-level
+discovery, and "a proposal document exists" is neither.
+
+---
+
 ## 15. CONTEXT-WINDOW HANDOFF
+
+### SESSION 7 FINAL END STATE — corrected/expanded 2026-09-14 00:55 IST (the block immediately
+### below was written by the parallel window earlier the same evening and understates what happened)
+
+**Exactly what was happening when this session stopped:** the sweep (PID 75682) was **alive at
+10h24m elapsed, 377/667 clips, 377 `.npz` frame files** — measured, not assumed. Nothing else was
+running. The last actions taken were documentation edits to this file; no code, no commits.
+
+**Git:** branch `main`, HEAD **`1b8d5c9`** (session 6's handoff commit — unchanged all session).
+Working tree: `M progress.md`, `?? NEW_PLAN.md`, `?? archive/NEW_PLAN_v2_parallel_session.md`,
+`?? runs/baselines2/`. **Nothing was committed this session.** `README.md` is byte-identical to
+HEAD (verified with `git diff --stat README.md`).
+
+**Must not be accidentally overwritten:** `runs/baselines2/` (10+ hours of GPU work in progress, and
+the `frames/*.npz` are the only per-frame data that exists); `runs/baselines/` and
+`runs/falsification/` (committed evidence).
+
+**Partially complete — do NOT record any of these as done:**
+- **The sweep is ~57% done (377/667), ~8 h remaining.** No final number for it yet.
+- **The last-window reduction finding is measured but NOT confirmed** (n=268 of 667).
+- **`NEW_PLAN.md` is complete as a document but UNREVIEWED and UNACCEPTED by the user.** Nothing in
+  it has been started.
+- **`eval/calibration.py` does not exist.** Zero lines written. Same for any hardware benchmark.
+- **Tracks B and C remain at zero, now seven sessions running.** No UK footage, no fleet calls, and
+  the two Phase 0 licence emails are still unsent.
+
+---
+
+### SESSION 7 END STATE (earlier, parallel window) — superseded by the block above
+
+**Exactly what was happening when session 7 stopped:** the same background sweep from session 6
+(PID 75682, `runs/baselines2/`) was still running, now at **261/667** (confirmed by direct process
+check + `wc -l scores.jsonl`, not assumed). No code was written or executed this session. The only
+artifact produced was `NEW_PLAN_v2.md` (see §21), a planning document.
+
+**Why the session ended:** the user said the context window was about to run out and asked to end the
+session; this handoff was written on that explicit instruction.
+
+**Partially completed, stated plainly — do NOT record any of these as done:**
+- **The second sweep is still in flight, now ~39% complete (261/667).** Still no final number for it.
+  §13 STEP 0's check commands are unchanged and still correct.
+- **`NEW_PLAN_v2.md` is a complete, self-consistent document (it includes its own adversarial
+  self-review pass, §16 of that file) — but it is UNREVIEWED BY THE USER and UNACCEPTED.** Do not
+  start executing any of its ranked items until the user has explicitly said so.
+- **`scripts/hw_bench.py` and `eval/calibration.py`, both specified in `NEW_PLAN_v2.md` as the correct
+  zero-cost first steps if the plan is accepted, do NOT exist yet.** Nobody has written them.
+- **The "10 points" artifact the user referenced when giving the red-team brief was never located.**
+  This is a standing open question, not resolved this session (§10 below should carry this forward).
+- **Nothing was committed this session** (no code changed, so nothing to commit besides the two new
+  untracked planning files — see §16B below for exact git state).
+
+**Environment reminder, unchanged from session 5/6:** two envs, keep them separate — `~/envs/crashdet`
+(TF 2.19.1 / Keras 3.15.1 / matplotlib / sklearn) and `~/envs/badas` (torch 2.14.0 / transformers
+5.17.0 / sklearn). **Do NOT rebuild either.**
+
+---
 
 ### SESSION 5 END STATE — read this (session 3's text below is history)
 
@@ -2279,6 +2724,16 @@ never made**, and §13 records the recommendation (unknowns first, with the reas
 ---
 
 ## 16. README MODIFICATION STATUS
+
+## SESSION 7 — README CHANGED THIS SESSION: **NO.**
+
+**Verified directly (`git status`, `git diff README.md`): zero changes to `README.md` this session.**
+This session's output (`NEW_PLAN_v2.md`, §21) is, by design and by the user's own explicit rule, a
+proposal document that does not touch the master plan until reviewed and accepted — nothing found
+this session rose to the "master-plan-level discovery" bar the user's rule requires for a README edit.
+The master plan remains exactly as session 6 left it.
+
+---
 
 ## SESSION 6 — README CHANGED THIS SESSION: **YES, two lines. Not a plan change.**
 
@@ -2443,50 +2898,49 @@ not in `README.md`.**
 
 ---
 
-## 17. FINAL HANDOFF CHECK  ·  **updated end of SESSION 6**
+## 17. FINAL HANDOFF CHECK  ·  **updated end of SESSION 7**
 
 | Question | Answered where |
 |---|---|
 | 1. What are we building? | §1 · §3 header |
-| 2. What does README.md say the plan is? | §2 (pointer; not copied). Three tracks: §3 header |
-| 3. Which phase are we in? | §3 — **Phase 4 COMPLETE. Phase 5 gate PASSED. A second, non-required sweep is in flight for Phase 6 groundwork.** |
-| 4. What has actually been completed? | §4 (4.1–4.8 s1 · 4.9 s2 · 4.10 s3 · 4.11 s4 · 4.12 s5 · **4.13 s6**), §7 + §7.1 + **§7.2** |
-| 5. What evidence/results do we have? | §6 for T3/§6.1 and sessions 1-5 evidence. **This session's evidence lives in git (`e7ac3e6`'s commit message and the files it touched) and in the SESSION 6 SUMMARY at the top of this file — it was not added as new §6.2x subsections; see §4.13 instead.** |
-| 6. What is broken or uncertain? | §5, §10 (**U-B2 has a session-6 update: gate passed anyway, tighter comparison still possible**), §18 |
-| 7. What decisions are already made? | §11 — D1–D8 (s1/s2), D9–D14 (s3), D15–D18 (s5), **D19–D24 (s6)** |
-| 8. What files changed? | **§7.2** (session 6, verified against `git show --stat`), §8 (verified git state) |
-| 9. What is the exact next action? | **§13 — START AT STEP 0: check whether the SECOND sweep (PID 75682, `runs/baselines2/`) is alive. The FIRST sweep (PID 88180) is done and committed — do not confuse the two.** |
-| 10. What must NOT be redone? | §12 — read the **"Added after SESSION 6"** block first, it supersedes the PID-88180 warning below it |
-| 11. Did README change, and why? | §16 — **YES, two lines (ego-row strike); not a plan change.** The session-5 `original_fps` live offer is STILL unanswered, two sessions running |
-| 12. What failed / what is a negative result? | §6.1 (T3 chance-level), §6.13 (trivial baseline wins on FP/h), §6.16 (sweep ordering bug, session 5), **committed BADAS ECE 0.3286 — poorly calibrated, worse than session 5's early partial estimate of 0.2794 (§14 item 3)** |
-| 13. What is genuinely UNKNOWN vs BLOCKED? | **UNKNOWN (open, session-6-updated):** U-B2, which published figure is authoritative — gate passed without resolving it. **UNRESOLVABLE:** U1/U2 (which run made the shipped weights); the "trained" predictor-concat semantics (D22 — training-time mask offsets are not in this repo). **BLOCKED permanently on this data:** mTTA/time-to-detection, ego/non-ego breakdown (D23, NEW this session). **NOT BLOCKED, just not started, SIX sessions running:** Tracks B and C. |
+| 2. What does README.md say the plan is? | §2 (pointer; not copied). Three tracks: §3 header. **Unchanged this session (§16).** |
+| 3. Which phase are we in? | §3 — **Phase 4 COMPLETE. Phase 5 gate PASSED. Master plan unchanged. In PARALLEL, an unreviewed revised proposal (`NEW_PLAN_v2.md`, §21) exists but is NOT part of the active plan until accepted.** |
+| 4. What has actually been completed? | §4 (…4.12 s5 · 4.13 s6), §7/§7.1/§7.2. **Session 7 added NO code/experiments — see §21 for its one deliverable, a planning document.** |
+| 5. What evidence/results do we have? | §6 + sessions 1–6 evidence, unchanged. **Session 7's contribution was verification, not new evidence**: confirmed `eval/calibration.py` doesn't exist (F2 table uncommitted), confirmed train/test-private are metadata-only (re-confirms F1), confirmed the sweep's progress (222→261/667) — all folded into §21. |
+| 6. What is broken or uncertain? | §5, §10, §18, **§21 (F3 still provisional, calibration script missing, hardware timing unconfirmed on real machines — all named explicitly in the new plan rather than left implicit)** |
+| 7. What decisions are already made? | §11 — D1–D24 (s1–s6) **plus D25–D28 (session 7: one plan document; paired bootstrap mandatory; no perf claim without hardware measurement; calibration demoted to infrastructure)**. `NEW_PLAN.md`'s ranked R1–R9 plan is a **proposal**, not a decision — it becomes D29+ only on acceptance. |
+| 8. What files changed? | **NONE in the tracked repo.** Two new untracked files: `NEW_PLAN.md` (session 6) and `NEW_PLAN_v2.md` (session 7, new this session) — see §21. |
+| 9. What is the exact next action? | **§13 — check whether the sweep hit 667/667; if so, re-run §21.1's reduction comparison on all 667 with a PAIRED bootstrap and decide whether the +0.033 AP last-window finding survives.** Separately, get an accept/reject decision from the user on `NEW_PLAN.md` before executing any of it. |
+| 10. What must NOT be redone? | §12, **plus: do not re-derive the "10 points" the user referenced — it was searched for and not found; ask the user directly rather than guessing again (§21)** |
+| 11. Did README change, and why? | §16 — **NO this session.** Still two lines from session 6 (ego-row strike); the session-5 `original_fps` live offer remains unanswered, now three sessions running |
+| 12. What failed / what is a negative result? | Unchanged from session 6 (§6.1, §6.13, §6.16, ECE 0.3286). **New this session: `NEW_PLAN_v2.md`'s own uncertainty audit (its §12) reclassifies the beta-vs-Platt calibration "win" as NOT statistically meaningful** — a negative result about a prior positive-sounding claim. |
+| 13. What is genuinely UNKNOWN vs BLOCKED? | Unchanged from session 6, **plus: the "10 points" artifact's existence/location is now an explicit open question (§21)**, and Track C's zero-progress streak is now flagged by `NEW_PLAN_v2.md` itself as evidence of an unnamed, undiagnosed blocker rather than a scheduling oversight. |
 
 ### What a brand-new Claude should read, in order
 
-1. **The ⏳ running-job block at the very top of this file.** A second GPU job (PID 75682) may still
-   be in flight. It is NOT the same job any earlier session described — read the banner, don't assume.
-2. **README.md §41** — the roadmap and the three-track block. Then §30–§31 for the metric rules.
-3. **This file: SESSION 6 SUMMARY → §3 → §13.**
-4. **§12** before touching anything — especially the **"Added after SESSION 6"** block (it supersedes
-   the SESSION 5 block immediately below it, which references a now-finished, now-committed process).
-5. `runs/falsification/` and `runs/baselines/` — committed evidence. Never delete or "tidy" either.
+1. **The ⏳ running-job block at the very top of this file.** Same PID 75682 job as sessions 6–7,
+   now further along (261/667 at session 7's end) — check current progress, don't trust that number.
+2. **The SESSION 7 SUMMARY block**, immediately below the running-job banner.
+3. **README.md §41** — the roadmap and the three-track block, unchanged. Then §30–§31 for metric rules.
+4. **`NEW_PLAN_v2.md` in full** if continuing the planning thread — §21 here is a pointer/summary only.
+5. **This file: §13 (now with its session-7 step 0.5) → §14 → §21.**
+6. **§12** before touching anything.
+7. `runs/falsification/` and `runs/baselines/` — committed evidence. Never delete or "tidy" either.
 
 ### Honest statement of what is NOT finished
 
-- **The second BADAS sweep (`runs/baselines2/`) is in flight, started ~14:28 IST, only ~8/667 clips
-  in at handoff.** It is NOT required for any gate that's already passed — it's groundwork for
-  reduction-method comparison and future timing extraction (D20, §13).
-- **Phase 5 task 3 (the "trained" predictor-concat with real future-prediction masks) has NOT been
-  started, and per D22 this session, may not be worth starting at all** — the checkpoint's own mask
-  config indicates the naive version adds no information, and the real version needs training code
-  that was never open-sourced.
-- **Tracks B and C remain at literally zero across six sessions.** No UK footage, no fleet calls.
-  README §40/§45's "the model is not the moat" argument has now been fully executed on (Phase 4/5
-  closed with real evidence) without a single hour spent on the moat itself. Worth saying to the user
-  plainly, not just recording here.
-- **The two Phase 0 licence emails (U7, BDD100K) are still not sent**, six sessions in.
-- **README's session-5 live offer** (edit the `original_fps` gate-note line to reflect the
-  session-5 resolution) is still open and unanswered.
+- **The second BADAS sweep (`runs/baselines2/`) is still in flight**, now 261/667 (~39%), started
+  session 6, still running unattended through session 7. Not required for any passed gate.
+- **`NEW_PLAN_v2.md` is a complete document but is UNREVIEWED AND UNACCEPTED.** Nothing in it has been
+  started. Treating it as "the plan" without checking with the user first would be a mistake.
+- **`eval/calibration.py` and `scripts/hw_bench.py`, both specified as the correct first steps if
+  `NEW_PLAN_v2.md` is accepted, do not exist.** Zero lines written.
+- **Phase 5 task 3 and Tracks B/C are exactly where session 6 left them** — no session-7 progress,
+  because session 7 was planning-only. Track B/C now at zero across **seven** sessions.
+- **The "10 points" prior artifact referenced by the user's brief was never located.** This is now a
+  standing open question that should be asked of the user directly, not silently re-guessed again.
+- **README's session-5 live offer** (edit the `original_fps` gate-note line) is still open, unanswered,
+  now three sessions running.
 
 ---
 
