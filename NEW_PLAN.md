@@ -119,23 +119,55 @@ Each carries the nine required fields. Ranked by *expected gain × probability �
 - → **Model: opus · Effort: high** — the leakage argument is the whole ballgame.
 
 #### Gate 3 — the external falsification test · **REDESIGNED 2026-09-16 (session 10), user-approved**
+#### ⚠️ CORRECTED LATER THE SAME SESSION — read the correction block before the design below.
 
-> **The original test could not be computed.** It read: *"on DoTA/DADA, where clips are NOT truncated
-> and the crash is mid-clip, last-window should perform WORSE than max."* That is an **AP comparison,
-> and AP requires both classes.** All three vendored annotation sets are **positives-only** —
-> verified twice, by session 8 and again independently in session 10 by counting
-> `vendor/badas-open/annotation/*_concensus.csv`:
+> ### Correction, session 10 — two errors in this section's first version
 >
-> | Set | n | Event-type | `Time-of-collision` |
+> **Error 1 — "the AP test cannot be computed" was too strong.** The vendored
+> `*_concensus.csv` files are positives-only, which is true and was verified twice. But they are
+> **collision-*timing* annotations**, and a negative clip has no collision to time, so their being
+> positives-only says nothing about the underlying datasets. **DAD's test split is 466 clips:
+> 165 positive and 301 negative** — [the authors' project page](http://aliensunmin.github.io/project/dashcam/)
+> (1,750 clips total; 620 pos / 1,130 neg; train 1,284 = 455/829; test 466 = 165/301). BADAS also
+> publishes **AP 0.66 / AUC 0.87 on DAD**, and both metrics require two classes. **The AP test the
+> plan originally specified is therefore computable after all**, from the full DAD download.
+>
+> **Error 2 — DAD is the wrong dataset for the mechanism test.** Its annotated collision time is
+> effectively a **constant**:
+>
+> | Set | n | `Time-of-collision` median | **IQR** | usable variance? |
+> |---|---|---|---|---|
+> | `dad_test_concensus.csv` | 165 | 2.96 s | **0.16 s** | ❌ 84% within 0.25 s of exactly 3.00 s |
+> | `dada2000_small_test_concensus.csv` | 221 | 5.33 s | **4.63 s** | ✅ range 0.37–14.43 s |
+> | `dota_test_concensus.csv` | 598 | 4.65 s | 1.95 s | ✅ range 0.90–14.40 s (but disk-blocked) |
+>
+> The mechanism test asks whether the score peak **tracks** the annotated collision time. **Against a
+> constant there is nothing to track** — no correlation is estimable, and a null result would be
+> uninterpretable rather than a failure. The first version of this section called DAD's range
+> "narrow" and warned against reading a null as a pass; that was right in direction and far too mild.
+>
+> **And the constant is structural, not observed.** DAD's page states the accident occurs "at the
+> last 10 frames" of a 100-frame clip — frame 90, which at 30 fps is **exactly 3.00 s**, matching the
+> annotation's clustering. So DAD's collision sits at normalised **~0.90, near the clip end — much
+> like Nexar's 0.975.** DAD is not an untruncated mid-clip contrast at all. It fails as the
+> mechanism-test target on both counts.
+>
+> **Resulting split of the gate, each test on the data that suits it:**
+>
+> | Test | Dataset | Why | Cost (~97 s/clip, D10) |
 > |---|---|---|---|
-> | `dad_test_concensus.csv` | 165 | 151 Collision + 14 Near-collision | all 165 · 1.60 / **2.96** / 3.68 s |
-> | `dada2000_small_test_concensus.csv` | 221 | 198 + 23 | all 221 · 0.37 / **5.33** / 14.43 s |
-> | `dota_test_concensus.csv` | 598 | 562 + 36 | all 598 · 0.90 / **4.65** / 14.40 s |
+> | **3a — mechanism** (peak tracks annotation) | **DADA-2000**, 221 clips | only set with real collision-time variance (IQR 4.63 s) and genuinely mid-clip events | ~6.0 h, Air overnight |
+> | **3b — AP** (last-window should LOSE on untruncated data) | **DAD full test split**, 466 clips (165 pos + 301 neg) | restores the plan's original design; the negatives exist | ~7.5 h, Air overnight |
 >
-> Zero negatives anywhere. AP is undefined on one class, so the test as written is uncomputable on
-> all three sets.
+> **R1 must survive both.** They fail independently and for different reasons, which is the point.
+> DoTA stays excluded on disk (~55 GB against ~30 GB free on the Air).
 >
-> **The replacement — test the mechanism directly, not through an AP proxy.** Every row ships a
+> **Access note:** DAD is distributed by a Google Form request to the authors, not a direct
+> download, and its terms are not posted publicly. **Confirm the terms in writing before use** —
+> §22/§23 licence discipline applies, and a research-only grant would bar it from any commercial
+> claim even though it may still be used as an internal falsification test.
+
+> **The test design — the mechanism directly, not through an AP proxy.** Every positive row ships a
 > `Time-of-collision`, so ask the question §3.2 actually rests on: *where does the score peak sit?*
 >
 > - **§3.2's claim:** Nexar positives peak at the clip **end** (0.975 at full n) because Nexar
@@ -150,26 +182,35 @@ Each carries the nine required fields. Ranked by *expected gain × probability �
 >   be winning for a reason that has nothing to do with truncation, and the Nexar +0.0556 would be a
 >   benchmark artifact, not a finding.
 >
-> **Why this is the sharper test, not the weaker one:** the AP version asked whether last-window
-> *loses* on untruncated data — a directional check with one bit of output. This one measures the
+> **Why 3a complements 3b rather than replacing it:** the AP version (3b) asks whether last-window
+> *loses* on untruncated data — a directional check with one bit of output. 3a measures the
 > mechanism's own quantity against a ground-truth timestamp, clip by clip, and can fail in a way that
-> names the alternative explanation. It also works on positives-only data, which is what exists.
+> **names the alternative explanation** (watch-time drift). Run both.
 >
-> **Primary target: DAD only.** 165 clips × ~97 s/clip (D10's measured rate) ≈ **4.5 h** — one
-> overnight M4 Air run, no Studio. DAD is also the cleanest case: median `Time-of-collision` 2.96 s,
-> and 91% of its clips are collisions the camera vehicle was *not* in, so the footage keeps rolling
-> past the event. DoTA is out on disk (~55 GB against ~30 GB free on the Air); DADA is a follow-up.
->
-> **Statistical care — this test has its own traps:**
-> - DAD's dynamic range is narrow (`Time-of-collision` spans 1.60–3.68 s). If DAD clips are a fixed
->   ~5 s, normalised collision position varies little, so "peak tracks annotation" has **little
->   variance to explain**. Report the correlation between peak position and annotated position, with
->   its CI — and if that range is too narrow to resolve, say so and extend to DADA, which spans
->   0.37–14.43 s. **Do not read a null correlation on a narrow range as a pass.**
-> - Near-collisions (14 in DAD) have no impact; keep them separate from the 151 collisions.
+> **Statistical care — 3a has its own traps:**
+> - **Dynamic range is the whole ballgame, and it is why the target moved to DADA.** Report the
+>   correlation between measured peak position and annotated collision position **with its CI, and
+>   report the annotation's own IQR next to it** so a reader can see whether there was variance to
+>   explain. **A null correlation against a near-constant annotation is not a pass, not a fail, and
+>   must never be reported as either.** DAD (IQR 0.16 s) is exactly that case.
+> - **Time-base compatibility must be checked before the correlation is believed.** Our trace
+>   timestamps are real seconds (`t = index / target_fps` after upstream resamples to 8 fps). The
+>   consensus annotation's seconds are only the same seconds if the annotators used each clip's true
+>   frame rate. DAD's ~3.00 s clustering is consistent with frame 90 read at 30 fps, while its page
+>   describes 100-frame clips as 5 s (20 fps) — **the two readings disagree by 1.5 s.** Before
+>   trusting any offset on DADA, verify one decoded clip's true duration and fps against its
+>   annotation. **A systematic offset would corrupt 3a silently.**
+> - Near-collisions (23 in DADA) have no impact; keep them separate from the 198 collisions.
 > - State the comparison against a **clip-end null** explicitly: what peak position would a
 >   watch-time-drift model predict, and does the measurement separate from it?
 > - `t_end` is `(len-1)/fps`, never "end of clip" — upstream discards the final window (§21.4 item 7).
+>
+> **Statistical care — 3b:**
+> - Use the **paired** bootstrap on the same DAD clips, as §1 mandates everywhere.
+> - DAD's 301 negatives are the denominator; report it, as with every FP/hour figure in this project.
+> - A DAD AP far from BADAS's published 0.66 means our harness differs from theirs — that is a
+>   **harness-reproduction** finding (§8.1 tier 1), and must be resolved before 3b's ΔAP is read as
+>   evidence about R1.
 >
 > **Reuse, do not rebuild:** `eval/timing.py::load_traces_abs` (keeps the absolute NaN offset — the
 > 2-second trap), its `t_peak` argmax, and `eval/adapters.py`'s scoring path unchanged.
@@ -567,7 +608,7 @@ test-public · proprietary-data or trained-in-house claims.
 
 | Item | Kill if |
 |---|---|
-| R1 | paired CI on 667 includes zero **or** gate 3 fails — on untruncated external clips the score peak sits at the clip end regardless of the annotated `Time-of-collision` (watch-time drift, not truncation) |
+| R1 | paired CI on 667 includes zero **or** gate 3a fails on DADA-2000 (peak sits at the clip end regardless of the annotated `Time-of-collision` — watch-time drift, not truncation) **or** gate 3b fails on DAD's 466-clip test split (last-window does *not* lose to max on untruncated data) |
 | R2 | ensemble fails to beat best single scale on held-out half |
 | R3 | standalone AP < 0.60 **and** no paired fusion gain |
 | R4 | flipped AP drops > 0.05, or no paired gain at n=100 pilot |
