@@ -1,47 +1,112 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-14, 00:55 IST**, end of **session 7** (planning + measurement; handoff pass).
+Last updated: **2026-09-16, 16:45 IST**, end of **session 9** (`eval/timing.py` built; incident record's
+second field now works). `NEW_PLAN.md` is the detailed/current execution plan and must be read
+alongside `README.md`.
+
+> # ▶ SESSION 9 (2026-09-16, afternoon) — READ THIS FIRST
+>
+> **Nothing is running. Nothing is partially done. Nothing was committed.**
+>
+> Session 9 executed §13 as session 8 wrote it: **`eval/timing.py` now exists** (331 lines,
+> untracked) and turns the 667 committed per-frame traces into `t_start` / `t_peak` / `t_end`.
+> `README.md` §27's incident record now has **two working fields instead of one**, and the second
+> is the first non-commodity one. Zero compute, zero new data, no committed number changed.
+>
+> | | |
+> |---|---|
+> | `eval/timing.py --self-check` | **7/7 PASS** |
+> | Regression guards (benchmark / calibration / reduction_study) | **all reproduce exactly** |
+> | `eval/adapters.py` | **untouched** — still `np.nanmax`, R1 still unpromoted |
+> | `README.md` / `NEW_PLAN.md` | **unchanged** |
+>
+> ### 🔴 TWO THINGS ARE UNCOMMITTED AND ONE OF THEM IS SESSION 8's ENTIRE HANDOFF
+>
+> ```
+>  M progress.md      <- session 8's handoff + this session's. NOT committed.
+> ?? eval/timing.py   <- session 9's deliverable. NOT committed.
+> ```
+>
+> Session 8's §17-S8 claims *"Working tree clean, pushed, in sync with origin/main"*. **That is false
+> about `progress.md` itself** — session 8 wrote its handoff at 16:21, *after* its 13:05 commit
+> `252d282`, and never committed it. It has been one `git checkout` away from destruction ever since.
+> **The user was asked to commit + push and said "wait" twice. It is still pending their go-ahead.**
+> HEAD is `252d282`, `main` is otherwise in sync with `origin/main`, 0 unpushed commits.
+>
+> ### The headline numbers from this session
+>
+> ```
+> Gate derived from the PR curve @ target recall 0.80  -> threshold 0.9733
+>   delivers recall 0.8024, precision 0.7635
+>   83 false positives over 0.899 h of negatives = 92.3 FP/hour     <- BAD, and honest
+> 351 incident records emitted (268 positive, 83 the gate's false alarms)
+> ```
+>
+> **§3.2's mechanism reproduced at full n=667 through an independent code path** (CONFIRMED, new):
+> positives peak at **0.975** of clip vs negatives **0.802**; 73.7% vs 38.4% in the final 10%.
+> Session 7 had 0.984 / 0.782 and 83.0% / 42.5% at n=268. Same direction, mild softening at full n.
+>
+> **Read order for a brand-new Claude: this block → §21.4 (session 9 findings) → §13 (exact next
+> action) → §12 (what not to redo) → `NEW_PLAN.md` → §21.3 (session 8).**
 
 > **⚠️ SESSION 7 RAN AS TWO PARALLEL CLAUDE WINDOWS BY ACCIDENT.** The user gave the same red-team
 > brief to two sessions at once. Both wrote plans. They have been **reconciled** — see the
 > CONSOLIDATED block below. Anywhere this file says "this session" inside the older SESSION 7 SUMMARY,
 > it means *one* of the two windows, and three of its statements were false and are corrected inline.
 
-> # ⏳ THE SAME SECOND BACKGROUND JOB IS STILL RUNNING RIGHT NOW — READ THIS BEFORE ANYTHING ELSE
+> # ✅ THE SECOND SWEEP IS FINISHED. NOTHING IS RUNNING. — READ THIS BEFORE ANYTHING ELSE
 >
-> **Nothing about this job changed since session 6 wrote the paragraph below — it is still the same
-> run, just further along.** PID 75682 (`caffeinate` wrapper PID 75684) is **CONFIRMED ALIVE** as of
-> session 7's end (`ps aux` checked directly, not assumed). Progress: **377/667 done at 10h24m
-> elapsed, 2026-09-14 00:55 IST** (`wc -l runs/baselines2/badas-open/scores.jsonl`; the `frames/`
-> dir matches at 377 `.npz`). Trajectory across session 7: 14 → 194 → 222 → 261 → 268 → 377.
-> Measured rate ≈ **99 s/clip**, so the remaining 290 clips ≈ **8 h**, finishing roughly
-> 2026-09-14 09:00 IST. Do the arithmetic yourself with `eval/peek.py` before trusting this — this
-> project has already recorded one bad ETA extrapolation (session 6's 14-clip sample) and 222→261 across
-> session 7 is a real second data point if you want to refit the rate.
+> **SUPERSEDES session 7's "job still running" banner, which is now deleted.** PID 75682 completed
+> and exited. Verified 2026-09-16: `ps -p 75682` returns nothing; `wc -l
+> runs/baselines2/badas-open/scores.jsonl` = **667**; `ls runs/baselines2/badas-open/frames/*.npz |
+> wc -l` = **667**. **Do not relaunch it. Do not look for it. There is no background job.**
 >
-> **PID 75682** (`caffeinate` wrapper PID 75684), launched 2026-09-13 14:28 IST.
+> **All of `runs/baselines2/` is now COMMITTED** (`252d282`), including the 667 per-frame `.npz`
+> traces and `sweep.log` (force-added past the `*.log` ignore rule, matching the `runs/baselines/`
+> precedent, per D24). Total 3.1 MB.
+>
+> ### What session 8 settled: R1 passed TWO of its three promotion gates
+>
+> | Gate (`NEW_PLAN.md` R1) | Status |
+> |---|---|
+> | 1. Full-667 paired CI on ΔAP excludes zero | ✅ **PASSED** |
+> | 2. Held-out-half confirmation | ✅ **PASSED** (this session) |
+> | 3. External falsification on untruncated clips | ⬜ **OPEN — and its design is broken, see §21.3** |
+>
+> **R1 IS NOT PROMOTED.** `eval/adapters.py::BadasOpen.score` still reduces with `np.nanmax`, and
+> that is deliberate — do not switch it until gate 3 is answered.
+>
+> ### The numbers, exactly
+>
+> Gate 1 (`python -m eval.reduction_study`, re-run and reproduced this session):
 > ```
-> PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
->     ~/envs/badas/bin/python eval/run_baselines.py --out runs/baselines2 --skip-predictor \
->     --save-frames-dir runs/baselines2/badas-open/frames
+> n=667  pos=334  neg=333
+> max            0.8349      —
+> last_window    0.8905   +0.0556   [+0.0263, +0.0876] excludes zero
+> max_x_last     0.8904   +0.0555   [+0.0274, +0.0865] excludes zero
+> last4_mean     0.8732   +0.0383   [+0.0101, +0.0688] excludes zero
+> top3_mean      0.8213   -0.0136   worse
+> p90            0.7862   -0.0488   worse
+> area_gt_half   0.6549   -0.1800   worse
 > ```
-> It re-scores the same 667 clips with two changes from the committed run: `--skip-predictor` (A/B
-> verified bit-identical score, ~14–25% faster — see D19) and `--save-frames-dir` (persists **every**
-> per-frame score to `<id>.npz`, not just the one `nanmax` per clip that the first sweep kept). This
-> is what unlocks mean-vs-max reduction and `t_start`/`t_peak`/`t_end` timing **without a third sweep**.
+> **Cross-check that matters:** `max` on the *second* sweep = **0.8349**, identical to the committed
+> *first* sweep's AP. That independently re-confirms **D19** (`--skip-predictor` is score-identical)
+> and proves the 667 traces are sound.
 >
-> - **DO NOT kill it, and do NOT run anything else on MPS.**
-> - **Resumable**, same mechanism: `runs/baselines2/badas-open/scores.jsonl`. Relaunch the identical
->   command if it dies; it prints `resuming: N/667`.
-> - **Check it without touching it:** `~/envs/crashdet/bin/python eval/peek.py runs/baselines2/badas-open/scores.jsonl`
->   (note: **not** the bare `eval/peek.py` — that defaults to `runs/baselines/`, the finished run).
-> - When it finishes: `runs/baselines2/badas-open/metrics.json` + `.npz` per-frame files. See §13.
-> - **🔴 THIS SWEEP IS NOW THE CRITICAL PATH.** Two separate findings are gated on it reaching 667/667:
->   F3 (temporal smoothing hurts) and — more importantly — the **+0.033 AP last-window reduction
->   finding (§21.1 item 2)**, which is currently measured on only 268 clips and is the single largest
->   potential detection improvement identified so far. **The first thing the next session should do
->   once this finishes is re-run §21.1's reduction comparison on all 667.**
+> Gate 2 (`python -m eval.heldout_half`, new this session):
+> ```
+> primary split (seed 0): A selects last_window; held-out B ΔAP +0.0598
+>                         paired 95% CI [+0.0169, +0.1085] excludes zero
+> 1000 splits:            A picks last_window 52.4% / max_x_last 47.6% — never a losing candidate
+>                         held-out ΔAP median +0.0551, 5-95% [+0.0291, +0.0796], >0 in 100% of splits
+> ```
+> **The held-out median (+0.0551) matches the full-667 estimate (+0.0556) — no winner's-curse
+> shrinkage.** The effect was not manufactured by selecting on test-public. This closes
+> `NEW_PLAN.md` §11 point 1 as far as Nexar can close it.
+>
+> **Read order for a brand-new Claude: this block → §21.3 (session 8 findings) → §13 (exact next
+> action) → §12 (what not to redo) → `NEW_PLAN.md`.**
 
 > # SESSION 7 — CONSOLIDATED SUMMARY (2026-09-13/14) · READ THIS FIRST, then §21.1, then §13
 >
@@ -370,8 +435,9 @@ labelled "this session" for sessions 1–5 is history.**
 | **Phase 2 — Current model validation** | **COMPLETE** (session 1). Gate satisfied by T3 (§6.1). |
 | **Phase 4 — Evaluation harness** | **COMPLETE (session 6).** All 4 acceptance criteria met: three models one code path (session 3); `metrics.json` has AP/AUC/FP-h/ECE/per-condition rows (ego/non-ego struck, not computable on this data — README edited, §16); leakage test written and proven to fire on an injected violation; accuracy banned and asserted absent. Plots rendered for the first time (`runs/baselines/plots/`). |
 | **Phase 5 — BADAS-Open reference baseline** | **GATE JUDGED: PASS (session 6).** Full 667-clip sweep: **AP 0.8349 / AUC 0.8498**, matching the vendored `config.json`'s published 83.2/0.85 to within 0.003. Provenance + every deviation recorded in `metrics.json`'s `gate` block (`scripts/badas_gate_provenance.py`). Committed `e7ac3e6`. |
-| **Phase 5-continuation (unplanned, user's choice)** | **A second sweep is IN FLIGHT** (`runs/baselines2/`, PID 75682, started 14:28) — same model, `--skip-predictor` (A/B-verified bit-identical, faster) and `--save-frames-dir` (persists per-frame scores this time, unlocking reduction-method comparison and future `t_start`/`t_peak`/`t_end` extraction). NOT required by Phase 5's gate, which already passed — this is groundwork for Phase 6 / the product's timing needs. See the ⏳ banner at the top of this file. |
-| **Current objective** | **First: check the second sweep (§13 STEP 0). Once done, decide reduction method from the per-frame data, then move to Phase 6 or Tracks B/C** — README §40/§45 argue B/C are the real critical path and need none of this. |
+| **Phase 5-continuation (unplanned, user's choice)** | **COMPLETE (session 8).** The second sweep (`runs/baselines2/`, `--skip-predictor` + `--save-frames-dir`) **finished at 667/667 and is committed** at `252d282`, including all 667 per-frame `.npz` traces. Its `nanmax` AP reproduces the first sweep's **0.8349 exactly**, re-confirming D19. **Nothing is running.** |
+| **R1 — deployment-faithful reduction** (`NEW_PLAN.md` R1) | **2 of 3 promotion gates PASSED (session 8).** Gate 1 full-667 paired CI and gate 2 held-out-half both exclude zero; held-out median +0.0551 vs full-667 +0.0556, so no winner's-curse shrinkage. **Gate 3 (external falsification) is OPEN and its specified design is broken** — §21.3 item 2. **R1 is NOT promoted; `eval/adapters.py` still uses `np.nanmax` (D29).** |
+| **Current objective** | **Build `eval/timing.py` — `t_start`/`t_peak`/`t_end` from the committed traces (§13).** Zero compute, and it is `README.md` §27's second incident-record field, of which only one currently works. Then: user sign-off on the gate-3 redesign, then DAD (~4.5 h, Air only). **README §40/§45 still argue Tracks B/C are the real critical path and they remain at zero after eight sessions.** |
 
 **Phases with outstanding items (none blocking Phase 4 or 5):**
 
@@ -1353,6 +1419,18 @@ add or commit until it finishes (§12).
 **Verified at 2026-09-13 14:45 IST, not remembered.**
 
 - **Branch:** `main`
+> **🔴 SUPERSEDED 2026-09-16 (session 8). The block immediately below is session 6's git state and is
+> STALE. Current git state:**
+>
+> - **HEAD: `252d282`** — "Confirm the reduction finding survives held-out selection (R1 gate 2)"
+> - **Branch `main`, IN SYNC with `origin/main`. Pushed, user-approved.**
+> - **Working tree CLEAN** apart from this handoff edit to `progress.md`.
+> - **`runs/baselines2/` is COMMITTED and STATIC.** No process is writing to it. PID 75682 is gone.
+> - Session 8 added: `eval/heldout_half.py`, and committed `eval/reduction_study.py` +
+>   `eval/calibration.py` (both written by the lost session, previously untracked).
+>
+> Session 6's text follows unaltered as the record of what was true then.
+
 - **HEAD:** `e7ac3e6` — "Close Phase 4 and judge the Phase 5 gate: commit the 667-clip sweep, plots,
   threshold sweep, leakage test" (Sun 2026-09-13)
 - **SESSION 6 COMMITTED.** One commit, 18 files, +15,896/−7. See §7.2 for the file-by-file breakdown.
@@ -1390,11 +1468,12 @@ c995fd7  update readme
 ```
 
 **Be careful not to overwrite:**
-- **`runs/baselines2/badas-open/scores.jsonl` (and its sibling `frames/*.npz` files) — A RUNNING
-  PROCESS (PID 75682) IS WRITING TO THESE.** This is the NEW live path — the old one
-  (`runs/baselines/badas-open/scores.jsonl`, PID 88180) is finished and committed, safe to treat as
-  static. Do not edit, move, truncate or delete anything under `runs/baselines2/` while PID 75682
-  lives. Do not `git add` it until the sweep finishes.
+- **`runs/baselines2/` — ~~A RUNNING PROCESS IS WRITING TO THESE~~ 🔴 SUPERSEDED 2026-09-16.** The
+  sweep **finished** and the whole directory is **committed at `252d282`**. PID 75682 is gone. It is
+  now static, like `runs/baselines/`. **Still do not edit, move, truncate or delete it** — it is ~20 h
+  of MPS time and the 667 `.npz` traces are the input for `t_start`/`t_peak`/`t_end` (§13) — but the
+  reason is value, not a live writer. **Do not relaunch `run_baselines.py --out runs/baselines2`;**
+  it would append to a complete log.
 - Anything in `runs/falsification/` — this is the project's evidence base, and README §17 and the
   user's standing instruction both forbid destroying it.
 - `scripts/t124_model_falsification.py` and `scripts/t5_source_leakage.py` — refactoring these would
@@ -1837,12 +1916,79 @@ Do not reverse these without new evidence.
   operating point principled; it is not a detection improvement and must not be presented as one.
   This corrects the framing in the earlier plan.
 
+**Added session 8 (2026-09-16):**
+
+- **D29 — R1 stays UNPROMOTED at 2 of 3 gates; `np.nanmax` remains the shipped reduction.**
+  **Why:** gates 1 and 2 both passed convincingly (+0.0556 full-667; +0.0551 held-out median,
+  positive in 100% of 1000 splits), but both live entirely inside Nexar, whose truncation is the very
+  thing the finding exploits. `NEW_PLAN.md` §11 point 8 is explicit that success here may not transfer.
+  Switching the reduction now would alter every downstream number before the one test that could
+  still kill the finding has been run.
+- **D30 — The held-out null control permutes labels per split, not traces.** **Why:** the
+  noise-trace version was measured and is biased — one lucky `nanmax` draw (AP 0.5630 vs 0.5007
+  chance) persists across all splits and drags the null to −0.0252. Label permutation preserves each
+  reduction's distribution and puts the baseline on equal footing (+0.0025). Recorded because the
+  broken version looks more obviously "null" and someone will be tempted to revert it.
+- **D31 — `runs/baselines2/` is committed in full, including all 667 `.npz` traces and `sweep.log`.**
+  **Why:** ~20 h of MPS time existed only as untracked files. 3.1 MB total, so the cost is trivial
+  against the risk. `sweep.log` force-added past `*.log`, matching `runs/baselines/` (D24). The
+  traces are also the input for `t_start`/`t_peak`/`t_end` (§13), so they are a product asset, not
+  just an experiment artefact.
+
+**Added session 9 (2026-09-16):**
+
+- **D32 — Incident timing uses a TWO-STAGE threshold: a global derived gate, then per-clip
+  half-prominence.** **Why:** "did it happen" and "when did it happen" are different questions. One
+  threshold serving both collapses `t_start` and `t_end` to the same instant on any clip that only
+  just clears the gate. The gate is read off the PR curve at a stated target recall (README §41
+  Phase 2 task 5), never hard-coded (B5). User chose this over two simpler alternatives.
+- **D33 — `eval/timing.py` reports BOTH reductions and promotes neither.** `confidence.shipped` =
+  `nanmax` (what `adapters.py` actually does), `confidence.candidate_r1_last_window` = the R1
+  candidate, labelled pending gate 3. **Why:** D29 forbids switching before gate 3, but discarding a
+  value already computed from the same trace would make the eventual promotion a wider edit. This
+  keeps it a one-line change.
+- **D34 — Unproducible incident-record fields are OMITTED, not null-filled.** **Why:** a `null`
+  implies a field that could be populated and merely isn't. `ego_involved` is not "missing", it is
+  *not derivable from Nexar* (D23). Omission is the honest encoding.
+- **D35 — 8 fps stays. The question is closed for the third time.** **Why:** upstream's own default;
+  16 frames @ 8 fps = the 2.0 s window the head was trained on; changing it invalidates every
+  committed number; a mismatch here would be this project's own B1 bug repeated. Other frame rates
+  belong in `NEW_PLAN.md` R2 as an *ensemble*, never as a replacement. Full argument in §21.4 item 9.
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
-Those are **proposals** pending the user's explicit acceptance; they become D29+ only if accepted.
+Those are **proposals** pending the user's explicit acceptance; they become D32+ only if accepted.
+**Also not decided:** the §21.3 item 2 redesign of R1 gate 3 — it is a proposed fix to a real plan
+defect and needs the user's sign-off.
 
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 9 — do NOT redo these, and do NOT undo them:**
+
+- **🔴 Do not `git checkout`, `git restore`, `git stash` or otherwise discard `progress.md`.** It
+  holds **both** session 8's and session 9's handoffs, uncommitted. Discarding it destroys two
+  sessions of state that exists nowhere else.
+- **Do not rebuild `eval/timing.py`.** It exists, it is 331 lines, its 7 self-checks pass, and it is
+  untracked only because the user has not yet approved the commit. Run
+  `~/envs/badas/bin/python -m eval.timing --self-check` if you need to confirm it still works.
+- **Do not "fix" `eval/reduction_study.load_traces` to keep the NaN offset.** It strips leading NaNs
+  deliberately and correctly for ranking; `heldout_half.py` and `reduction_study.py` both depend on
+  that. `eval/timing.py` has its own `load_traces_abs()` for the time base. §21.4 item 5.
+- **Do not re-open the 8 fps / `target_fps` question. Answered three times now** (§6.18, §12, §21.4
+  item 9). 8 fps is upstream's own default and is the rate the head was trained at. Other rates
+  belong in `NEW_PLAN.md` R2 as an ensemble, never as a replacement. D35.
+- **Do not re-derive the time base.** `t = index / target_fps`, fps read per-clip from the `.npz`.
+  Confirmed three independent ways (§21.4 item 6), including a ±0.0623 s cross-check against
+  `benchmark.durations()` on all 667 clips.
+- **Do not switch `eval/adapters.py` to `last_window`.** D29 stands; gate 3 is still open. Session 9
+  deliberately left line 129 as `np.nanmax`.
+- **Do not quote 92.3 FP/hour without its 0.899 h denominator**, and do not expect calibration to
+  improve it — a monotone map cannot change FP/hour at matched recall (D28).
+- **Do not claim any timing accuracy, mTTA, or time-to-detection from Nexar test-public.** There is
+  no usable ground-truth event time. §21.4 item 11.
+- **Do not re-run the §3.2 peak-position measurement.** Reproduced at full n=667 this session:
+  positives 0.975 / negatives 0.802, 73.7% vs 38.4% in the final 10% (§21.4 item 4).
 
 - **Do not put progress updates, session history, or experiment results into `README.md`.** They go
   here. Modify the README only for a genuine plan-level change (and see §16).
@@ -1880,6 +2026,34 @@ Those are **proposals** pending the user's explicit acceptance; they become D29+
 - **Do not create Python environments or store datasets under `~/Desktop`** (iCloud eviction).
 - **Do not push to the remote without asking the user.** Session 1's push was explicitly approved;
   that approval does not carry forward. **Session 3 committed nothing at all.**
+
+**Added after SESSION 8 (2026-09-16) — do NOT redo these:**
+
+- **Do not look for the background sweep. It finished.** PID 75682 is gone, 667/667 scored, all of
+  `runs/baselines2/` is committed at `252d282`. **Do not relaunch `run_baselines.py --out
+  runs/baselines2`** — it would append to a complete log. Session 7's "job still running" banner has
+  been deleted from the top of this file; if you see that text anywhere else, it is stale.
+- **Do not re-run R1 gate 1 or gate 2 to "check".** Both are committed with exact numbers (top banner)
+  and both scripts assert their own preconditions. `python -m eval.reduction_study` takes ~43 s and
+  `python -m eval.heldout_half` ~10 s if you genuinely need to reproduce them, but nothing depends on
+  re-running them.
+- **Do not switch `eval/adapters.py::BadasOpen.score` from `np.nanmax` to last-window.** R1 has passed
+  2 of 3 gates; promotion needs gate 3. Changing the reduction now would silently alter every
+  downstream number and pre-empt the one test that could still kill the finding.
+- **Do not try to run R1 gate 3 as `NEW_PLAN.md` R1 words it.** The AP comparison is impossible —
+  DAD/DADA/DoTA are positives-only (§21.3 item 2). Redesign first, with user sign-off.
+- **Do not plan DoTA.** ~55 GB against 33 GB free on the Air and a stale ~40 GB on the Studio. **DAD
+  (165 clips) is the first target and needs only the Air, ~4.5 h** (§21.3 items 4–5).
+- **Do not "fix" `eval/heldout_half.py`'s null control back to random traces.** That version was
+  measured and is biased (−0.0252 from one lucky baseline draw). Per-split label permutation is
+  correct and gives +0.0025 (§21.3 item 8). **Do not loosen the assertion threshold to make a failing
+  null pass** — the failure is the check working.
+- **Do not run `python eval/calibration.py`** — it raises `ModuleNotFoundError`. Use
+  **`python -m eval.calibration`**. Same for `reduction_study` and `heldout_half`: all need `-m`.
+- **Do not quote `eval/calibration.py`'s ECE numbers as a deployed result.** It is `NEW_PLAN.md` §6
+  **Tier 3 only** — "achievable calibration". Tier 1 is unwritten (§21.3 item 6).
+- **Do not describe the product as "crash detection".** `README.md` §27: *"The product is not crash
+  detection... The product is the structured incident record."* (§21.3 item 9).
 
 **Added after SESSION 7 (2026-09-14) — do NOT redo these:**
 
@@ -1971,35 +2145,94 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **content below is session 6's, still valid — session 7 added a step 0.5**
+## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-16 16:45, end of session 9**
 
-### ══ THE ONE EXACT NEXT ACTION (rewritten 2026-09-14, end of session 7) ══
+### ══ THE ONE EXACT NEXT ACTION ══
 ###
-### **Check whether the sweep has reached 667/667. If it has, re-run the reduction comparison from
-### §21.1 item 2 on all 667 clips, using a paired bootstrap, and decide whether the +0.033 AP
-### last-window finding survives.**
+### **Commit and push the two outstanding files. Ask the user first — they were asked twice in
+### session 9 and said "wait" both times, so this is PENDING THEIR GO-AHEAD, not agreed.**
 ###
 ### ```bash
-### ps -p 75682 -o etime=                                      # alive?
-### wc -l runs/baselines2/badas-open/scores.jsonl               # 667 = done
-### ls runs/baselines2/badas-open/frames/*.npz | wc -l          # should match
+### cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+### git status --short          # expect:  M progress.md   ?? eval/timing.py
 ### ```
 ###
-### - **If 667/667:** run the reduction comparison (max vs last-window vs max×last vs mean vs
-###   persistence) with a **paired** bootstrap CI on ΔAP. This is the highest-value single action
-###   available — it either confirms the project's first real detection improvement or kills it.
-###   Promotion criteria are in `NEW_PLAN.md` R1; **do not promote on the point estimate alone.**
-### - **If < 667 and PID 75682 alive:** leave it alone, do CPU-only work (below). Re-check later.
-### - **If < 667 and PID gone:** relaunch the identical command (next block). It resumes; nothing lost.
+### **Why this first:** `progress.md` holds session 8's AND session 9's entire handoffs and is
+### uncommitted. One `git checkout` destroys both. `eval/timing.py` is 331 lines of working,
+### self-checked deliverable that exists only in the working tree. Nothing else should be built on
+### top of an unsaved base.
 ###
-### **Before executing any of `NEW_PLAN.md`'s ranked items, get an explicit accept/reject/revise
-### decision from the user.** It is a proposal, not an accepted plan. If accepted, its two
-### zero-compute openers are `eval/calibration.py` (the F2 numbers currently have NO committed,
-### reproducible script — this is a P0 credibility gap) and a hardware benchmark for M4 Air CPU vs
-### MPS (no timing on record was ever measured on the user's actual machines).
+### **Verify before committing** — if any number moves, STOP and do not commit:
+### ```bash
+### ~/envs/badas/bin/python -m eval.timing --self-check   # 7/7, PASS
+### ~/envs/badas/bin/python eval/benchmark.py             # T3: AUC 0.5339 / AP 0.5218 / 332,325,2,8
+### ~/envs/badas/bin/python -m eval.reduction_study       # max 0.8349, last_window 0.8905 +0.0556
+### ```
+###
+### **Two atomic commits, not one** — they are unrelated changes by different sessions, and merging
+### them buries the fact that session 8's handoff was nearly lost:
+### 1. `progress.md` — recovers session 8's stranded handoff plus session 9's.
+### 2. `eval/timing.py` — session 9's deliverable. Message should carry the evidence in the style of
+###    `252d282`: gate 0.9733 @ recall 0.80, 92.3 FP/h over 0.899 h, 351 records, §3.2 reproduced at
+###    n=667, capability-not-metric, `adapters.py` untouched.
+###
+### Both messages end with:
+### ```
+### Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+### ```
+###
+### Then `git push origin main`. **Never force-push** — `252d282` is on the remote and the 667
+### `.npz` traces are ~20 h of MPS time. If the push is rejected, STOP and report.
+###
+### **After the push:** `git log origin/main..HEAD --oneline` must be empty and `git status --short`
+### must be clean.
+
+---
+
+## 13-S8. Session 8's next action (DONE in session 9 — kept for its specification)
+
+**Status: COMPLETE.** `eval/timing.py` was built exactly as specified below. See §21.4.
+
+## 13-S8-ORIGINAL. **written 2026-09-16, end of session 8**
+
+### ══ THE ONE EXACT NEXT ACTION ══
+###
+### **Build `eval/timing.py`: turn the 667 committed per-frame traces into `t_start` / `t_peak` /
+### `t_end` in seconds — the incident record's second field.**
+###
+### **Why this and not gate 3:** gate 3 is blocked three ways (its design is broken — §21.3 item 2;
+### the videos are not downloaded; DAD needs ~4.5 h of compute). This needs **zero compute and zero
+### new data**, the traces are already committed, and `README.md` §27 makes it a *product* deliverable
+### rather than another benchmark number. `progress.md` §13 has listed it as step 2 since session 6
+### and it was blocked on data that now exists.
+###
+### ```bash
+### cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+### ls runs/baselines2/badas-open/frames/*.npz | wc -l    # 667, committed at 252d282
+### ```
+###
+### - **Reuse, do not re-implement:** `eval.reduction_study.load_traces` (strips leading NaNs),
+###   `eval.benchmark.load_labels`. Each `.npz` carries `scores`, `target_fps`, `stride`,
+###   `frame_count` — **use those to convert frame index → seconds; do not hard-code 8 fps.**
+### - `t_peak` = argmax of the trace. `t_start`/`t_end` = first/last crossing of a threshold derived
+###   from the trace (e.g. a fraction of peak height). **Do not hard-code 0.80** — B5/§12 forbid
+###   hard-coded thresholds, and 0.80 is the retired model's number.
+### - Emit JSON shaped like `README.md` §27's incident record.
+### - Self-check asserting `t_start <= t_peak <= t_end` and all three inside the clip duration.
+###
+### **🔴 REPORT IT AS A CAPABILITY, NOT A METRIC.** Nexar has no usable ground-truth event time —
+### `time_of_event` is corrupt for all 334 positives (§6.7, settled). There is nothing to validate
+### timing against here, so **no accuracy claim of any kind.** §12 forbids mTTA/time-to-detection on
+### test-public and that prohibition still stands; this is `README.md` §27's product field, not a
+### resurrection of mTTA.
+###
+### **Still required before executing anything else from `NEW_PLAN.md`:** an explicit
+### accept/reject/revise decision from the user. It remains a PROPOSAL. **And §21.3 item 2 is a
+### genuine plan defect in R1 gate 3 that needs the user's sign-off to fix.**
 ###
 ### Everything below this line is session 6's still-valid guidance for the ORIGINAL master-plan track
-### (Phase 4/5 closure, the sweep, Tracks B/C) and remains the fallback regardless of the proposal.
+### (Tracks B/C) and remains the fallback. **Note its "STEP 0 — is the sweep alive" block is now
+### DEAD: the sweep finished, PID 75682 is gone, and `runs/baselines2/` is committed.**
 
 ### Phase 4 is COMPLETE and Phase 5's gate has PASSED. Nothing about the master plan is blocked. A
 ### second, non-required sweep is in flight. Session 5's §13 is superseded — it is below as §13-S5.
@@ -2260,7 +2493,37 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14. NEXT 3–5 ACTIONS  ·  **updated end of SESSION 6, session 7 note added**
+## 14-S9. NEXT 3–5 ACTIONS  ·  **written end of SESSION 9. This supersedes §14 below.**
+
+After §13's commit + push:
+
+1. **`scripts/hw_bench.py`** — time ONE window on M4 Air **CPU** vs **MPS** and report both.
+   *Why this next:* small, zero new data, and it unblocks language the project is currently
+   **forbidden** from using — `NEW_PLAN.md` §7.3 bans any "real-time" or "CPU-capable" claim until
+   this measurement exists (D27). Week-1 item, still unwritten after nine sessions.
+   → **Model: sonnet · Effort: medium.**
+2. **Get user sign-off on the §21.3 item 2 gate-3 redesign**, then download **DAD only** (165 clips,
+   ~4.5 h on the Air, **no Studio needed**) and run the peak-position test against the annotated
+   `Time-of-collision`. **This is the test that decides R1.** Session 9's full-n reproduction of §3.2
+   (§21.4 item 4) strengthens the mechanism but does **not** substitute for this — it is still inside
+   Nexar. → **Model: opus · Effort: high** — the leakage reasoning is the whole ballgame.
+3. **Calibration Tier 1** — the deployable stratified calibration/eval half split (`NEW_PLAN.md` §6).
+   `eval/calibration.py` currently implements **Tier 3 only** (5-fold cross-fitted), which §6 says
+   must be reported as *"achievable calibration"* and never as a deployed result. Note it reads
+   `runs/baselines/` (nanmax scores); if R1 is ever promoted it must be refit on last-window.
+   → **Model: sonnet · Effort: medium.**
+4. **Decide R1** on gate 3's result. If it passes, promote: `eval/adapters.py:129` `np.nanmax` →
+   last-window, then refit calibration and re-run every committed metric. If it fails, record the
+   kill and keep `nanmax`. → **Model: opus · Effort: high.**
+5. **Track B and Track C.** Buy a dashcam; send 10 fleet messages. Both are **P0 in `README.md`
+   §41**, both need no code and no compute, and both are at **zero across nine sessions** while the
+   engineering track keeps advancing. `NEW_PLAN.md` §9 sets a kill condition: **< 3 replies by end of
+   week 2 → formally close Track C and stop listing it.** README §40/§45 both call Track B the moat.
+   → **Model: haiku · Effort: low** (drafting only; sending is the user's).
+
+---
+
+## 14. NEXT 3–5 ACTIONS  ·  **updated end of SESSION 6, session 7 note added (SUPERSEDED by §14-S9)**
 
 **SESSION 7 NOTE (corrected 2026-09-14):** the relevant proposal is **`NEW_PLAN.md`**, not
 `NEW_PLAN_v2.md` (archived). **If and only if the user accepts it**, its §7.4 timeline and §10 ranking
@@ -2484,6 +2747,217 @@ persistence k=4/8/16 all below max. Every averaging form is worse, for the reaso
 
 ---
 
+## 21.4 SESSION 9's FINDINGS — added 2026-09-16 16:45 IST. Read after the top banner.
+
+**1. `eval/timing.py` EXISTS AND WORKS. CONFIRMED.** 331 lines, untracked. Executes §13 exactly as
+session 8 specified it. Per-frame trace → `t_start`/`t_peak`/`t_end` in seconds, emitted as a
+`README.md` §27-shaped incident record. Zero compute, zero new data — it reads the 667 `.npz` traces
+committed at `252d282`.
+
+Invocations:
+```bash
+~/envs/badas/bin/python -m eval.timing --self-check   # 7/7, prints PASS
+~/envs/badas/bin/python -m eval.timing                # the report
+~/envs/badas/bin/python -m eval.timing --emit DIR     # one JSON record per gated clip (351 files)
+```
+
+**2. The two-stage threshold, and why it is two stages. DECISION (D32).** "Did an incident happen"
+and "when did it happen" are different questions; one threshold answering both is degenerate on
+marginal clips (`t_start` and `t_end` collapse to the same instant).
+
+- **Stage 1 — gate (global, derived).** Lowest threshold still reaching a stated target recall, read
+  off the PR curve over all 667 clips. Satisfies `README.md` §41 Phase 2 task 5. **Not hard-coded** —
+  B5/§12 forbid it and 0.80 is the *retired* model's number.
+- **Stage 2 — localisation (per-clip, relative).** `cut = median(trace) + 0.5*(max - median)`;
+  `t_start`/`t_end` are first/last crossings, `t_peak` is the argmax. Half-prominence above the
+  clip's *own* quiet level, so a uniformly-high clip does not report a 10-second incident.
+
+Measured at target recall 0.80:
+```
+threshold      0.9733   (derived, not chosen)
+recall         0.8024   precision 0.7635
+83 FP over 0.899 h of negatives = 92.3 FP/hour
+351 records emitted: 268 positive + 83 negative (the gate's false alarms)
+
+gated POSITIVES n=268: window median 4.62 s, t_peak at 0.974 of clip, 77.6% in final 10%
+gated NEGATIVES n=83 : window median 4.50 s, t_peak at 0.899 of clip, 49.4% in final 10%
+```
+Threshold is data-derived, proven behaviourally: recall 0.70/0.80/0.95 → 0.9830/0.9733/0.8098,
+FP 60/83/194.
+
+**3. 🔴 92.3 FP/hour is the honest state, and it must never be quoted without its denominator.**
+CONFIRMED. 0.899 h is **54 minutes** of negative footage — the known data ceiling. Also note
+**calibration cannot fix this**: a monotone map cannot change AP, AUC, or FP/hour at matched recall
+(D28). HYPOTHESIS, explicitly not a claim: Nexar's negatives are *curated hard* negatives, not random
+driving, so the rate on ordinary footage is probably lower — **by an unknown factor**. That unknown
+is exactly why `NEW_PLAN.md` §8.2 wants comma2k19 and ZOD. Do not use it to soften 92.3.
+
+**4. §3.2's mechanism reproduced at FULL n=667 through an independent code path. CONFIRMED — new
+evidence, and it strengthens R1.** Session 7 measured peak position at n=268 only. Session 9's
+absolute-offset loader (a different code path from `reduction_study.load_traces`) gives:
+
+| | median peak position | peak in final 10% |
+|---|---|---|
+| positives (n=334) | **0.975** | 73.7% |
+| negatives (n=333) | 0.802 | 38.4% |
+| *session 7, n=268* | *0.984 / 0.782* | *83.0% / 42.5%* |
+
+Same direction and magnitude, mild softening at full n — exactly what a partial prefix → full set
+should do. **This was a stop condition** ("if `t_peak` lands at the clip end on negatives too, the
+mechanism is wrong and R1 is suspect"). It did not trigger. R1's mechanistic story survives its first
+full-n check. It is **not** a substitute for gate 3, which remains the test that decides R1.
+
+**5. THE 2-SECOND TRAP, caught by an assertion rather than by luck. CONFIRMED.**
+`eval/reduction_study.load_traces()` **strips the 16 leading NaN frames** — correct for its own job,
+since ranking a clip needs no time base. Reuse it naively for timing and **every timestamp lands
+exactly 2 s early**. Nothing crashes; the numbers are just silently, plausibly wrong forever.
+`eval/timing.py` has its own `load_traces_abs()` that keeps the absolute offset, and self-check 4
+asserts the difference (`5.000s with, 3.000s without`). **`reduction_study.load_traces` was left
+unchanged** — `heldout_half.py` and `reduction_study.py` both depend on its current behaviour.
+
+**6. The time base is confirmed THREE independent ways. CONFIRMED.** `t = index / target_fps`, with
+fps read from each `.npz`, never hard-coded:
+- (a) traced to source — `vendor/badas-open/badas/utils/sliding_window.py` resamples to `target_fps`
+  *before* windowing, so a trace index is an index in the **resampled** timeline; the source video's
+  fps is irrelevant. A window `(start, start+16)` files its prediction against `end_idx`, the first
+  frame the model has **not** seen, so index *i* reads "having watched to (i−1)/fps, this is
+  P(collision next)".
+- (b) **cross-checked against `benchmark.durations()`** (the T3 run, which decoded all 667 clips
+  months ago for an unrelated purpose): agreement within **0.0623 s — under one 8 fps frame — on all
+  667 clips**. This is self-check 2.
+- (c) upstream's own `badas_loader.py:112` does `return i / fps` at `fps=8.0` — identical arithmetic.
+
+**7. Upstream silently DISCARDS the final window's prediction. CONFIRMED — new.**
+`_create_predictive_frame_array` guards with `if 0 <= target_frame < total_frames`. At stride 1 the
+last window targets `total_frames` exactly, which fails that test. An 81-frame clip runs **66 windows
+and keeps 65**. Consequences: (a) R1's "last window" is really the *second*-to-last — harmless for
+R1, which applies the same reduction to every clip, but the naming is misleading; (b) the latest
+representable timestamp is `(len-1)/fps`, so **`t_end` must never be read as "end of clip"**.
+
+**8. A self-check of mine was wrong and was replaced, not loosened.** The first version of check 7
+grepped the module source for the string `"0.80"` to prove the threshold wasn't hard-coded. It failed
+— on the *docstring sentence explaining why 0.80 is forbidden*. It was testing prose, not behaviour.
+Replaced with a behavioural check: asking for more recall must move the threshold **down** and cost
+more FP, which a hard-coded constant could not do. **The assertion was made stronger, not weaker**
+(same discipline as session 8's D30 null-control fix).
+
+**9. THE 8 FPS QUESTION — ASKED BY THE USER, ANSWERED: DO NOT CHANGE IT. CONFIRMED.**
+This is already closed in §12 and §6.18; restating because the user asked directly.
+- 8 fps is **upstream BADAS's own default**, not ours — `vendor/badas-open/badas/badas_loader.py`
+  hard-codes `target_fps=8.0` at lines 47, 89 and 121, and upstream's README and example use
+  `target_fps=8.0, num_frames=16, window_stride=1`, exactly what `eval/adapters.py` runs.
+- It is **what the classifier head was trained at**: 16 frames @ 8 fps = 2.0 s, matching the
+  checkpoint config's `data_root ".../balanced_dataset_2s"`. At 4 fps that window is 4 s, at 16 fps
+  1 s — neither is what the head ever saw. (`original_fps: 4` is the post-tubelet **token** rate, not
+  a video rate. §6.18. Not a contradiction.)
+- Changing it **invalidates every committed number**: the ~18 h sweep, AP 0.8349, R1's +0.0556, T3,
+  the calibration table.
+- A 2× mismatch here would be **this project's own B1 bug repeated** (README §15: the old model
+  trained on 5 s spans, run on 0.33 s ones). `scripts/badas_fps_probe.py` exists to assert it hasn't.
+- **Where other frame rates DO belong:** `NEW_PLAN.md` **R2 (multi-temporal-scale ensemble, TIER 1)**
+  — score at 4 / 8 / 16 fps and **ensemble**. That *adds* decorrelated channels; it never replaces 8.
+  Week-2 item, ~4–5 h per scale tail-only, expected +0.01–0.03.
+
+**10. Fields the incident record cannot produce are OMITTED, not null-filled.** DECISION (D34).
+`ego_involved` (Nexar has no ego field, D23), severity band, closing speed, GPS. A `null` implies a
+field that *could* be populated and merely isn't, which misrepresents what the system knows. The
+record also carries `"timing_validated": false` explicitly.
+
+**11. 🔴 THIS IS A CAPABILITY, NOT A METRIC — unchanged from session 8's §13 instruction.**
+Nexar's `time_of_event` is corrupt for all 334 positives (median 20.0 s against a 9.93 s clip — the
+event is *outside* the distributed video). There is **nothing to validate a timestamp against**. No
+mTTA, no time-to-detection, no "±0.3 s accurate", ever, from this benchmark. The honest claim is:
+*the pipeline now emits these three fields; their accuracy is unmeasured on this benchmark because
+this benchmark cannot measure it.* Stated in the module docstring and printed by the report itself.
+
+---
+
+## 21.3 SESSION 8's FINDINGS — added 2026-09-16. Read after the top banner.
+
+**1. R1 gate 2 PASSED. CONFIRMED.** Numbers in the top banner. Method: `eval/heldout_half.py`.
+Stratified 50/50 split; the winning reduction is chosen on half A by AP; its ΔAP vs `nanmax` is
+reported on half B only, with the paired bootstrap; repeated over 1000 random stratified splits as a
+split-luck control (the same discipline `NEW_PLAN.md` §6 Tier 2 mandates for calibration).
+Session 7's weak version (6 halves at n=268, spread −0.009 to +0.075) is superseded — at n=667 the
+held-out ΔAP is **positive in 100% of 1000 splits** and the instability is gone.
+
+**2. 🔴 GATE 3 CANNOT BE RUN AS `NEW_PLAN.md` R1 SPECIFIES IT. CONFIRMED — this is a plan defect.**
+R1's falsification test reads: *"on DoTA/DADA, where clips are NOT truncated, last-window should
+perform WORSE than max."* That is an **AP comparison, and AP requires both classes.** Verified by
+reading the vendored annotation CSVs directly:
+
+| Set | n | Composition |
+|---|---|---|
+| `dad_test_concensus.csv` | 165 | 151 Collision + 14 Near-collision — **all positive** |
+| `dada2000_small_test_concensus.csv` | 221 | 198 + 23 — **all positive** |
+| `dota_test_concensus.csv` | 598 | 562 + 36 — **all positive** |
+
+There are **no negatives in any of them**. AP is undefined on one class, so the test as written
+cannot be computed at all, on any of the three.
+
+**PROPOSED REDESIGN (not implemented, needs user sign-off as a plan change):** all three sets ship a
+`Time-of-collision` column, so test the **mechanism** directly instead of the AP proxy — on
+untruncated clips the score peak should sit **at the annotated collision time, mid-clip**, not at the
+clip end. Nexar positives peak at normalised position **0.984** (§3.2 / `NEW_PLAN.md` §3.2). If
+external positives *also* peak at ~0.98 despite the collision being seconds earlier, then the model
+merely drifts upward with watch-time, the §3.2 mechanism is wrong, and R1 is suspect. This works on
+positives-only data and is a sharper test than the AP comparison it replaces.
+
+**3. The external clips genuinely do continue past the collision. CONFIRMED.** The user challenged
+whether post-crash footage can exist ("when crash happen car stops"). Measured from the same CSVs:
+
+| Set | Camera car crashed (`pos-ego`) | **Witnessed** (`pos-not-ego`) | Time-of-collision |
+|---|---|---|---|
+| DAD | 13 (8%) | **150 (91%)** | min 1.6s · median **3.0s** · max 3.7s |
+| DADA-2000 | 75 (34%) | 51 (23%) | min 0.4s · median 5.3s · max 14.4s |
+| DoTA | 327 (55%) | 255 (43%) | min 0.9s · median 4.7s · max 14.4s |
+
+**In DAD, 91% of clips are collisions the camera vehicle was not involved in** — it keeps driving, so
+the footage keeps rolling. Contrast with Nexar, where `time_of_event` (median **20.0 s**) lies
+**beyond** the clip (median **9.93 s**): the event is outside the video entirely. That structural
+contrast is exactly what gate 3 needs, and it is confirmed from files already in the repo.
+
+**4. DAD does NOT need the Mac Studio. CONFIRMED by arithmetic.** 165 clips × ~97 s/clip end-to-end
+(D10's measured rate) ≈ **4.5 h** — one overnight Air run, the same shape as every sweep so far. The
+Studio is only required for DoTA-scale work (598 clips) or the 25.5 GB Nexar train split. **Earlier
+in this session this was wrongly stated as needing the Studio; that was corrected.**
+
+**5. Disk is a hard constraint on DoTA. CONFIRMED.** `df -h` on the Air: **33 GB free**. `NEW_PLAN.md`
+§7.4 puts DoTA at ~55 GB — it does not fit. The Studio's recorded **~40 GB free** is from session 1
+(2026-09-11), is stale, and is **still below 55 GB**. Re-check `df -h` on the Studio before any
+download. **DAD is the only realistic first target.**
+
+**6. `eval/calibration.py` now exists and is committed** — closes the §21.1 item 5 P0 gap where the
+ECE 0.3286 → 0.0498 table had no reproducible script. **Caveat: it implements `NEW_PLAN.md` §6
+Tier 3 ONLY** (5-fold cross-fitted), which §6 says must be reported as *"achievable calibration"* and
+**never** as a deployed result. **Tier 1 — the primary deployable calibration/eval half split — is
+still unwritten.** It also reads `runs/baselines/` (nanmax scores); if R1 is ever promoted the
+calibration must be refit on last-window scores.
+
+**7. Bug found and fixed in `eval/calibration.py`'s docstring.** It documented `python
+eval/calibration.py`, which fails with `ModuleNotFoundError: No module named 'eval'` — the
+`from eval.benchmark import ...` needs the repo root on `sys.path`. Correct invocation is
+**`python -m eval.calibration --self-check`**. Docstring corrected; no code change.
+
+**8. A self-check caught its own bias — worth knowing, because the fix is subtle.**
+`eval/heldout_half.py`'s null control initially replaced traces with random noise. It **failed**
+(median ΔAP −0.0252). Diagnosis: with one fixed random draw, `nanmax` happened to score AP **0.5630**
+against a chance level of 0.5007, and that single lucky draw persists across every split, dragging the
+whole null negative. It was measuring "how lucky was the baseline" not "does selection inflate the
+estimate". **Fixed by permuting the labels per split instead** — this preserves each reduction's own
+distribution and puts the baseline on equal footing. Corrected null: **+0.0025**. The assertion
+threshold was *not* loosened to make it pass.
+
+**9. Product framing correction, from the user.** This session initially described the product as
+"software that watches dashcam video and flags crashes". **That is wrong and `README.md` §27 says so
+explicitly:** *"The product is not crash detection... The product is the structured incident record."*
+Detection is a commodity input (BADAS is free and Apache-2.0). Against §27's ~10-field record,
+**exactly one field currently works** (collision detected), and it is the commodity one. **The 667
+committed per-frame traces newly unblock `t_start`/`t_peak`/`t_end`** — §13 step 2, zero compute.
+That would be the second working field and the first non-commodity one.
+
+---
+
 ## 21.2 DATA / LICENSING STATE — verified from primary sources, session 7
 
 | Asset | Licence | Train | Eval | Commercial product | Status on disk |
@@ -2651,7 +3125,12 @@ session; this handoff was written on that explicit instruction.
 
 ---
 
-### SESSION 5 END STATE — read this (session 3's text below is history)
+### SESSION 5 END STATE — 🔴 HISTORY, SUPERSEDED. Read §17-S8's "SESSION END STATE" instead.
+
+> Everything below is true as of **session 5** and is kept as the record. It is **wrong as a
+> description of today**: the sweep it calls "34% complete" finished long ago, Phase 4 and the Phase 5
+> gate both closed in session 6, and `runs/baselines2/` is committed at `252d282`. Do not act on this
+> block.
 
 **Exactly what was happening when session 5 stopped:** **a GPU job was still running.** The
 667-clip BADAS-Open sweep, PID 88180, 3 h 07 m elapsed, **235/667 clips visited** at 23:24 IST.
@@ -2723,7 +3202,80 @@ never made**, and §13 records the recommendation (unknowns first, with the reas
 
 ---
 
+## 15.9 PLAN POSITION — where the repo sits against BOTH planning documents (session 9)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. Three tracks run concurrently
+  from week 1 (§41): **A** model & measurement, **B** UK data/benchmark, **C** customer discovery.
+- **What README says should happen:** Track A phases 4→5→6; Track B the hard-negative benchmark
+  (§34, the moat per §40/§45); Track C 30 UK fleet calls. §27 defines the product as the **structured
+  incident record**, not detection.
+- **Completed:** Track A is well advanced — falsification suite closed, BADAS baseline measured
+  (AP 0.8349 / AUC 0.8498), evaluation harness built, R1 at 2 of 3 gates, calibration Tier 3,
+  and now **incident-record field 2** (`t_start`/`t_peak`/`t_end`). Phase 2 task 5's "derive the
+  operating point from the PR curve" is now satisfied inside `eval/timing.py`.
+- **Remains:** Phase 6. **Tracks B and C are at ZERO after nine sessions** — this is the single
+  largest gap between the master plan and reality, and it is not a technical blocker.
+
+### `NEW_PLAN.md` POSITION (detailed/current plan)
+
+- **Current task:** Week 1, Track A. `NEW_PLAN.md` is still a **PROPOSAL** — never formally
+  accepted, so its R1–R9 are not decisions of record (see the note at the end of §11).
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate. Every comparison by
+  **paired** bootstrap (§1). Week 1 = confirm R1, calibration §6 Tiers 1–3, operating-point policy,
+  CPU/MPS benchmark (§7.3).
+- **Completed:** R1 gates 1 and 2 ✅. Calibration Tier 3 ✅. Operating-point policy ✅ (session 9).
+  §3.2's mechanism now confirmed at full n ✅.
+- **Remains:** R1 gate 3 (design broken, needs sign-off), calibration Tier 1, `hw_bench.py`,
+  then R4/R2/R3.
+
+### ALIGNMENT
+
+**No conflict. They are aligned and operate at different altitudes** — README gives the roadmap and
+the product definition; `NEW_PLAN.md` gives the detailed experiment sequence inside README's Track A.
+Session 9's work sits in both: it is `progress.md` §13's step 2 *and* README §27's field 2 *and*
+README §41 Phase 2 task 5's operating-point requirement.
+
+**One known DEFECT, not a conflict:** `NEW_PLAN.md` R1's gate-3 falsification test **cannot be
+computed as written** — it specifies an AP comparison on DAD/DADA/DoTA, all three of which are
+**positives-only** (165/221/598, all Collision or Near-collision). AP is undefined on one class. A
+redesign is proposed in §21.3 item 2 (peak position vs annotated `Time-of-collision`) but **has not
+been applied** — it needs the user's sign-off as a plan change. This is the one place a planning
+document is known to be wrong.
+
+---
+
 ## 16. README MODIFICATION STATUS
+
+## SESSION 9 — README CHANGED THIS SESSION: **NO.** NEW_PLAN CHANGED: **NO.**
+
+**`README.md`:** unchanged. Nothing discovered this session changes the master plan. Session 9 built
+a deliverable README §27 already called for and satisfied a §41 Phase 2 acceptance item; that is
+execution, not a plan change.
+
+**`NEW_PLAN.md`:** unchanged. The known gate-3 defect (§21.3 item 2) is still **proposed, not
+applied** — it remains awaiting the user's sign-off, now across two sessions. Session 9's finding
+that the §3.2 mechanism reproduces at full n=667 *supports* R1 but changes none of its wording.
+
+**Also unchanged this session:** `eval/adapters.py`, `eval/reduction_study.py`, `eval/benchmark.py`,
+`eval/calibration.py`, `eval/heldout_half.py`, and everything under `runs/`.
+
+
+
+## SESSION 8 — README CHANGED THIS SESSION: **NO.**
+
+The master plan did not change. Everything session 8 did executes `README.md` §41 Phase 5/6 and
+`NEW_PLAN.md` R1 as already written; confirming a finding is progress, not a plan change, so it
+belongs here rather than in the README (§12, first bullet).
+
+**One genuine plan-level defect WAS found but deliberately NOT edited:** `NEW_PLAN.md` R1's gate 3
+specifies an AP comparison that is impossible on positives-only data (§21.3 item 2). That is a defect
+in `NEW_PLAN.md`, not `README.md`, and `NEW_PLAN.md` is still an unaccepted PROPOSAL — so the fix was
+recorded here for the user's sign-off rather than applied unilaterally.
+
+**Still open from earlier sessions:** the session-5 live offer to edit the `original_fps` gate-note
+line in the README remains unanswered, now four sessions running.
 
 ## SESSION 7 — README CHANGED THIS SESSION: **NO.**
 
@@ -2898,7 +3450,116 @@ not in `README.md`.**
 
 ---
 
-## 17. FINAL HANDOFF CHECK  ·  **updated end of SESSION 7**
+## 17-S9. FINAL HANDOFF CHECK  ·  **SESSION 9, 2026-09-16 16:45 IST. This supersedes §17-S8 below.**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | §1. **Not "crash detection"** — `README.md` §27's structured incident record. Detection is a commodity input (BADAS-Open is free, Apache-2.0). |
+| 2. What does README say the plan is? | §41, via §15.9. Three parallel tracks: A model/measurement, B UK data, C customer calls. **Unchanged this session (§16).** |
+| 3. What does NEW_PLAN say? | §15.9. Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory. **Still a PROPOSAL. Unchanged this session.** |
+| 4. Which phase are we in? | Phase 4 COMPLETE, Phase 5 gate PASSED, inside `NEW_PLAN.md` Week 1. **Tracks B and C at zero across NINE sessions.** |
+| 5. What did the PREVIOUS session complete? | Session 8: R1 gate 2 (`eval/heldout_half.py`), commit `252d282`, found the gate-3 plan defect. §21.3. |
+| 6. What did THIS session complete? | **`eval/timing.py`** — incident-record field 2. §21.4. Plus: §3.2 reproduced at full n=667; the 8 fps question answered; two new upstream findings (items 5 and 7). |
+| 7. What evidence/results exist? | §21.4. Gate 0.9733 @ recall 0.80; 92.3 FP/h over 0.899 h; 351 records; positives peak 0.975 vs negatives 0.802. All three regression guards reproduce exactly. |
+| 8. What failed / negative results? | **92.3 FP/hour is bad** and is the honest number (§21.4 item 3). One of session 9's own self-checks was wrong and was **replaced with a stronger one, not loosened** (item 8). Upstream silently discards the final window (item 7). |
+| 9. What is broken or uncertain? | **R1 gate 3's design is still broken and still unsigned-off** (§21.3 item 2) — now across two sessions. Calibration Tier 1 unwritten. No hardware timing ever measured on the user's machines. |
+| 10. What decisions are made? | §11 — D1–D31, **plus D32–D35 (session 9)**. `NEW_PLAN.md` R1–R9 remains a PROPOSAL. |
+| 11. What files changed? | `eval/timing.py` **created** (untracked). `progress.md` updated. **NOTHING COMMITTED.** HEAD is still `252d282`. |
+| 12. What is the exact next action? | **§13 — commit and push the two outstanding files, after asking the user.** They said "wait" twice in session 9. |
+| 13. What must NOT be redone? | §12, especially the **new session-9 block at its top** — above all, **do not discard `progress.md`**, do not rebuild `timing.py`, do not re-open 8 fps, do not switch `adapters.py`. |
+| 14. Did either plan change, and why? | §16 — **README NO, NEW_PLAN NO.** Both left unchanged; session 9 was execution, not planning. |
+| 15. BLOCKED vs UNKNOWN? | **BLOCKED:** R1 gate 3 (broken design awaiting sign-off + videos not downloaded + DoTA's ~55 GB exceeds both machines' free disk). **UNKNOWN, not blocked:** Studio's real free disk (the ~40 GB figure is from session 1 and stale); DAD's download size/terms; CPU-vs-MPS throughput. |
+
+### What session 9 did, precisely
+
+1. **Full project recovery from zero memory** — read `README.md` §27/§41, `NEW_PLAN.md` in full,
+   `progress.md` §§11/12/13/21.x, then verified the claims against the repo rather than trusting them.
+2. **Caught that session 8's handoff was never committed** despite §17-S8 claiming a clean tree.
+3. **Traced the index→seconds mapping to vendored source** instead of assuming it, and cross-checked
+   it against `benchmark.durations()` (±0.0623 s on all 667 clips).
+4. **Wrote `eval/timing.py`** (331 lines) — two-stage threshold, §27-shaped JSON, 7 self-checks.
+5. **Replaced one of its own self-checks** after it failed for the wrong reason — made it stronger.
+6. **Ran all three regression guards.** All reproduce exactly. No committed number moved.
+7. **Reproduced §3.2's peak-position mechanism at full n=667** through an independent code path — a
+   stop condition that did not trigger, and new supporting evidence for R1.
+8. **Answered the user's 8 fps question** from primary sources (upstream defaults + checkpoint config).
+9. **Did NOT commit** — the user was asked twice and said "wait" both times.
+
+### SESSION END STATE
+
+**Nothing is running. Nothing is partially implemented.** `eval/timing.py` is complete and working.
+The session ended on this handoff request, with **the commit + push still pending the user's
+go-ahead** — that is the only unfinished item, and it is a decision, not work. Two plan files exist
+outside the repo (`~/.claude/plans/`); they are scratch, **this file is authoritative**.
+
+### MODEL / EFFORT HANDOFF
+
+- **Recommended model for the immediate next action (commit + push): sonnet · effort low.** It is
+  mechanical git work against a fully specified §13.
+- **Then `scripts/hw_bench.py`: sonnet · medium.** Well-specified implementation.
+- **🔴 Switch to opus · high BEFORE touching R1 gate 3 (action 2).** The leakage and
+  selection-risk reasoning is the single most consequential judgment left in the plan, and
+  `NEW_PLAN.md` R1 itself marks it "opus · high".
+- **Switch before next task? NO** for the commit; **YES** before gate 3.
+
+---
+
+## 17-S8. FINAL HANDOFF CHECK  ·  **SESSION 8, 2026-09-16 (history — superseded by §17-S9 above).**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | §1. **Not "crash detection"** — `README.md` §27's structured incident record. Detection is a commodity input (§21.3 item 9). |
+| 2. What does README say the plan is? | §2 (pointer). Three parallel tracks: A model/measurement, B UK data, C customer calls. **Unchanged this session (§16).** |
+| 3. Which phase are we in? | Phase 4 COMPLETE, Phase 5 gate PASSED. Working inside `NEW_PLAN.md` Week 1 (Track A). Tracks B and C remain at **zero across eight sessions**. |
+| 4. What has actually been completed? | §4 (s1–s6), §21.1 (s7), **§21.3 (s8)**. Session 8 wrote `eval/heldout_half.py` and made the first commit since `fd5d97f`. |
+| 5. What evidence/results do we have? | Top banner (gate 1 + gate 2 numbers), §21.3, §6. BADAS baseline AP 0.8349 / AUC 0.8498. Old model retired at AUC 0.5339. |
+| 6. What is broken or uncertain? | **R1 gate 3's design is broken (§21.3 item 2).** Calibration Tier 1 unwritten. No hardware timing ever measured on the user's machines. No Docker/lockfile/Makefile. |
+| 7. What decisions are made? | §11 — D1–D28, **plus D29–D31 (session 8)**. `NEW_PLAN.md` R1–R9 is still a PROPOSAL. |
+| 8. What files changed? | Commit `252d282`: 678 files added (667 `.npz` + `runs/baselines2/` metrics + 3 eval scripts). **Working tree clean, pushed, in sync with origin/main.** |
+| 9. What is the exact next action? | **§13 — build `eval/timing.py` for `t_start`/`t_peak`/`t_end` from the committed traces.** Zero compute. |
+| 10. What must NOT be redone? | §12, especially the **new session-8 block at its top** (the sweep is finished; don't switch the reduction; don't run gate 3 as written; don't revert the null control). |
+| 11. Did README change, and why? | §16 — **NO.** Master plan unchanged. One `NEW_PLAN.md` defect found and left for user sign-off. |
+| 12. What failed / negative results? | The `heldout_half` null control failed on first run and was **correctly** failing (§21.3 item 8). Gate 3 found to be uncomputable as specified. `eval/calibration.py`'s documented invocation was broken. |
+| 13. UNKNOWN vs BLOCKED? | **BLOCKED:** R1 gate 3 (broken design + videos not downloaded + DoTA exceeds disk). **UNKNOWN, not blocked:** Studio's real free disk; DAD's actual download size and access terms; CPU-vs-MPS throughput. |
+
+### What session 8 did, precisely
+
+1. **Recovered the lost session's result.** A previous session finished R1 gate 1 but exited before
+   writing anything; the result existed nowhere on disk or in git. **Re-ran `eval/reduction_study.py`
+   and reproduced it exactly** rather than trusting the user's pasted numbers.
+2. **Verified the sweep finished** — 667/667 scores, 667 `.npz`, PID gone.
+3. **Wrote `eval/heldout_half.py`** (180 lines) and ran R1 gate 2. **PASSED.**
+4. **Found and fixed a bias in its own null control** before trusting any result from it.
+5. **Ran all three existing self-checks** as regression guards: `eval/benchmark.py` (T3 reproduced
+   exactly), `eval.calibration --self-check`, `eval.reduction_study`. All pass.
+6. **Fixed `eval/calibration.py`'s docstring** — it documented an invocation that raises.
+7. **Committed and pushed `252d282`** — user explicitly approved the push.
+8. **Verified the gate-3 annotation sets are positives-only** and measured the ego/not-ego and
+   collision-timing breakdowns (§21.3 items 2–3).
+9. **Corrected the product framing** after the user pushed back (§21.3 item 9).
+
+### NEXT 3–5 ACTIONS after §13
+
+1. **`eval/timing.py`** — `t_start`/`t_peak`/`t_end` (§13). Zero compute. Second incident-record field.
+2. **Get user sign-off on the §21.3 item 2 gate-3 redesign**, then download **DAD only** (~4.5 h on
+   the Air, no Studio) and run the peak-position test. This is the test that decides R1.
+3. **`scripts/hw_bench.py`** — one window on M4 Air CPU vs MPS. `NEW_PLAN.md` §7.3 forbids any
+   "real-time" or "CPU-capable" language until this exists. Week 1 item, still unwritten.
+4. **Calibration Tier 1** — the deployable stratified calibration/eval split (`NEW_PLAN.md` §6).
+5. **Track B and Track C.** Buy a dashcam; send 10 fleet messages. Both are P0 in `README.md` §41,
+   both need no code, both are at zero after eight sessions. `NEW_PLAN.md` §9 sets a kill condition:
+   **< 3 replies by end of week 2 → formally close Track C and stop listing it.**
+
+### SESSION END STATE
+
+**Nothing is running. Nothing is partially done.** Working tree clean, `main` in sync with
+`origin/main` at `252d282`. The session ended on a handoff request, not mid-task. `eval/timing.py`
+(§13) is **planned but not started — zero lines written.** A plan file also exists outside the repo at
+`~/.claude/plans/yes-it-was-not-splendid-llama.md`; it is scratch, not authoritative — **this file is.**
+
+---
+
+## 17. FINAL HANDOFF CHECK  ·  **SESSION 7 (history — superseded by §17-S8 above)**
 
 | Question | Answered where |
 |---|---|
@@ -2965,6 +3626,97 @@ not in `README.md`.**
 ## SESSION TIMELINE
 
 ```text
+2026-09-16 (SESSION 9, ~16:20-16:45 IST) — eval/timing.py; incident record field 2. NO COMMIT.
+- Full recovery from zero memory. Read README SS27/S41, NEW_PLAN.md in full, progress.md
+  SS11/12/13/17-S8/21.x. Verified claims against the repo rather than trusting the handoff.
+- FOUND: session 8's handoff was NEVER COMMITTED. progress.md modified 16:21, after its own
+  13:05 commit 252d282. S17-S8's "working tree clean, in sync" is false about progress.md.
+- Traced the index->seconds mapping to vendor source instead of assuming: upstream resamples to
+  target_fps BEFORE windowing, so trace index is in the RESAMPLED timeline; t = index/target_fps.
+  A window (start, start+16) files its prediction against end_idx, the first UNSEEN frame.
+  Cross-checked against benchmark.durations() (the T3 decode): agree to 0.0623s = under one
+  8fps frame, on all 667 clips. Third confirmation: upstream badas_loader.py:112 does i/fps.
+- FOUND: upstream SILENTLY DISCARDS the final window. The guard
+  `if 0 <= target_frame < total_frames` fails when target == total_frames at stride 1. An
+  81-frame clip runs 66 windows, keeps 65. So R1's "last window" is the SECOND-to-last, and
+  t_end is not "end of clip". Harmless to R1 (applied uniformly) but the naming misleads.
+- Wrote eval/timing.py (331 lines, UNTRACKED). Two-stage threshold, user-chosen:
+  stage 1 global gate derived from the PR curve at a stated recall (README S41 Phase 2 task 5,
+  never hard-coded per B5); stage 2 per-clip half-prominence above the clip's own median.
+  Reports BOTH reductions (shipped=nanmax, candidate=last_window) and promotes neither (D29/D33).
+  Unproducible fields OMITTED not null-filled (D34).
+- TRAP AVOIDED BY ASSERTION: reduction_study.load_traces STRIPS the 16 leading NaNs. Reusing it
+  for timing puts every timestamp EXACTLY 2s early, silently. timing.py has its own
+  load_traces_abs(); self-check 4 asserts the delta (5.000s with offset, 3.000s without).
+  reduction_study.load_traces left UNCHANGED - heldout_half and reduction_study depend on it.
+- One of my own self-checks was WRONG: it grepped the source for "0.80" and failed on the
+  DOCSTRING sentence explaining why 0.80 is forbidden. It tested prose, not behaviour. Replaced
+  with a behavioural check (more recall must move the threshold DOWN and cost more FP).
+  Made STRONGER, not loosened - same discipline as session 8's D30.
+- RESULTS: gate @ recall 0.80 -> threshold 0.9733, recall 0.8024, precision 0.7635,
+  83 FP over 0.899 h = 92.3 FP/HOUR (bad, and honest; 0.899h is 54 minutes).
+  351 records emitted: 268 positive + 83 negative (the gate's false alarms).
+  Gate is data-derived: recall 0.70/0.80/0.95 -> 0.9830/0.9733/0.8098, FP 60/83/194.
+- STOP CONDITION DID NOT TRIGGER, and gave new evidence: S3.2's mechanism REPRODUCED AT FULL
+  n=667 through an independent code path. Positives peak at 0.975 of clip vs negatives 0.802;
+  73.7% vs 38.4% in the final 10%. Session 7 had 0.984/0.782 and 83.0%/42.5% at n=268. Same
+  direction, mild softening at full n. Supports R1's mechanism; does NOT replace gate 3.
+- Regression guards ALL PASS unchanged: eval/benchmark.py (T3 AUC 0.5339 / AP 0.5218 /
+  332,325,2,8), eval.calibration --self-check, eval.reduction_study (max 0.8349,
+  last_window 0.8905 +0.0556 [+0.0263,+0.0876]).
+- USER ASKED: "do we need to change the 8fps?" ANSWER: NO. Upstream's own default (badas_loader
+  lines 47/89/121 + their README + example); 16 frames @ 8fps = the 2.0s window the head was
+  trained on (data_root "balanced_dataset_2s"); changing it invalidates every committed number;
+  a mismatch here would repeat this project's own B1 bug. Other rates belong in NEW_PLAN R2 as
+  an ENSEMBLE, never a replacement. D35. Third time this question has been closed.
+- NOTHING COMMITTED. User asked to commit+push, then said "wait" twice. HEAD still 252d282,
+  0 unpushed. eval/adapters.py:129 still np.nanmax - R1 deliberately unpromoted (D29).
+- README.md NOT changed. NEW_PLAN.md NOT changed. The gate-3 defect redesign is still only
+  PROPOSED, now awaiting user sign-off across two sessions.
+
+2026-09-16 (SESSION 8, ~09:00-14:15 IST) — R1 gate 2; first commit since fd5d97f
+- Recovered a LOST session's work: a prior session finished R1 gate 1 (full-667 paired bootstrap)
+  but exited via a misclicked `exit` before writing progress.md. The result was in no file and no
+  commit. Re-ran eval/reduction_study.py and reproduced it EXACTLY rather than trusting the paste:
+  last_window AP 0.8905, dAP +0.0556, paired CI [+0.0263, +0.0876].
+  Cross-check: max on sweep 2 = 0.8349 = committed sweep 1 AP exactly -> re-confirms D19.
+- Verified the second sweep finished: 667/667 scores.jsonl, 667 .npz, PID 75682 gone.
+  Found eval/reduction_study.py and eval/calibration.py untracked -- the lost session's output.
+- Read NEW_PLAN.md in full, README.md SS41-45 + S27, progress.md SS11/12/13/17/21.x.
+- Wrote eval/heldout_half.py (180 lines) for R1 gate 2. Reuses reduction_study's bootstrap and
+  reductions rather than re-implementing them (a second copy of the stats is where a fake result
+  would enter -- NEW_PLAN.md R5's own warning).
+- Its null control FAILED on first run (median dAP -0.0252). Diagnosed instead of loosening the
+  threshold: the noise-trace null gave nanmax one fixed lucky draw (AP 0.5630 vs 0.5007 chance)
+  that persists across every split. Fixed by permuting labels per split -> +0.0025. D30.
+- R1 GATE 2 PASSED. Primary split: A selects last_window, held-out B dAP +0.0598 CI
+  [+0.0169, +0.1085]. 1000 splits: A picks last_window 52.4% / max_x_last 47.6%, never a loser;
+  held-out dAP median +0.0551, 5-95% [+0.0291, +0.0796], POSITIVE IN 100% OF SPLITS.
+  Held-out median (+0.0551) ~= full-667 (+0.0556): no winner's-curse shrinkage.
+- Regression guards all pass: eval/benchmark.py (T3 reproduced: AUC 0.5339 / AP 0.5218 /
+  332,325,2,8), eval.calibration --self-check, eval.reduction_study.
+- Fixed eval/calibration.py docstring: documented `python eval/calibration.py` raises
+  ModuleNotFoundError; correct form is `python -m eval.calibration`.
+- Committed 252d282 (678 files: 667 .npz + runs/baselines2 metrics + 3 eval scripts; sweep.log
+  force-added per D24) and PUSHED to origin/main, user-approved. First commit since fd5d97f.
+- FOUND A PLAN DEFECT: R1 gate 3 cannot be run as NEW_PLAN.md words it. DAD/DADA/DoTA consensus
+  sets are POSITIVES-ONLY (165/221/598, all Collision or Near-collision), so the specified AP
+  comparison is undefined. Proposed redesign: peak-position vs annotated Time-of-collision.
+  Left for user sign-off, NOT applied -- NEW_PLAN.md is still an unaccepted proposal. S21.3 item 2.
+- Measured, answering a user challenge ("when crash happen car stops"): DAD is 91% pos-not-ego
+  (camera car witnessed, kept driving), Time-of-collision median 3.0s max 3.7s -- footage continues
+  past every collision. Contrast Nexar: time_of_event median 20.0s vs clip 9.93s, event is OUTSIDE
+  the clip. That contrast is exactly what gate 3 needs.
+- Corrected DAD compute: 165 clips x ~97 s = ~4.5 h, one overnight Air run. The Studio is NOT
+  needed for DAD (an earlier statement this session said it was; wrong, corrected). Disk: 33 GB
+  free on the Air, Studio's ~40 GB figure is from session 1 and stale -- DoTA (~55 GB) fits neither.
+- User corrected the product framing: this session had called it "software that flags crashes".
+  README S27 says "The product is not crash detection... it is the structured incident record."
+  Against S27's ~10 fields exactly ONE works, and it is the commodity one. The 667 committed traces
+  newly unblock t_start/t_peak/t_end -> that became the S13 next action.
+- README.md NOT modified (S16). progress.md updated once, at session end, on the handoff prompt.
+
+
 2026-09-12 (SESSION 5, ~19:50-23:15 IST)
 - Deep recovery: read README SS1-2/41-44 + all of progress.md; verified claims against the repo.
   Result: progress.md was ONE SESSION STALE. A session 4 had already launched the BADAS sweep at
