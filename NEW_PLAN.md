@@ -113,11 +113,66 @@ Each carries the nine required fields. Ranked by *expected gain × probability �
 - **Failure condition:** paired CI on the full 667 includes zero.
 - **Leakage risk:** ⚠️ **test-set selection.** Mitigations: (a) the mechanism is derived from
   documented dataset construction, not fitted; (b) decide on a fixed held-out half of test-public and
-  confirm on the other half; (c) **falsifiable external prediction — on DoTA/DADA, where clips are
-  NOT truncated and the crash is mid-clip, last-window should perform WORSE than max.** If it helps
-  there too, the mechanism is wrong and the Nexar gain is suspect.
+  confirm on the other half; (c) a **falsifiable external prediction** on untruncated clips — see the
+  gate-3 block below.
 - **Validation:** paired bootstrap, full 667, plus the external falsification test.
 - → **Model: opus · Effort: high** — the leakage argument is the whole ballgame.
+
+#### Gate 3 — the external falsification test · **REDESIGNED 2026-09-16 (session 10), user-approved**
+
+> **The original test could not be computed.** It read: *"on DoTA/DADA, where clips are NOT truncated
+> and the crash is mid-clip, last-window should perform WORSE than max."* That is an **AP comparison,
+> and AP requires both classes.** All three vendored annotation sets are **positives-only** —
+> verified twice, by session 8 and again independently in session 10 by counting
+> `vendor/badas-open/annotation/*_concensus.csv`:
+>
+> | Set | n | Event-type | `Time-of-collision` |
+> |---|---|---|---|
+> | `dad_test_concensus.csv` | 165 | 151 Collision + 14 Near-collision | all 165 · 1.60 / **2.96** / 3.68 s |
+> | `dada2000_small_test_concensus.csv` | 221 | 198 + 23 | all 221 · 0.37 / **5.33** / 14.43 s |
+> | `dota_test_concensus.csv` | 598 | 562 + 36 | all 598 · 0.90 / **4.65** / 14.40 s |
+>
+> Zero negatives anywhere. AP is undefined on one class, so the test as written is uncomputable on
+> all three sets.
+>
+> **The replacement — test the mechanism directly, not through an AP proxy.** Every row ships a
+> `Time-of-collision`, so ask the question §3.2 actually rests on: *where does the score peak sit?*
+>
+> - **§3.2's claim:** Nexar positives peak at the clip **end** (0.975 at full n) because Nexar
+>   truncates 500–1500 ms *before* the event. The peak tracks **the event**, which truncation has
+>   pushed to the edge.
+> - **The external prediction:** on untruncated clips the event is mid-clip, so the peak should sit
+>   **at the annotated `Time-of-collision`**, not at the clip end.
+> - **PASS (mechanism survives):** peak position clusters at `Time-of-collision`; normalised peak
+>   position is materially below Nexar's 0.975 and tracks the annotation clip-by-clip.
+> - **FAIL (R1 dies):** peaks pile up at the clip end *regardless* of when the collision was
+>   annotated. That would mean the score merely **drifts upward with watch-time** — last-window would
+>   be winning for a reason that has nothing to do with truncation, and the Nexar +0.0556 would be a
+>   benchmark artifact, not a finding.
+>
+> **Why this is the sharper test, not the weaker one:** the AP version asked whether last-window
+> *loses* on untruncated data — a directional check with one bit of output. This one measures the
+> mechanism's own quantity against a ground-truth timestamp, clip by clip, and can fail in a way that
+> names the alternative explanation. It also works on positives-only data, which is what exists.
+>
+> **Primary target: DAD only.** 165 clips × ~97 s/clip (D10's measured rate) ≈ **4.5 h** — one
+> overnight M4 Air run, no Studio. DAD is also the cleanest case: median `Time-of-collision` 2.96 s,
+> and 91% of its clips are collisions the camera vehicle was *not* in, so the footage keeps rolling
+> past the event. DoTA is out on disk (~55 GB against ~30 GB free on the Air); DADA is a follow-up.
+>
+> **Statistical care — this test has its own traps:**
+> - DAD's dynamic range is narrow (`Time-of-collision` spans 1.60–3.68 s). If DAD clips are a fixed
+>   ~5 s, normalised collision position varies little, so "peak tracks annotation" has **little
+>   variance to explain**. Report the correlation between peak position and annotated position, with
+>   its CI — and if that range is too narrow to resolve, say so and extend to DADA, which spans
+>   0.37–14.43 s. **Do not read a null correlation on a narrow range as a pass.**
+> - Near-collisions (14 in DAD) have no impact; keep them separate from the 151 collisions.
+> - State the comparison against a **clip-end null** explicitly: what peak position would a
+>   watch-time-drift model predict, and does the measurement separate from it?
+> - `t_end` is `(len-1)/fps`, never "end of clip" — upstream discards the final window (§21.4 item 7).
+>
+> **Reuse, do not rebuild:** `eval/timing.py::load_traces_abs` (keeps the absolute NaN offset — the
+> 2-second trap), its `t_peak` argmax, and `eval/adapters.py`'s scoring path unchanged.
 
 ### R2 — Multi-temporal-scale ensemble · **TIER 1**
 
@@ -462,6 +517,10 @@ As instructed, turning the same hostility on v2.
 1. **R1 was chosen by looking at the test set.** The single most serious remaining risk. Three
    mitigations are in place (mechanism-first derivation, held-out confirmation, external
    falsification), but none is as good as a dataset we never touched. **Residual risk: real.**
+   *Update 2026-09-16:* mitigations (a) and (b) are now **discharged** — gate 1 passed at full n=667
+   (+0.0556, CI [+0.0263, +0.0876]) and gate 2's held-out median (+0.0551) matched it with the
+   effect positive in 100% of 1000 splits, so there is **no measurable winner's curse**. Both still
+   live inside Nexar. Mitigation (c), the only one that leaves it, is gate 3 above — **open**.
 2. **§3.1 and §3.2 rest on 268 clips in non-random order.** The sweep visits interleaved
    positive/negative by sorted id, so this is a balanced but not random prefix. If id correlates with
    collection batch, the estimate is biased. Unquantified — flagged, not solved.
@@ -508,7 +567,7 @@ test-public · proprietary-data or trained-in-house claims.
 
 | Item | Kill if |
 |---|---|
-| R1 | paired CI on 667 includes zero **or** last-window also helps on untruncated external data |
+| R1 | paired CI on 667 includes zero **or** gate 3 fails — on untruncated external clips the score peak sits at the clip end regardless of the annotated `Time-of-collision` (watch-time drift, not truncation) |
 | R2 | ensemble fails to beat best single scale on held-out half |
 | R3 | standalone AP < 0.60 **and** no paired fusion gain |
 | R4 | flipped AP drops > 0.05, or no paired gain at n=100 pilot |
