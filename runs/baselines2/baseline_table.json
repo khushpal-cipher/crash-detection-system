@@ -1,0 +1,281 @@
+[
+  {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.8498318677959396,
+    "average_precision": 0.8349234385624276,
+    "precision_at_recall_0.80": 0.7635327635327636,
+    "ece": 0.3286321576038233,
+    "threshold": 0.8,
+    "tp": 318,
+    "fp": 195,
+    "fn": 16,
+    "tn": 138,
+    "tpr": 0.9520958083832335,
+    "fpr": 0.5855855855855856,
+    "fp_per_hour": 216.86199875926886,
+    "negative_hours": 0.899189351364703,
+    "model": "badas-open(stride=1,fps=8.0,img=224)",
+    "skipped": [],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.8415830629492429
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.7756589079292672
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.9578519315599788
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.923005382987681
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.3595238095238096
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.9160287081339713
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.9999999999999999
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.6438727441734373
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.8298109828066335
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 1.0
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.8326149736047171
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.8342844682156276
+        }
+      }
+    },
+    "elapsed_seconds": 92979.4
+  },
+  {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.5339366312420204,
+    "average_precision": 0.5217892175500111,
+    "precision_at_recall_0.80": 0.5245346869712352,
+    "ece": 0.4879863568215893,
+    "threshold": 0.8,
+    "tp": 332,
+    "fp": 325,
+    "fn": 2,
+    "tn": 8,
+    "tpr": 0.9940119760479041,
+    "fpr": 0.975975975975976,
+    "fp_per_hour": 361.4366645987814,
+    "negative_hours": 0.899189351364703,
+    "model": "mobilenetv2-lstm (CCD-trained, retired)",
+    "skipped": [],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.5426123368092024
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.4233837999260234
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.8762939958592132
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.6099931264470502
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.3
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.6145933014354068
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.6583333333333333
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.28231887358637187
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.5896935148215877
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 0.2777777777777778
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.5294928753272178
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.5321428571428571
+        }
+      }
+    },
+    "elapsed_seconds": 0.0
+  },
+  {
+    "n": 667,
+    "n_pos": 334,
+    "n_neg": 333,
+    "roc_auc": 0.5,
+    "average_precision": 0.5007496251874063,
+    "precision_at_recall_0.80": 0.5008,
+    "ece": 0.5007496251874063,
+    "threshold": 0.8,
+    "tp": 0,
+    "fp": 0,
+    "fn": 334,
+    "tn": 333,
+    "tpr": 0.0,
+    "fpr": 0.0,
+    "fp_per_hour": 0.0,
+    "negative_hours": 0.899189351364703,
+    "model": "always-negative",
+    "skipped": [],
+    "by_condition": {
+      "weather": {
+        "Clear": {
+          "n": 458,
+          "n_pos": 234,
+          "average_precision": 0.5109170305676856
+        },
+        "Cloudy": {
+          "n": 177,
+          "n_pos": 79,
+          "average_precision": 0.4463276836158192
+        },
+        "Rain": {
+          "n": 32,
+          "n_pos": 21,
+          "average_precision": 0.65625
+        }
+      },
+      "scene": {
+        "Highway": {
+          "n": 183,
+          "n_pos": 98,
+          "average_precision": 0.5355191256830601
+        },
+        "Industrial": {
+          "n": 12,
+          "n_pos": 3,
+          "average_precision": 0.25
+        },
+        "Other": {
+          "n": 23,
+          "n_pos": 11,
+          "average_precision": 0.4782608695652174
+        },
+        "Rural": {
+          "n": 16,
+          "n_pos": 10,
+          "average_precision": 0.625
+        },
+        "Sub-urban": {
+          "n": 118,
+          "n_pos": 34,
+          "average_precision": 0.288135593220339
+        },
+        "Urban": {
+          "n": 315,
+          "n_pos": 178,
+          "average_precision": 0.5650793650793651
+        }
+      },
+      "light_conditions": {
+        "Bright": {
+          "n": 3,
+          "n_pos": 3
+        },
+        "Dark": {
+          "n": 21,
+          "n_pos": 5,
+          "average_precision": 0.23809523809523808
+        },
+        "Normal": {
+          "n": 608,
+          "n_pos": 308,
+          "average_precision": 0.506578947368421
+        },
+        "Twilight": {
+          "n": 35,
+          "n_pos": 18,
+          "average_precision": 0.5142857142857142
+        }
+      }
+    },
+    "elapsed_seconds": 0.0
+  }
+]

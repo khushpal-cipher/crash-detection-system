@@ -1,0 +1,461 @@
+clips: 667  (limit=None)
+
+Loading V-JEPA model: facebook/vjepa2-vitl-fpc16-256-ssv2
+Using checkpoint: /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2/models/badas/weights/badas_open.pth
+Loading weights:   0%|          | 0/587 [00:00<?, ?it/s]Loading weights: 100%|██████████| 587/587 [00:00<00:00, 7776.18it/s]
+[transformers] [1mVJEPA2Model LOAD REPORT[0m from: facebook/vjepa2-vitl-fpc16-256-ssv2
+Key                                                              | Status     |  | 
+-----------------------------------------------------------------+------------+--+-
+pooler.self_attention_layers.{0, 1, 2}.mlp.fc2.weight            | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.layer_norm1.weight        | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.layer_norm2.bias          | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.mlp.fc1.weight            | UNEXPECTED |  | 
+classifier.weight                                                | UNEXPECTED |  | 
+pooler.cross_attention_layer.mlp.fc2.bias                        | UNEXPECTED |  | 
+pooler.cross_attention_layer.mlp.fc1.weight                      | UNEXPECTED |  | 
+pooler.cross_attention_layer.cross_attn.q_proj.weight            | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.mlp.fc2.bias              | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.v_proj.bias     | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.layer_norm1.bias          | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.mlp.fc1.bias              | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.out_proj.bias   | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.q_proj.weight   | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.q_proj.bias     | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.k_proj.bias     | UNEXPECTED |  | 
+pooler.cross_attention_layer.cross_attn.q_proj.bias              | UNEXPECTED |  | 
+classifier.bias                                                  | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.k_proj.weight   | UNEXPECTED |  | 
+pooler.query_tokens                                              | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.v_proj.weight   | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.self_attn.out_proj.weight | UNEXPECTED |  | 
+pooler.self_attention_layers.{0, 1, 2}.layer_norm2.weight        | UNEXPECTED |  | 
+pooler.cross_attention_layer.mlp.fc2.weight                      | UNEXPECTED |  | 
+pooler.cross_attention_layer.cross_attn.k_proj.bias              | UNEXPECTED |  | 
+pooler.cross_attention_layer.mlp.fc1.bias                        | UNEXPECTED |  | 
+pooler.cross_attention_layer.cross_attn.v_proj.weight            | UNEXPECTED |  | 
+pooler.cross_attention_layer.cross_attn.k_proj.weight            | UNEXPECTED |  | 
+pooler.cross_attention_layer.cross_attn.v_proj.bias              | UNEXPECTED |  | 
+pooler.cross_attention_layer.layer_norm1.weight                  | UNEXPECTED |  | 
+pooler.cross_attention_layer.layer_norm1.bias                    | UNEXPECTED |  | 
+pooler.cross_attention_layer.layer_norm2.weight                  | UNEXPECTED |  | 
+pooler.cross_attention_layer.layer_norm2.bias                    | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Warning: unexpected keys in checkpoint (199 keys)
+Using AutoVideoProcessor for V-JEPA 2
+🎬 Sliding window predictor initialized (window=16, stride=1)
+  badas-open(stride=1,fps=8.0,img=224): 5/667
+  badas-open(stride=1,fps=8.0,img=224): 10/667
+  badas-open(stride=1,fps=8.0,img=224): 15/667
+  badas-open(stride=1,fps=8.0,img=224): 20/667
+  badas-open(stride=1,fps=8.0,img=224): 25/667
+  badas-open(stride=1,fps=8.0,img=224): 30/667
+  badas-open(stride=1,fps=8.0,img=224): 35/667
+  badas-open(stride=1,fps=8.0,img=224): 40/667
+  badas-open(stride=1,fps=8.0,img=224): 45/667
+  badas-open(stride=1,fps=8.0,img=224): 50/667
+  badas-open(stride=1,fps=8.0,img=224): 55/667
+  badas-open(stride=1,fps=8.0,img=224): 60/667
+  badas-open(stride=1,fps=8.0,img=224): 65/667
+  badas-open(stride=1,fps=8.0,img=224): 70/667
+  badas-open(stride=1,fps=8.0,img=224): 75/667
+  badas-open(stride=1,fps=8.0,img=224): 80/667
+  badas-open(stride=1,fps=8.0,img=224): 85/667
+  badas-open(stride=1,fps=8.0,img=224): 90/667
+  badas-open(stride=1,fps=8.0,img=224): 95/667
+  badas-open(stride=1,fps=8.0,img=224): 100/667
+  badas-open(stride=1,fps=8.0,img=224): 105/667
+  badas-open(stride=1,fps=8.0,img=224): 110/667
+  badas-open(stride=1,fps=8.0,img=224): 115/667
+  badas-open(stride=1,fps=8.0,img=224): 120/667
+  badas-open(stride=1,fps=8.0,img=224): 125/667
+  badas-open(stride=1,fps=8.0,img=224): 130/667
+  badas-open(stride=1,fps=8.0,img=224): 135/667
+  badas-open(stride=1,fps=8.0,img=224): 140/667
+  badas-open(stride=1,fps=8.0,img=224): 145/667
+  badas-open(stride=1,fps=8.0,img=224): 150/667
+  badas-open(stride=1,fps=8.0,img=224): 155/667
+  badas-open(stride=1,fps=8.0,img=224): 160/667
+  badas-open(stride=1,fps=8.0,img=224): 165/667
+  badas-open(stride=1,fps=8.0,img=224): 170/667
+  badas-open(stride=1,fps=8.0,img=224): 175/667
+  badas-open(stride=1,fps=8.0,img=224): 180/667
+  badas-open(stride=1,fps=8.0,img=224): 185/667
+  badas-open(stride=1,fps=8.0,img=224): 190/667
+  badas-open(stride=1,fps=8.0,img=224): 195/667
+  badas-open(stride=1,fps=8.0,img=224): 200/667
+  badas-open(stride=1,fps=8.0,img=224): 205/667
+  badas-open(stride=1,fps=8.0,img=224): 210/667
+  badas-open(stride=1,fps=8.0,img=224): 215/667
+  badas-open(stride=1,fps=8.0,img=224): 220/667
+  badas-open(stride=1,fps=8.0,img=224): 225/667
+  badas-open(stride=1,fps=8.0,img=224): 230/667
+  badas-open(stride=1,fps=8.0,img=224): 235/667
+  badas-open(stride=1,fps=8.0,img=224): 240/667
+  badas-open(stride=1,fps=8.0,img=224): 245/667
+  badas-open(stride=1,fps=8.0,img=224): 250/667
+  badas-open(stride=1,fps=8.0,img=224): 255/667
+  badas-open(stride=1,fps=8.0,img=224): 260/667
+  badas-open(stride=1,fps=8.0,img=224): 265/667
+  badas-open(stride=1,fps=8.0,img=224): 270/667
+  badas-open(stride=1,fps=8.0,img=224): 275/667
+  badas-open(stride=1,fps=8.0,img=224): 280/667
+  badas-open(stride=1,fps=8.0,img=224): 285/667
+  badas-open(stride=1,fps=8.0,img=224): 290/667
+  badas-open(stride=1,fps=8.0,img=224): 295/667
+  badas-open(stride=1,fps=8.0,img=224): 300/667
+  badas-open(stride=1,fps=8.0,img=224): 305/667
+  badas-open(stride=1,fps=8.0,img=224): 310/667
+  badas-open(stride=1,fps=8.0,img=224): 315/667
+  badas-open(stride=1,fps=8.0,img=224): 320/667
+  badas-open(stride=1,fps=8.0,img=224): 325/667
+  badas-open(stride=1,fps=8.0,img=224): 330/667
+  badas-open(stride=1,fps=8.0,img=224): 335/667
+  badas-open(stride=1,fps=8.0,img=224): 340/667
+  badas-open(stride=1,fps=8.0,img=224): 345/667
+  badas-open(stride=1,fps=8.0,img=224): 350/667
+  badas-open(stride=1,fps=8.0,img=224): 355/667
+  badas-open(stride=1,fps=8.0,img=224): 360/667
+  badas-open(stride=1,fps=8.0,img=224): 365/667
+  badas-open(stride=1,fps=8.0,img=224): 370/667
+  badas-open(stride=1,fps=8.0,img=224): 375/667
+  badas-open(stride=1,fps=8.0,img=224): 380/667
+  badas-open(stride=1,fps=8.0,img=224): 385/667
+  badas-open(stride=1,fps=8.0,img=224): 390/667
+  badas-open(stride=1,fps=8.0,img=224): 395/667
+  badas-open(stride=1,fps=8.0,img=224): 400/667
+  badas-open(stride=1,fps=8.0,img=224): 405/667
+  badas-open(stride=1,fps=8.0,img=224): 410/667
+  badas-open(stride=1,fps=8.0,img=224): 415/667
+  badas-open(stride=1,fps=8.0,img=224): 420/667
+  badas-open(stride=1,fps=8.0,img=224): 425/667
+  badas-open(stride=1,fps=8.0,img=224): 430/667
+  badas-open(stride=1,fps=8.0,img=224): 435/667
+  badas-open(stride=1,fps=8.0,img=224): 440/667
+  badas-open(stride=1,fps=8.0,img=224): 445/667
+  badas-open(stride=1,fps=8.0,img=224): 450/667
+  badas-open(stride=1,fps=8.0,img=224): 455/667
+  badas-open(stride=1,fps=8.0,img=224): 460/667
+  badas-open(stride=1,fps=8.0,img=224): 465/667
+  badas-open(stride=1,fps=8.0,img=224): 470/667
+  badas-open(stride=1,fps=8.0,img=224): 475/667
+  badas-open(stride=1,fps=8.0,img=224): 480/667
+  badas-open(stride=1,fps=8.0,img=224): 485/667
+  badas-open(stride=1,fps=8.0,img=224): 490/667
+  badas-open(stride=1,fps=8.0,img=224): 495/667
+  badas-open(stride=1,fps=8.0,img=224): 500/667
+  badas-open(stride=1,fps=8.0,img=224): 505/667
+  badas-open(stride=1,fps=8.0,img=224): 510/667
+  badas-open(stride=1,fps=8.0,img=224): 515/667
+  badas-open(stride=1,fps=8.0,img=224): 520/667
+  badas-open(stride=1,fps=8.0,img=224): 525/667
+  badas-open(stride=1,fps=8.0,img=224): 530/667
+  badas-open(stride=1,fps=8.0,img=224): 535/667
+  badas-open(stride=1,fps=8.0,img=224): 540/667
+  badas-open(stride=1,fps=8.0,img=224): 545/667
+  badas-open(stride=1,fps=8.0,img=224): 550/667
+  badas-open(stride=1,fps=8.0,img=224): 555/667
+  badas-open(stride=1,fps=8.0,img=224): 560/667
+  badas-open(stride=1,fps=8.0,img=224): 565/667
+  badas-open(stride=1,fps=8.0,img=224): 570/667
+  badas-open(stride=1,fps=8.0,img=224): 575/667
+  badas-open(stride=1,fps=8.0,img=224): 580/667
+  badas-open(stride=1,fps=8.0,img=224): 585/667
+  badas-open(stride=1,fps=8.0,img=224): 590/667
+  badas-open(stride=1,fps=8.0,img=224): 595/667
+  badas-open(stride=1,fps=8.0,img=224): 600/667
+  badas-open(stride=1,fps=8.0,img=224): 605/667
+  badas-open(stride=1,fps=8.0,img=224): 610/667
+  badas-open(stride=1,fps=8.0,img=224): 615/667
+  badas-open(stride=1,fps=8.0,img=224): 620/667
+  badas-open(stride=1,fps=8.0,img=224): 625/667
+  badas-open(stride=1,fps=8.0,img=224): 630/667
+  badas-open(stride=1,fps=8.0,img=224): 635/667
+  badas-open(stride=1,fps=8.0,img=224): 640/667
+  badas-open(stride=1,fps=8.0,img=224): 645/667
+  badas-open(stride=1,fps=8.0,img=224): 650/667
+  badas-open(stride=1,fps=8.0,img=224): 655/667
+  badas-open(stride=1,fps=8.0,img=224): 660/667
+  badas-open(stride=1,fps=8.0,img=224): 665/667
+  badas-open(stride=1,fps=8.0,img=224)           AP 0.8349  AUC 0.8498  FP/h   216.9 over 0.90h  ECE 0.3286  [92979.4s]
+  mobilenetv2-lstm (CCD-trained, retired): 5/667
+  mobilenetv2-lstm (CCD-trained, retired): 10/667
+  mobilenetv2-lstm (CCD-trained, retired): 15/667
+  mobilenetv2-lstm (CCD-trained, retired): 20/667
+  mobilenetv2-lstm (CCD-trained, retired): 25/667
+  mobilenetv2-lstm (CCD-trained, retired): 30/667
+  mobilenetv2-lstm (CCD-trained, retired): 35/667
+  mobilenetv2-lstm (CCD-trained, retired): 40/667
+  mobilenetv2-lstm (CCD-trained, retired): 45/667
+  mobilenetv2-lstm (CCD-trained, retired): 50/667
+  mobilenetv2-lstm (CCD-trained, retired): 55/667
+  mobilenetv2-lstm (CCD-trained, retired): 60/667
+  mobilenetv2-lstm (CCD-trained, retired): 65/667
+  mobilenetv2-lstm (CCD-trained, retired): 70/667
+  mobilenetv2-lstm (CCD-trained, retired): 75/667
+  mobilenetv2-lstm (CCD-trained, retired): 80/667
+  mobilenetv2-lstm (CCD-trained, retired): 85/667
+  mobilenetv2-lstm (CCD-trained, retired): 90/667
+  mobilenetv2-lstm (CCD-trained, retired): 95/667
+  mobilenetv2-lstm (CCD-trained, retired): 100/667
+  mobilenetv2-lstm (CCD-trained, retired): 105/667
+  mobilenetv2-lstm (CCD-trained, retired): 110/667
+  mobilenetv2-lstm (CCD-trained, retired): 115/667
+  mobilenetv2-lstm (CCD-trained, retired): 120/667
+  mobilenetv2-lstm (CCD-trained, retired): 125/667
+  mobilenetv2-lstm (CCD-trained, retired): 130/667
+  mobilenetv2-lstm (CCD-trained, retired): 135/667
+  mobilenetv2-lstm (CCD-trained, retired): 140/667
+  mobilenetv2-lstm (CCD-trained, retired): 145/667
+  mobilenetv2-lstm (CCD-trained, retired): 150/667
+  mobilenetv2-lstm (CCD-trained, retired): 155/667
+  mobilenetv2-lstm (CCD-trained, retired): 160/667
+  mobilenetv2-lstm (CCD-trained, retired): 165/667
+  mobilenetv2-lstm (CCD-trained, retired): 170/667
+  mobilenetv2-lstm (CCD-trained, retired): 175/667
+  mobilenetv2-lstm (CCD-trained, retired): 180/667
+  mobilenetv2-lstm (CCD-trained, retired): 185/667
+  mobilenetv2-lstm (CCD-trained, retired): 190/667
+  mobilenetv2-lstm (CCD-trained, retired): 195/667
+  mobilenetv2-lstm (CCD-trained, retired): 200/667
+  mobilenetv2-lstm (CCD-trained, retired): 205/667
+  mobilenetv2-lstm (CCD-trained, retired): 210/667
+  mobilenetv2-lstm (CCD-trained, retired): 215/667
+  mobilenetv2-lstm (CCD-trained, retired): 220/667
+  mobilenetv2-lstm (CCD-trained, retired): 225/667
+  mobilenetv2-lstm (CCD-trained, retired): 230/667
+  mobilenetv2-lstm (CCD-trained, retired): 235/667
+  mobilenetv2-lstm (CCD-trained, retired): 240/667
+  mobilenetv2-lstm (CCD-trained, retired): 245/667
+  mobilenetv2-lstm (CCD-trained, retired): 250/667
+  mobilenetv2-lstm (CCD-trained, retired): 255/667
+  mobilenetv2-lstm (CCD-trained, retired): 260/667
+  mobilenetv2-lstm (CCD-trained, retired): 265/667
+  mobilenetv2-lstm (CCD-trained, retired): 270/667
+  mobilenetv2-lstm (CCD-trained, retired): 275/667
+  mobilenetv2-lstm (CCD-trained, retired): 280/667
+  mobilenetv2-lstm (CCD-trained, retired): 285/667
+  mobilenetv2-lstm (CCD-trained, retired): 290/667
+  mobilenetv2-lstm (CCD-trained, retired): 295/667
+  mobilenetv2-lstm (CCD-trained, retired): 300/667
+  mobilenetv2-lstm (CCD-trained, retired): 305/667
+  mobilenetv2-lstm (CCD-trained, retired): 310/667
+  mobilenetv2-lstm (CCD-trained, retired): 315/667
+  mobilenetv2-lstm (CCD-trained, retired): 320/667
+  mobilenetv2-lstm (CCD-trained, retired): 325/667
+  mobilenetv2-lstm (CCD-trained, retired): 330/667
+  mobilenetv2-lstm (CCD-trained, retired): 335/667
+  mobilenetv2-lstm (CCD-trained, retired): 340/667
+  mobilenetv2-lstm (CCD-trained, retired): 345/667
+  mobilenetv2-lstm (CCD-trained, retired): 350/667
+  mobilenetv2-lstm (CCD-trained, retired): 355/667
+  mobilenetv2-lstm (CCD-trained, retired): 360/667
+  mobilenetv2-lstm (CCD-trained, retired): 365/667
+  mobilenetv2-lstm (CCD-trained, retired): 370/667
+  mobilenetv2-lstm (CCD-trained, retired): 375/667
+  mobilenetv2-lstm (CCD-trained, retired): 380/667
+  mobilenetv2-lstm (CCD-trained, retired): 385/667
+  mobilenetv2-lstm (CCD-trained, retired): 390/667
+  mobilenetv2-lstm (CCD-trained, retired): 395/667
+  mobilenetv2-lstm (CCD-trained, retired): 400/667
+  mobilenetv2-lstm (CCD-trained, retired): 405/667
+  mobilenetv2-lstm (CCD-trained, retired): 410/667
+  mobilenetv2-lstm (CCD-trained, retired): 415/667
+  mobilenetv2-lstm (CCD-trained, retired): 420/667
+  mobilenetv2-lstm (CCD-trained, retired): 425/667
+  mobilenetv2-lstm (CCD-trained, retired): 430/667
+  mobilenetv2-lstm (CCD-trained, retired): 435/667
+  mobilenetv2-lstm (CCD-trained, retired): 440/667
+  mobilenetv2-lstm (CCD-trained, retired): 445/667
+  mobilenetv2-lstm (CCD-trained, retired): 450/667
+  mobilenetv2-lstm (CCD-trained, retired): 455/667
+  mobilenetv2-lstm (CCD-trained, retired): 460/667
+  mobilenetv2-lstm (CCD-trained, retired): 465/667
+  mobilenetv2-lstm (CCD-trained, retired): 470/667
+  mobilenetv2-lstm (CCD-trained, retired): 475/667
+  mobilenetv2-lstm (CCD-trained, retired): 480/667
+  mobilenetv2-lstm (CCD-trained, retired): 485/667
+  mobilenetv2-lstm (CCD-trained, retired): 490/667
+  mobilenetv2-lstm (CCD-trained, retired): 495/667
+  mobilenetv2-lstm (CCD-trained, retired): 500/667
+  mobilenetv2-lstm (CCD-trained, retired): 505/667
+  mobilenetv2-lstm (CCD-trained, retired): 510/667
+  mobilenetv2-lstm (CCD-trained, retired): 515/667
+  mobilenetv2-lstm (CCD-trained, retired): 520/667
+  mobilenetv2-lstm (CCD-trained, retired): 525/667
+  mobilenetv2-lstm (CCD-trained, retired): 530/667
+  mobilenetv2-lstm (CCD-trained, retired): 535/667
+  mobilenetv2-lstm (CCD-trained, retired): 540/667
+  mobilenetv2-lstm (CCD-trained, retired): 545/667
+  mobilenetv2-lstm (CCD-trained, retired): 550/667
+  mobilenetv2-lstm (CCD-trained, retired): 555/667
+  mobilenetv2-lstm (CCD-trained, retired): 560/667
+  mobilenetv2-lstm (CCD-trained, retired): 565/667
+  mobilenetv2-lstm (CCD-trained, retired): 570/667
+  mobilenetv2-lstm (CCD-trained, retired): 575/667
+  mobilenetv2-lstm (CCD-trained, retired): 580/667
+  mobilenetv2-lstm (CCD-trained, retired): 585/667
+  mobilenetv2-lstm (CCD-trained, retired): 590/667
+  mobilenetv2-lstm (CCD-trained, retired): 595/667
+  mobilenetv2-lstm (CCD-trained, retired): 600/667
+  mobilenetv2-lstm (CCD-trained, retired): 605/667
+  mobilenetv2-lstm (CCD-trained, retired): 610/667
+  mobilenetv2-lstm (CCD-trained, retired): 615/667
+  mobilenetv2-lstm (CCD-trained, retired): 620/667
+  mobilenetv2-lstm (CCD-trained, retired): 625/667
+  mobilenetv2-lstm (CCD-trained, retired): 630/667
+  mobilenetv2-lstm (CCD-trained, retired): 635/667
+  mobilenetv2-lstm (CCD-trained, retired): 640/667
+  mobilenetv2-lstm (CCD-trained, retired): 645/667
+  mobilenetv2-lstm (CCD-trained, retired): 650/667
+  mobilenetv2-lstm (CCD-trained, retired): 655/667
+  mobilenetv2-lstm (CCD-trained, retired): 660/667
+  mobilenetv2-lstm (CCD-trained, retired): 665/667
+  mobilenetv2-lstm (CCD-trained, retired)        AP 0.5218  AUC 0.5339  FP/h   361.4 over 0.90h  ECE 0.4880  [0.0s]
+  always-negative: 5/667
+  always-negative: 10/667
+  always-negative: 15/667
+  always-negative: 20/667
+  always-negative: 25/667
+  always-negative: 30/667
+  always-negative: 35/667
+  always-negative: 40/667
+  always-negative: 45/667
+  always-negative: 50/667
+  always-negative: 55/667
+  always-negative: 60/667
+  always-negative: 65/667
+  always-negative: 70/667
+  always-negative: 75/667
+  always-negative: 80/667
+  always-negative: 85/667
+  always-negative: 90/667
+  always-negative: 95/667
+  always-negative: 100/667
+  always-negative: 105/667
+  always-negative: 110/667
+  always-negative: 115/667
+  always-negative: 120/667
+  always-negative: 125/667
+  always-negative: 130/667
+  always-negative: 135/667
+  always-negative: 140/667
+  always-negative: 145/667
+  always-negative: 150/667
+  always-negative: 155/667
+  always-negative: 160/667
+  always-negative: 165/667
+  always-negative: 170/667
+  always-negative: 175/667
+  always-negative: 180/667
+  always-negative: 185/667
+  always-negative: 190/667
+  always-negative: 195/667
+  always-negative: 200/667
+  always-negative: 205/667
+  always-negative: 210/667
+  always-negative: 215/667
+  always-negative: 220/667
+  always-negative: 225/667
+  always-negative: 230/667
+  always-negative: 235/667
+  always-negative: 240/667
+  always-negative: 245/667
+  always-negative: 250/667
+  always-negative: 255/667
+  always-negative: 260/667
+  always-negative: 265/667
+  always-negative: 270/667
+  always-negative: 275/667
+  always-negative: 280/667
+  always-negative: 285/667
+  always-negative: 290/667
+  always-negative: 295/667
+  always-negative: 300/667
+  always-negative: 305/667
+  always-negative: 310/667
+  always-negative: 315/667
+  always-negative: 320/667
+  always-negative: 325/667
+  always-negative: 330/667
+  always-negative: 335/667
+  always-negative: 340/667
+  always-negative: 345/667
+  always-negative: 350/667
+  always-negative: 355/667
+  always-negative: 360/667
+  always-negative: 365/667
+  always-negative: 370/667
+  always-negative: 375/667
+  always-negative: 380/667
+  always-negative: 385/667
+  always-negative: 390/667
+  always-negative: 395/667
+  always-negative: 400/667
+  always-negative: 405/667
+  always-negative: 410/667
+  always-negative: 415/667
+  always-negative: 420/667
+  always-negative: 425/667
+  always-negative: 430/667
+  always-negative: 435/667
+  always-negative: 440/667
+  always-negative: 445/667
+  always-negative: 450/667
+  always-negative: 455/667
+  always-negative: 460/667
+  always-negative: 465/667
+  always-negative: 470/667
+  always-negative: 475/667
+  always-negative: 480/667
+  always-negative: 485/667
+  always-negative: 490/667
+  always-negative: 495/667
+  always-negative: 500/667
+  always-negative: 505/667
+  always-negative: 510/667
+  always-negative: 515/667
+  always-negative: 520/667
+  always-negative: 525/667
+  always-negative: 530/667
+  always-negative: 535/667
+  always-negative: 540/667
+  always-negative: 545/667
+  always-negative: 550/667
+  always-negative: 555/667
+  always-negative: 560/667
+  always-negative: 565/667
+  always-negative: 570/667
+  always-negative: 575/667
+  always-negative: 580/667
+  always-negative: 585/667
+  always-negative: 590/667
+  always-negative: 595/667
+  always-negative: 600/667
+  always-negative: 605/667
+  always-negative: 610/667
+  always-negative: 615/667
+  always-negative: 620/667
+  always-negative: 625/667
+  always-negative: 630/667
+  always-negative: 635/667
+  always-negative: 640/667
+  always-negative: 645/667
+  always-negative: 650/667
+  always-negative: 655/667
+  always-negative: 660/667
+  always-negative: 665/667
+  always-negative                                AP 0.5007  AUC 0.5000  FP/h     0.0 over 0.90h  ECE 0.5007  [0.0s]
+
+====================================================================================================
+BASELINE TABLE  (667 clips, identical split and denominator)
+====================================================================================================
+  badas-open(stride=1,fps=8.0,img=224)           AP 0.8349  AUC 0.8498  FP/h   216.9 over 0.90h  ECE 0.3286
+  mobilenetv2-lstm (CCD-trained, retired)        AP 0.5218  AUC 0.5339  FP/h   361.4 over 0.90h  ECE 0.4880
+  always-negative                                AP 0.5007  AUC 0.5000  FP/h     0.0 over 0.90h  ECE 0.5007
+====================================================================================================
+FP/hour is reported with its denominator because the denominator is small:
+  0.90 h of negatives cannot evidence a rate below ~1.1/h (README §34 -> UK-HN-500).
+
+wrote runs/baselines2/baseline_table.json
