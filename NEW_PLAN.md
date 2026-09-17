@@ -184,6 +184,36 @@ Each carries the nine required fields. Ranked by *expected gain × probability �
 > download, and its terms are not posted publicly. **Confirm the terms in writing before use** —
 > §22/§23 licence discipline applies, and a research-only grant would bar it from any commercial
 > claim even though it may still be used as an internal falsification test.
+>
+> > ### 🔴 ANNOTATION-SOURCE CORRECTION (2026-09-17, session 11 — **D45**)
+> >
+> > **Gate 3a does NOT use `vendor/badas-open/annotation/dada2000_small_test_concensus.csv`.**
+> > That file is named throughout this block and **its ids do not map onto the obtainable DADA
+> > archive.** Only **132/221** matched; nine of DADA's 61 type folders are absent from the mirror;
+> > and among the matched ones **11/132 annotate a collision after the clip ends** — `41_007` claims
+> > 12.37 s in an 87-frame (2.9 s) clip, and no frame rate from 10 to 60 fps reconciles them. **The
+> > annotation describes different videos.** Using it would have correlated each clip's peak against
+> > a *different* clip's collision time and produced a confident, meaningless number.
+> >
+> > **3a's annotation is DADA's own `Sheet1` (`dada标注.xlsx`)**, shipped beside the clips as
+> > `data/dada2000/gate3a/dada_gate3a_annotation.csv` (220 rows, stratified on collision position,
+> > seed 0 — D47). Rows failing a consistency check are **dropped, never repaired** (D48).
+> > **Do not "restore" the BADAS CSV.**
+> >
+> > **Mapping proven independently:** the sheet's `total frames` equals the on-disk frame count for
+> > **1949/1962** clips — a quantity the mapping was not fitted on.
+> >
+> > **This also eliminates the time-base risk below rather than merely checking it.** Position is
+> > `accident_frame / total_frames`, a **ratio**, so the frame rate cancels completely. The clips
+> > were stitched at 30 fps with frame counts asserted preserved, and the annotation's seconds are
+> > `accident_frame / 30` — the *same* 30 — so seconds and frames cannot drift apart.
+> >
+> > **Corpus, measured over the 220 selected clips:** normalised collision position median **0.541**,
+> > IQR 0.282, range 0.084–0.995; seconds IQR **4.57 s**; only **3.6%** in the final 10% of the clip,
+> > against **Nexar positives' 0.975 / 73.7%**. That contrast is what lets 3a discriminate at all.
+> >
+> > 🔴 **DADA posts no licence.** Internal falsification only (D43) — never in an external write-up
+> > or a commercial claim.
 
 > **The test design — the mechanism directly, not through an AP proxy.** Every positive row ships a
 > `Time-of-collision`, so ask the question §3.2 actually rests on: *where does the score peak sit?*
@@ -218,6 +248,8 @@ Each carries the nine required fields. Ranked by *expected gain × probability �
 >   describes 100-frame clips as 5 s (20 fps) — **the two readings disagree by 1.5 s.** Before
 >   trusting any offset on DADA, verify one decoded clip's true duration and fps against its
 >   annotation. **A systematic offset would corrupt 3a silently.**
+>   **→ DISCHARGED for 3a by D45 (see the correction block above): the gate turns on a ratio, so the
+>   frame rate cancels and there is no offset to carry. This bullet still binds 3b on DAD.**
 > - Near-collisions (23 in DADA) have no impact; keep them separate from the 198 collisions.
 > - State the comparison against a **clip-end null** explicitly: what peak position would a
 >   watch-time-drift model predict, and does the measurement separate from it?
