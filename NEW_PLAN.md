@@ -154,10 +154,28 @@ Each carries the nine required fields. Ranked by *expected gain × probability �
 >
 > **Resulting split of the gate, each test on the data that suits it:**
 >
-> | Test | Dataset | Why | Cost (~97 s/clip, D10) |
+> | Test | Dataset | Why | Cost — **see the correction below** |
 > |---|---|---|---|
-> | **3a — mechanism** (peak tracks annotation) | **DADA-2000**, 221 clips | only set with real collision-time variance (IQR 4.63 s) and genuinely mid-clip events | ~6.0 h, Air overnight |
-> | **3b — AP** (last-window should LOSE on untruncated data) | **DAD full test split**, 466 clips (165 pos + 301 neg) | restores the plan's original design; the negatives exist | ~7.5 h, Air overnight |
+> | **3a — mechanism** (peak tracks annotation) | **DADA-2000**, 221 clips | only set with real collision-time variance (IQR 4.63 s) and genuinely mid-clip events | **~10.3 h** at 167 s/clip, Air overnight |
+> | **3b — AP** (last-window should LOSE on untruncated data) | **DAD full test split**, 466 clips (165 pos + 301 neg) | restores the plan's original design; the negatives exist | **~21.6 h** at 167 s/clip — but DAD's clips are 5 s, ~half Nexar's, so likely far less |
+>
+> > **⚠️ COST CORRECTION (2026-09-17).** The first version of this table used **~97 s/clip**.
+> > `eval/run_baselines.py`'s own docstring forbids that figure: the rate measured over 140 clips of
+> > the live sweep was **~167 s/clip end-to-end**, and it states *"the earlier ~97 s/clip (6-clip
+> > smoke) and ~10 h (compute-only) figures are both too optimistic — do not plan against them."*
+> > Both estimates above were therefore understated by ~1.7×. **Per-clip cost scales with clip
+> > duration**, so neither figure transfers cleanly between corpora — DADA's clips are longer and
+> > variable, DAD's are a fixed 5 s. **Measure a 20-clip pilot and replace these numbers before
+> > committing to any full run** (§7.2's own instruction, and the `badas_smoke.py` precedent).
+> > Stop condition: if a pilot implies > 18 h for 221 clips, re-plan onto the Studio or a subsample
+> > stratified on `Time-of-collision` — never on score.
+> >
+> > **🔴 §7.2's tail-scoring optimisation does NOT apply to gate 3a.** Scoring only the final ~8
+> > windows is what makes most of this plan fit the hardware, but **3a asks where in the clip the
+> > peak falls**, which needs the dense stride-1 trace over the whole clip. A tail-only run would
+> > presuppose the answer. **3a must be a full dense sweep**, and its cost cannot be reduced that
+> > way. (3b, being an AP comparison of two reductions, *could* use a tail run — but only once the
+> > reductions it compares are both computable from the tail, which `max` is not.)
 >
 > **R1 must survive both.** They fail independently and for different reasons, which is the point.
 > DoTA stays excluded on disk (~55 GB against ~30 GB free on the Air).

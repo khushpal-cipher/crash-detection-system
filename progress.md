@@ -1,11 +1,66 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-17, end of session 10** (session ran 2026-09-16 evening into 2026-09-17).
-Six commits, all pushed, working tree clean. `NEW_PLAN.md` is the detailed/current execution plan and
-must be read alongside `README.md`.
+Last updated: **2026-09-17, end of session 10 (continued)**. `NEW_PLAN.md` is the detailed/current
+execution plan and must be read alongside `README.md`.
 
-> # ▶ SESSION 10 (2026-09-16 evening → 2026-09-17) — READ THIS FIRST
+> # ▶▶ SESSION 10 CONTINUATION (2026-09-17, after the 7e1ea9a handoff) — READ THIS FIRST
+>
+> **Session 10 wrote a handoff (`7e1ea9a`), then KEPT GOING.** Everything in the SESSION 10 block
+> below is still accurate; this block records what happened after it. **Read both.**
+>
+> **Nothing is running. No code was written in the continuation.** The only work was
+> investigation, three decisions, and one plan-document correction.
+>
+> ### What the continuation established
+>
+> **1. 🔴 DAD, DADA-2000 and DoTA are NOT DOWNLOADED. CONFIRMED by exhaustive search** — the repo,
+> the whole home directory, and `/Volumes`. The only video on this machine is Nexar test-public
+> (667 clips, 2.7 GB) plus 3 demo clips in `videos/`. **What exists for the three external sets is
+> only their annotation CSVs**, vendored with BADAS-Open source — which had created a false
+> impression of having the data. **You have the index, not the library.**
+>
+> **2. Gate 3 therefore cannot start, and it is an ACQUISITION blocker, not a code one.**
+>
+> **3. Disk, measured today: 34 GB free** (not the ~30 GB previously on record), 228 GB total.
+> Answering the user's direct question — **is there room for DAD + DADA + DoTA? NO.** DADA ~53 GB +
+> DoTA ~55 GB ≈ 108 GB compressed before extraction, plus DAD (size unpublished). **But all three
+> were never needed** — DoTA is explicitly excluded, and gate 3 needs only 221 DADA clips and 466
+> DAD clips.
+>
+> **4. The DADA Google Drive mirror is the pivot, and it is UNRESOLVED.**
+> https://drive.google.com/drive/folders/1l1_xOMWfs2eSoh0771ZJOcS2tcKwhh-C — the folder exists
+> ("DADA2000", modified Dec 2024) but its listing is JS-rendered and a text fetcher cannot
+> enumerate it. **If it is per-file, we take only the 221 test clips ≈ 6 GB and the blocker
+> evaporates. If it is one archive, ~53 GB vs 34 GB free.** The user chose to inspect it personally.
+>
+> **5. 🔴 A COST ERROR IN MY OWN PLAN CHANGE, found before it cost anything.** The gate-3 block
+> committed at `d0bc237` estimated ~6.0 h / ~7.5 h using **~97 s/clip**. `eval/run_baselines.py`'s
+> docstring *explicitly forbids that number*: the measured rate over 140 clips of the live sweep was
+> **~167 s/clip**, and it says *"do not plan against them."* **Estimates were understated ~1.7×** →
+> corrected to ~10.3 h (DADA) / ~21.6 h (DAD). **This is the only uncommitted-then-committed change
+> of the continuation.**
+>
+> **6. 🔴 §7.2's tail-scoring optimisation does NOT apply to gate 3a. CONFIRMED by reasoning.**
+> Scoring only the final ~8 windows is what makes most of `NEW_PLAN.md` fit this hardware — but 3a
+> asks **where in the clip the peak falls**, which needs the dense stride-1 trace over the whole
+> clip. A tail-only run would presuppose the answer. **3a must be a full dense sweep.**
+>
+> **7. The approved implementation plan lives at `~/.claude/plans/magical-snuggling-muffin.md`** —
+> 8 steps, user-approved. It is scratch and outside the repo; **this file remains authoritative**,
+> but that plan has the step-by-step detail and a progress table.
+>
+> ### What was NOT done, despite being promised
+>
+> I told the user I would build the plumbing and the analysis module while waiting on data.
+> **I did neither.** Of three things promised, one was done (the plan correction).
+> `scripts/score_external.py` and `eval/gate3_mechanism.py` **do not exist**. Both are unblocked
+> and buildable against synthetic data — they are the obvious next coding work.
+>
+> **Read order for a brand-new Claude: this block → the SESSION 10 block below → §21.6 (continuation
+> findings) → §13 (exact next action) → §12 → `NEW_PLAN.md` R1 gate-3 block → §21.5.**
+
+> # ▶ SESSION 10 (2026-09-16 evening → 2026-09-17) — the earlier part of the same session
 >
 > **Nothing is running. Nothing is partially done. Everything is committed AND pushed.**
 > `git status` is clean, `git log origin/main..HEAD` is empty, HEAD = **`37f02b0`**.
@@ -2058,6 +2113,29 @@ Do not reverse these without new evidence.
   structurally frame 90 ≈ normalised 0.90, near the clip end like Nexar). §21.5 item 2. **This is a
   decision of record — the user signed it off** and it is committed in `NEW_PLAN.md` at `d0bc237`.
 
+**SESSION 10 CONTINUATION decisions:**
+
+- **D40 — Gate-3 cost estimates are ~10.3 h (DADA) / ~21.6 h (DAD), and a pilot must replace them.**
+  **Why:** the ~6.0/7.5 h figures in `d0bc237` used ~97 s/clip, which `run_baselines.py`'s docstring
+  explicitly forbids planning against; the measured rate is ~167 s/clip. Cost also scales with clip
+  duration, so no figure transfers between corpora. **Measure 20 clips before any full run.**
+- **D41 — Gate 3a must be a FULL DENSE stride-1 sweep; §7.2's tail-scoring is forbidden for it.**
+  **Why:** 3a asks where in the clip the peak falls. A tail-only run presupposes the answer. This
+  removes the ~10× saving the rest of the plan relies on, which is why D40's cost matters.
+- **D42 — External scoring goes in a standalone `scripts/score_external.py`, NOT a `--clips-dir`
+  flag on `run_baselines.py`.** **Why:** `benchmark.run()` has four label/Nexar dependencies
+  (`labels[cid]`, `hours(neg_ids, table)`, `evaluate()` needing both classes, `load_metadata()`)
+  and is the function all four regression guards exercise. A positives-only trace job needs none of
+  it. The standalone script is the smaller diff *and* cannot break the guards.
+- **D43 — DAD and DADA-2000 are INTERNAL-FALSIFICATION-ONLY.** **Why:** neither posts any licence
+  or terms (verified from both project pages this session), and both are web/YouTube-derived.
+  Precedent: BDD100K was excluded from this project on exactly these grounds (`NEW_PLAN.md` §8.2).
+  They may be used to try to *kill* R1; they may **never** appear in an external write-up, pitch, or
+  commercial claim without written terms. **User-approved.**
+- **D44 — Disk strategy: free space on the Air first, Mac Studio as fallback.** **User-approved.**
+  Caveat recorded: the Studio's free disk is unknown and its stale ~40 GB is itself below DADA's
+  53 GB, so it is **not** an automatic solution. **DoTA stays excluded** (~55 GB).
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
 Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
 gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
@@ -2066,6 +2144,22 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after the SESSION 10 CONTINUATION:**
+
+- **🔴 Do not go looking for DAD / DADA / DoTA on disk.** Searched exhaustively 2026-09-17 — the
+  repo, all of `~` to depth 4, and `/Volumes`. **They are not there.** Only their annotation CSVs
+  in `vendor/badas-open/annotation/` exist, and those are *timing* files, not video.
+- **Do not plan gate 3 against ~97 s/clip or the ~6.0/7.5 h figures** (D40). Use ~167 s/clip, and
+  replace even that with a 20-clip pilot measurement.
+- **Do not tail-score gate 3a** (D41) — it presupposes the answer. Full dense stride-1 only.
+- **Do not add `--clips-dir` to `eval/run_baselines.py`** (D42). Write the standalone
+  `scripts/score_external.py` instead; `benchmark.run()` is guard-critical and label-coupled.
+- **Do not assume the Mac Studio solves the disk problem.** Its ~40 GB is stale *and* below DADA's
+  53 GB. `df -h` it first.
+- **Do not cite DAD or DADA in anything external** (D43) — no licence, internal falsification only.
+- **Do not assume `scripts/score_external.py` or `eval/gate3_mechanism.py` exist.** They were
+  promised and **not built** (§21.6 item 8).
 
 **Added after SESSION 10 — do NOT redo these, and do NOT undo them:**
 
@@ -2271,12 +2365,74 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-17, end of session 10**
+## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-17, end of session 10 (continued)**
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 ###
+### **Build `eval/gate3_mechanism.py` and `scripts/score_external.py` — the two unblocked pieces of
+### gate 3. They need NO downloaded data and are fully testable against synthetic traces.**
+###
+### **Why this and not the data:** gate 3's data acquisition is blocked on **two things only the
+### user can do** (inspect the DADA Drive folder; submit DAD's Google Form). Those may take days.
+### Meanwhile both code pieces can be written and self-checked now, so that **the moment clips land
+### the pilot starts immediately** instead of beginning a build. Session 10 promised this work and
+### did not do it (§21.6 item 8). Full step-by-step spec: steps 5 and 6 of
+### `~/.claude/plans/magical-snuggling-muffin.md` (user-approved).
+###
+### **`scripts/score_external.py`** (~40 lines) — score an arbitrary clip directory:
+### - `--clips-dir`, `--out`, `--limit` (for the 20-clip pilot).
+### - Reuse `eval/adapters.py::BadasOpen` **completely unchanged** — `save_frames_dir` is already a
+###   constructor parameter and already writes the exact `.npz` format `eval/timing.py` reads.
+### - Replicate ONLY the resume behaviour: append each clip to `scores.jsonl`, skip ids already
+###   present. Print elapsed s/clip (that is what the pilot measures).
+### - **No labels, no metrics** — the external sets are positives-only and 3a needs traces, not AP.
+### - 🔴 **Do NOT add `--clips-dir` to `eval/run_baselines.py`.** D42/§21.6 item 7: `benchmark.run()`
+###   has four label/Nexar dependencies and is the function all four regression guards exercise.
+###
+### **`eval/gate3_mechanism.py`** — the 3a analysis:
+### - Reuse `eval/timing.py::load_traces_abs` (**keeps the absolute NaN offset — the 2-second trap;
+###   `reduction_study.load_traces` strips 16 leading NaNs and would put every timestamp 2 s early,
+###   silently**) and its `t_peak` argmax and `t = index / target_fps` convention (fps read per-clip
+###   from the `.npz`, **never hard-coded**).
+### - Report together: (a) correlation of measured `t_peak` vs annotated `Time-of-collision` with
+###   bootstrap CI, (b) **the annotation's own IQR beside it** (DADA 4.63 s), (c) normalised peak
+###   position vs Nexar's 0.975 and vs a clip-end null.
+### - `--self-check` on synthetic traces: a known peak position is recovered; a clip-end-peaked
+###   trace is reported as NOT tracking the annotation; the NaN-offset assertion is preserved.
+###
+### **Verify after building:** `git status` must show `eval/benchmark.py`, `eval/run_baselines.py`
+### and `eval/adapters.py` **unmodified**, and all four guards must still reproduce exactly:
+### ```bash
+### ~/envs/badas/bin/python eval/benchmark.py              # T3: AUC 0.5339 / AP 0.5218
+### ~/envs/badas/bin/python -m eval.reduction_study        # max 0.8349, last_window 0.8905 +0.0556
+### ~/envs/badas/bin/python -m eval.timing --self-check    # 7/7
+### ~/envs/badas/bin/python -m eval.heldout_half --self-check
+### ```
+###
+### ---
+###
+### ### BLOCKED ON THE USER, in parallel — remind them, do not attempt yourself
+###
+### 1. **Inspect the DADA Drive folder** —
+###    https://drive.google.com/drive/folders/1l1_xOMWfs2eSoh0771ZJOcS2tcKwhh-C
+###    Its listing is JS-rendered; `WebFetch` returns nothing. **Per-file → 221 clips ≈ 6 GB, fits
+###    today. One archive → ~53 GB vs 34 GB free.** This single fact decides the whole acquisition path.
+### 2. **Submit DAD's Google Form** — http://aliensunmin.github.io/project/dashcam/ — the only route
+###    to gate 3b. Claude cannot submit it. Authors may take days.
+### 3. **`df -h` on the Mac Studio** — its ~40 GB on record is from 2026-09-11, stale, and **already
+###    below DADA's 53 GB**, so the Studio is not automatically a fallback.
+###
+### 🔴 **Do not start any download without telling the user the size and terms first.** Neither DAD
+### nor DADA posts any licence; both are **internal-falsification-only** (D43).
+###
+### ---
+###
+### ### 13-S10a. The previous "one exact next action" (superseded, kept for its detail)
+###
 ### **Establish whether DADA-2000's Google Drive mirror allows per-clip download of the 221 test
 ### clips. This single fact decides whether gate 3a is a 6-hour overnight run or is blocked on disk.**
+### **Status: still open, but reassigned to the USER** — it needs a real browser. Superseded as
+### *Claude's* next action by the two code pieces above, which are unblocked.
 ###
 ### ```bash
 ### df -h /                       # Air free space; ~30 GB as of session 8's check
@@ -2661,7 +2817,39 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S10. NEXT 3–5 ACTIONS  ·  **written end of SESSION 10. This supersedes §14-S9 below.**
+## 14-S10b. NEXT 3–5 ACTIONS · **written end of SESSION 10 (continued). Supersedes §14-S10.**
+
+After §13 (building the two unblocked code pieces):
+
+1. **User reports the DADA Drive folder contents** → if per-file, download the 221 clips named in
+   `dada2000_small_test_concensus.csv` (≈ 6 GB, fits today). If one archive, propose the disk
+   reclaim from §21.6 item 2 **item by item — the user decides, delete nothing unilaterally** — or
+   `df -h` the Studio. → **sonnet · medium.**
+2. **Time-base verification, BEFORE any correlation is believed.** `ffprobe` 3–5 downloaded DADA
+   clips; compare true duration and fps against `Time-of-collision`. **Floor: every annotated
+   collision time must fall inside its clip's duration.** DAD's own two readings disagree by 1.5 s,
+   and a systematic offset would corrupt 3a silently. → **sonnet · medium.**
+3. **20-clip pilot** with `scripts/score_external.py --limit 20`; replace D40's estimate with the
+   measurement. **Stop condition: > 18 h implied for 221 clips** → Studio, or a subsample
+   stratified on `Time-of-collision` (never on score). → **sonnet · medium.**
+4. **🔴 Run gate 3a on all 221 DADA clips, then 3b on DAD's 466 when it arrives, then DECIDE R1.**
+   R1 must survive both. If both pass → promote `eval/adapters.py:129` `np.nanmax` → last-window,
+   **refit calibration** (`--source last_window`, already supported), re-run every committed
+   metric. If either fails → record the kill, keep `nanmax`, report the honest outcome.
+   → **🔴 opus · high.**
+5. **Track B and Track C.** Buy a dashcam; send 10 fleet messages. Both **P0 in `README.md` §41**,
+   both need no code and no compute, both at **zero across ten sessions**. §40/§45 call Track B the
+   moat, and **the FP/hour metric the product needs cannot be evidenced on 54 minutes of negatives
+   no matter how good the model gets** — only Track B can produce it. `NEW_PLAN.md` §9 kill
+   condition: < 3 replies by end of week 2 → formally close Track C. → **haiku · low** (drafting).
+
+**Unblocked alternatives if acquisition stalls entirely:** `NEW_PLAN.md` R4 (flip TTA — 100-clip
+pilot first, since flipping reverses driving-side convention) and R2 (multi-scale 4/16 fps
+ensemble). Neither needs new data.
+
+---
+
+## 14-S10. NEXT 3–5 ACTIONS  ·  **written end of SESSION 10 (SUPERSEDED by §14-S10b above).**
 
 After §13's DADA-mirror check:
 
@@ -2948,6 +3136,126 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.6 SESSION 10 CONTINUATION FINDINGS — added 2026-09-17, after the `7e1ea9a` handoff.
+
+**1. 🔴 THE EXTERNAL DATASETS ARE NOT ON THIS MACHINE. CONFIRMED — searched exhaustively.**
+
+```
+data/nexar/test-public   667 .mp4   2.7 GB   <- the ONLY dataset present
+data/nexar/train           0 .mp4            metadata only
+data/nexar/test-private    0 .mp4            metadata only
+videos/                    3 files  182 MB   safe.mp4, crash1.mov, crash2.mov (demo/regression)
+DAD / DADA-2000 / DoTA     NOTHING
+```
+
+Searched: the whole repo (`find` for `*.mp4 *.avi *.mov *.mkv` → 670 files, all accounted for
+above), `~` to depth 4 for `*dada* *dota* *dashcam*accident* *LOTVS* Anticipating-Accidents*`
+(one hit, an unrelated filename coincidence), and `/Volumes` (only Macintosh HD — no external
+drive attached).
+
+**What exists is only `vendor/badas-open/annotation/{dad,dada2000_small,dota}_test_concensus.csv`.**
+These shipped with the vendored BADAS-Open source and are *label/timing* files, not video. **This
+is what made the data look present when it was not** — and it is the same confusion that produced
+the gate-3 defect (§21.5 item 2). **You have the index, not the library.**
+
+**2. Disk, measured 2026-09-17. CONFIRMED.** `34 GB free` of 228 GB (previous record said ~30 GB).
+
+Direct answer to the user's question — **can DAD + DADA + DoTA all be downloaded? NO.**
+DADA ~53 GB + DoTA ~55 GB ≈ 108 GB compressed *before extraction*, plus DAD (size unpublished),
+against 34 GB. **But all three were never required:** DoTA is excluded by decision, and gate 3
+needs 221 DADA clips and 466 DAD clips only.
+
+Largest reclaimable candidates, surveyed but **NOT deleted** (nothing was deleted this session):
+
+| Candidate | Size | Note |
+|---|---|---|
+| `~/Library/Group Containers/HUAQ24HBR6.dev.orbstack` | 12 GB | OrbStack VM data. Biggest single win **if OrbStack is unused** — unverified. |
+| `~/Library/Containers/maccatalyst.com.frontrow.vlog` | 7.6 GB | Vlog app container; safe if the app is unused. |
+| `~/Library/Caches/*` (Google 2.1G, VSCode ShipIt 1.4G, Brave 1.2G, Spotify 1.0G, pip 664M) | ~7 GB | **Lowest risk — caches regenerate.** |
+| `~/Library/Application Support/minecraft` + `tlauncher` | ~1.9 GB | Games. |
+| `~/Library/Application Support/Google` | 12 GB | Chrome **profile**, not a cache. Only with explicit confirmation. |
+
+Low-risk reclaim (caches + OrbStack + vlog) ≈ **26 GB → ~60 GB free**. **Extraction trap:** a 53 GB
+archive *plus* its extracted contents may need 100 GB+; extract incrementally, keep only the 221
+clips, delete the archive immediately.
+
+**Do NOT delete:** `models/badas/` (3.7 GB, gated HF download), `runs/baselines2/` (667 traces
+≈ 20 h GPU), `data/nexar/` (the benchmark).
+
+**3. The DADA Google Drive mirror — THE PIVOT, and UNRESOLVED.**
+https://drive.google.com/drive/folders/1l1_xOMWfs2eSoh0771ZJOcS2tcKwhh-C
+Confirmed to exist (folder "DADA2000", modified Dec 2024) but **its file list is JS-rendered and
+`WebFetch` returns an empty listing.** Enumerating it needs a real browser. **The user elected to
+inspect it personally.**
+
+| If the folder is… | Then |
+|---|---|
+| **per-file** | download only the 221 clips in `dada2000_small_test_concensus.csv` ≈ **6 GB** → **fits today**, no disk work, no Studio |
+| **one/few archives** | ~53 GB vs 34 GB free → free disk (item 2) or Studio |
+
+**4. Will we use the Mac Studio? UNDECIDED, and it may not even help. NEEDS VERIFICATION.**
+The Studio's free disk is **unknown** — the ~40 GB on record is from session 1 (2026-09-11) and is
+stale. **40 GB is itself below DADA's 53 GB**, so the Studio is not automatically a solution.
+`df -h` on the Studio is required before it can be planned around. *Independent* reason to use it
+anyway: it is an M4 Max and gate 3a is ~10 h of dense scoring on the Air — but it is available only
+in 2–4 h weekday chunks, which the resumable `scores.jsonl` harness already supports.
+
+**5. 🔴 A COST ERROR IN MY OWN PLAN CHANGE (D40).** The gate-3 block committed at `d0bc237`
+estimated **~6.0 h / ~7.5 h** from **~97 s/clip**. `eval/run_baselines.py`'s docstring forbids that
+number in as many words: the rate measured over 140 clips of the live sweep was **~167 s/clip
+end-to-end**, and *"the earlier ~97 s/clip (6-clip smoke) and ~10 h (compute-only) figures are both
+too optimistic — do not plan against them."* I planned against them. Corrected in `NEW_PLAN.md`:
+
+| | clips | at 167 s/clip | caveat |
+|---|---|---|---|
+| 3a DADA | 221 | **~10.3 h** (was 6.0) | DADA clips are longer and variable — could exceed |
+| 3b DAD | 466 | **~21.6 h** (was 7.5) | DAD clips are 5 s, ~half Nexar's — likely far less |
+
+**Cost scales with clip duration, so neither figure transfers between corpora. Measure a 20-clip
+pilot before any full run** (§7.2's own instruction, `badas_smoke.py` precedent). Stop condition:
+pilot implying > 18 h for 221 clips → re-plan onto the Studio or a subsample stratified on
+`Time-of-collision`, **never on score**.
+
+**6. 🔴 THE TAIL-SCORING OPTIMISATION DOES NOT APPLY TO GATE 3a (D41). CONFIRMED by reasoning.**
+`NEW_PLAN.md` §7.2 is what makes this plan fit the hardware: score only the final ~8 windows, ~10×
+cheaper. **Gate 3a cannot use it.** The question 3a asks is *where in the clip the peak falls*,
+which requires the dense stride-1 trace across the entire clip. **A tail-only run would presuppose
+the answer.** 3a must be a full dense sweep and its cost cannot be reduced that way. (3b, an AP
+comparison, could in principle use a tail run — but `max` is not computable from the tail, so not
+as currently specified.)
+
+**7. `eval/benchmark.py::run()` is too label-coupled for the planned `--clips-dir` flag (D42).**
+The approved plan said to add `--clips-dir` to `eval/run_baselines.py`, "skipping the label join".
+Tracing the code shows **four** separate label/Nexar dependencies:
+
+```python
+labels, paths, table = load_labels(), clip_paths(), durations()
+r = {"id": cid, "label": labels[cid], "score": float(s)}   # KeyError without labels
+neg_hours = hours(neg_ids, table)                          # T3 table, Nexar ids only
+m = evaluate(y, p, neg_hours, ...)                         # undefined on one class
+m["by_condition"] = ... load_metadata()                    # Nexar CSVs
+```
+
+plus `clip_paths()` hard-wired to `data/nexar/test-public/{positive,negative}`. **`benchmark.run()`
+is the function all four regression guards exercise** — threading a no-label mode through it risks
+the project's honesty mechanism to serve a job that **needs no metrics at all** (3a needs *traces*).
+**Revised: a standalone `scripts/score_external.py`** (~40 lines) that reuses
+`eval/adapters.py::BadasOpen` **unchanged** (`save_frames_dir` already writes the exact `.npz`
+format `eval/timing.py` reads) and replicates only the resume-from-`scores.jsonl` behaviour.
+Smaller diff, and it cannot break the guards because it touches no file they exercise.
+
+**8. NOTHING WAS BUILT, DESPITE BEING PROMISED. Recorded so the next session does not assume
+otherwise.** I told the user I would build the plumbing and the analysis module while data
+acquisition was blocked. Of three things promised — plan correction, plumbing, analysis module —
+**only the plan correction happened.** `scripts/score_external.py` and `eval/gate3_mechanism.py`
+**do not exist.** Both are unblocked and fully testable against synthetic traces.
+
+**9. No regression guard was re-run in the continuation, because no code changed.** The last full
+guard run was before `37f02b0` and all four reproduced exactly. The only file touched since is
+`NEW_PLAN.md` (documentation).
 
 ---
 
@@ -3385,6 +3693,28 @@ That would be the second working field and the first non-commodity one.
 
 ---
 
+## 21.2c DATA — WHAT IS ACTUALLY ON DISK (verified 2026-09-17). Read this first.
+
+| Dataset | On disk | Detail |
+|---|---|---|
+| **Nexar test-public** | ✅ **667 clips, 2.7 GB** | `data/nexar/test-public/{positive,negative}`. **The only dataset present.** Every number in this project comes from it. |
+| Nexar train | ❌ metadata only | 0 `.mp4`. BADAS's own training data; 25.5 GB download. |
+| Nexar test-private | ❌ metadata only | 0 `.mp4`, no public labels. |
+| **DAD** | ❌ **NOT downloaded** | only `vendor/badas-open/annotation/dad_test_concensus.csv` |
+| **DADA-2000** | ❌ **NOT downloaded** | only `…/dada2000_small_test_concensus.csv` |
+| **DoTA** | ❌ **NOT downloaded, and excluded by decision** | only `…/dota_test_concensus.csv` |
+| `videos/` | 3 files, 182 MB | `safe.mp4`, `crash1.mov`, `crash2.mov` — demo/regression, not a dataset |
+
+**Disk: 34 GB free of 228 GB.** Can all three external sets be downloaded? **NO** — DADA ~53 GB +
+DoTA ~55 GB ≈ 108 GB compressed before extraction. **All three were never needed**: gate 3 requires
+221 DADA clips and 466 DAD clips only.
+
+**The trap to remember:** having the annotation CSVs is not having the data. They are *timing*
+files. This is what produced both the gate-3 defect (§21.5 item 2) and the impression that these
+corpora were available.
+
+---
+
 ## 21.2b DATA / LICENSING — SESSION 10 ADDITIONS (gate-3 datasets). Read with §21.2 below.
 
 **All from primary sources this session. Both are UNRESOLVED on licence and both are needed for
@@ -3751,6 +4081,29 @@ document is known to be wrong.
 
 ## 16. README MODIFICATION STATUS
 
+## SESSION 10 CONTINUATION — README CHANGED: **NO.** NEW_PLAN CHANGED: **YES, once more.**
+
+### `README.md` — **NOT CHANGED.** No discovery in the continuation alters the roadmap, phases,
+product definition or track structure. The dataset facts found (DAD's 301 negatives, DADA's size
+and licence status) live in `NEW_PLAN.md` R1 and in §21.2b/§21.6 here.
+
+### `NEW_PLAN.md` — **CHANGED ONCE: the gate-3 cost correction.**
+*Why this is a plan change and not progress:* the table gave **wrong numbers for scheduling a
+~10–20 h compute job**, derived from a rate the codebase explicitly forbids planning against. A
+plan that would cause work to be mis-scheduled is defective, so correcting it is a plan fix. Added
+in the same edit: the **tail-scoring exclusion for gate 3a** (D41), which changes what the run must
+be, not merely how long it takes.
+
+**Committed together with this handoff** rather than left dirty — this project has twice been bitten
+by uncommitted work sitting across sessions.
+
+**Still deliberately NOT edited in `NEW_PLAN.md`** (recording progress, not changing plan):
+its header still says *"Status: PROPOSAL — nothing implemented"* (false), §3.4 still quotes beta
+ECE **0.0498** where the committed script gives **0.0503**, and the gate-3 block still says
+"~30 GB free" where today's measurement is **34 GB**. All three are flagged for the user to decide.
+
+---
+
 ## SESSION 10 — README CHANGED: **NO.** NEW_PLAN CHANGED: **YES, twice — both user-approved.**
 
 ### `README.md` — **NOT CHANGED.**
@@ -3989,7 +4342,60 @@ not in `README.md`.**
 
 ---
 
-## 17-S10. FINAL HANDOFF CHECK  ·  **SESSION 10, 2026-09-17. This supersedes §17-S9 below.**
+## 17-S10b. FINAL HANDOFF CHECK · **SESSION 10 CONTINUATION, 2026-09-17. Supersedes §17-S10.**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | `README.md` §27's **structured incident record**, not crash detection (detection is a commodity — BADAS-Open is free, Apache-2.0). **2 of ~10 fields work.** |
+| 2. README plan? | §41 — three parallel tracks: A model/measurement, B UK data, C customer calls. **Unchanged.** |
+| 3. NEW_PLAN plan? | Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory. **Week 1 complete except R1 gate 3.** |
+| 4. Which phase? | Phase 4 COMPLETE, Phase 5 gate PASSED, `NEW_PLAN.md` Week 1. **Tracks B and C at zero across ten sessions.** |
+| 5. Previous session? | Session 9: `eval/timing.py` built (uncommitted at the time). |
+| 6. THIS session? | **Earlier (§21.5, 7 commits):** recovered sessions 8+9's handoff, committed `timing.py`, redesigned **and corrected** gate 3, measured CPU/MPS, built calibration Tiers 1+2. **Continuation (§21.6, no code):** confirmed the external datasets are **not downloaded**, measured disk at 34 GB, found the DADA Drive mirror, found a **cost error in my own plan change**, found tail-scoring cannot serve 3a, and revised the scorer approach. |
+| 7. Evidence? | §21.5 + §21.6. MPS 0.871 s/window KEEPS UP at 1 Hz, CPU 1.917 s TOO SLOW. Tier 1 beta ECE **0.0809** [.062,.127], AP unmoved 0.8596. DAD IQR **0.16 s** vs DADA **4.63 s**. DAD test = 165 pos + **301 neg**. Disk 34 GB free. |
+| 8. What failed? | **A plan change I committed was wrong twice over** — first the positives-only premise (§21.5 item 2), then its cost table (§21.6 item 5). **I promised to build two modules and built neither** (§21.6 item 8). Deployable ECE 0.0809 is ~60% worse than the 0.0503 the project quotes. CPU is not real-time. 92.3 FP/hour stands. |
+| 9. Broken / uncertain? | **Gate 3 BLOCKED on acquisition.** UNKNOWN: DADA Drive folder structure; Studio free disk; DADA's annotation time base; both datasets' licence terms; DAD's download size. |
+| 10. Decisions? | §11 — D1–D39, **plus D40–D44 (continuation)**. |
+| 11. Files changed? | Continuation: **`NEW_PLAN.md` only** (cost correction + tail-scoring exclusion), committed with this handoff. No code written. |
+| 12. Exact next action? | **§13 — build `eval/gate3_mechanism.py` and `scripts/score_external.py`.** Both unblocked, no data needed, testable on synthetic traces. |
+| 13. Must NOT redo? | §12, especially the **new continuation block at its top** — don't hunt for the datasets on disk, don't plan at 97 s/clip, don't tail-score 3a, don't touch `run_baselines.py`, don't assume the two modules exist. |
+| 14. Plans changed? | §16 — **README NO. NEW_PLAN YES** (gate-3 cost correction + tail-scoring exclusion). Three known-stale statements in `NEW_PLAN.md` deliberately left for the user to decide. |
+| 15. BLOCKED vs UNKNOWN? | **BLOCKED:** gate 3, on data acquisition — and **two of the three unblocking actions need the USER**, not Claude (Drive folder, DAD form). **UNKNOWN:** everything in row 9. **NOT blocked:** the two code modules. |
+
+### What the continuation did, precisely
+
+1. **Answered "are the datasets installed?" by searching** the repo, all of `~`, and `/Volumes` —
+   they are not, and only annotation CSVs exist, which is what created the false impression.
+2. **Measured disk** (34 GB free) and surveyed ~26 GB of low-risk reclaim. **Deleted nothing.**
+3. **Found the DADA Drive mirror** and established that enumerating it needs a real browser.
+4. **Caught a cost error in its own committed plan change** and corrected `NEW_PLAN.md`.
+5. **Reasoned out that tail-scoring cannot serve gate 3a** — a constraint nobody had noticed.
+6. **Traced `benchmark.run()`** and revised the scorer approach away from the approved plan's
+   riskier one, recording why.
+7. **Did not build what it said it would build**, and recorded that plainly.
+
+### SESSION END STATE
+
+**Nothing is running. No code was written in the continuation.** The session ended on this handoff
+request, in plan mode, with the user asking what prompt to give the next session.
+
+`NEW_PLAN.md`'s cost correction was the only file change and is committed with this handoff.
+The approved 8-step implementation plan is at `~/.claude/plans/magical-snuggling-muffin.md` —
+**scratch, outside the repo; this file is authoritative**, but that plan carries step-level detail.
+
+### MODEL / EFFORT HANDOFF
+
+- **Next action (build the two modules): sonnet · medium.** Well-specified in §13 and in steps 5–6
+  of the plan file. Straightforward implementation against existing, reusable code.
+- **Acquisition, disk, pilot: sonnet · medium.**
+- **🔴 Switch to opus · high BEFORE running or interpreting gate 3, and before deciding R1.**
+  `NEW_PLAN.md` R1 marks it opus/high. Session 10 is the evidence: **three attempts to specify this
+  gate, two of them wrong**, each caught only by checking a primary source rather than a summary.
+- **Switch before next task? NO** for the build; **YES** before gate 3 itself.
+
+---
+
+## 17-S10. FINAL HANDOFF CHECK  ·  **SESSION 10, 2026-09-17 (history — superseded by §17-S10b).**
 
 | Question | Answer |
 |---|---|
