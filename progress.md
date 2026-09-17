@@ -1,11 +1,91 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-16, 16:45 IST**, end of **session 9** (`eval/timing.py` built; incident record's
-second field now works). `NEW_PLAN.md` is the detailed/current execution plan and must be read
-alongside `README.md`.
+Last updated: **2026-09-17, end of session 10** (session ran 2026-09-16 evening into 2026-09-17).
+Six commits, all pushed, working tree clean. `NEW_PLAN.md` is the detailed/current execution plan and
+must be read alongside `README.md`.
 
-> # ▶ SESSION 9 (2026-09-16, afternoon) — READ THIS FIRST
+> # ▶ SESSION 10 (2026-09-16 evening → 2026-09-17) — READ THIS FIRST
+>
+> **Nothing is running. Nothing is partially done. Everything is committed AND pushed.**
+> `git status` is clean, `git log origin/main..HEAD` is empty, HEAD = **`37f02b0`**.
+>
+> Session 10 cleared the commit backlog that had been pending since session 8, then executed
+> `NEW_PLAN.md` Week 1 items in order. **Six commits:**
+>
+> | Commit | What |
+> |---|---|
+> | `fbf127c` | Recovered sessions 8+9's handoff — `progress.md` had been uncommitted for two sessions |
+> | `024bec9` | `eval/timing.py` — session 9's deliverable, incident-record field 2 |
+> | `c005757` | R1 gate-3 redesign (user-approved plan change) |
+> | `d0bc237` | **Correction to that redesign** — see the finding below |
+> | `faa823e` | `scripts/hw_bench.py` — CPU vs MPS, lifts §7.3's ban on "real-time" language |
+> | `37f02b0` | Calibration **Tiers 1 and 2** — the deployable map, not just the achievable one |
+>
+> ### 🔴 THE FINDING OF THIS SESSION — two errors in a plan change, caught the same session
+>
+> Session 8 concluded that R1's gate 3 "cannot be computed" because DAD/DADA/DoTA are positives-only.
+> That was committed as a plan change (`c005757`), then **found to be wrong in two ways** (`d0bc237`),
+> by checking DAD's actual construction *before* downloading it:
+>
+> 1. **The vendored `*_concensus.csv` files are collision-TIMING annotations.** A negative clip has no
+>    collision to time, so their being positives-only says nothing about the datasets.
+>    **DAD's test split is 466 clips: 165 positive and 301 NEGATIVE.** BADAS also publishes AP 0.66 /
+>    AUC 0.87 on DAD, and both metrics require two classes. **The original AP test is computable.**
+> 2. **DAD is the wrong dataset for the mechanism test anyway** — its annotated collision time is
+>    effectively a constant (IQR **0.16 s**; 84% within 0.25 s of exactly 3.00 s), and the test asks
+>    whether the peak *tracks* that time. Against a constant there is nothing to track. The constant is
+>    structural: DAD's page says the accident is in "the last 10 frames" of a 100-frame clip = frame 90
+>    = exactly 3.00 s at 30 fps, putting DAD's collision at normalised **~0.90, near the clip end like
+>    Nexar's 0.975.** It is not an untruncated mid-clip contrast at all.
+>
+> **Gate 3 now splits, and R1 must survive both** (`NEW_PLAN.md` R1, gate-3 block):
+>
+> | | Dataset | Why | Cost |
+> |---|---|---|---|
+> | **3a mechanism** | **DADA-2000**, 221 clips | only set with real collision-time variance (IQR 4.63 s) | ~6.0 h Air |
+> | **3b AP** | **DAD full test**, 466 clips (165 pos + 301 neg) | restores the plan's original design | ~7.5 h Air |
+>
+> ### The headline numbers from this session
+>
+> ```
+> HARDWARE (scripts/hw_bench.py, M4 Air, one window, 16 frames @ 8 fps)
+>   mps   0.871 s/window   0.87x budget   KEEPS UP at a 1 Hz alert cadence
+>   cpu   1.917 s/window   1.92x budget   TOO SLOW
+>   CPU is 2.20x slower than MPS.   MPS 0.871 s re-confirms D10's 0.856 s.
+>
+> CALIBRATION TIER 1 (deployable; fit on calibration half, reported on evaluation half only)
+>   uncalibrated  ECE 0.3273 [.282,.374]   AP 0.8596
+>   beta          ECE 0.0809 [.062,.127]   AP 0.8596   <- THE DEPLOYABLE NUMBER
+>   isotonic      ECE 0.0560 [.049,.107]   AP 0.8342   <- costs 0.025 AP
+>   platt         ECE 0.0908 [.068,.134]   AP 0.8596
+>   temperature   ECE 0.2209 [.177,.263]   AP 0.8596
+> TIER 2 (100 random stratified splits, evaluation-half ECE)
+>   beta median 0.0596  5-95% [0.0405, 0.0850]
+> ```
+>
+> **🔴 The deployable calibration number is 0.0809, NOT the 0.0498/0.0503 this project has been
+> quoting.** That lower figure is Tier 3 — cross-fitted, no shippable map, and `NEW_PLAN.md` §6
+> forbids reporting it as a deployed result. Quoting it as a product figure overstates deployed
+> calibration by ~60%. Tier 2 shows seed 0 is a slightly *unlucky* split, so the headline is not
+> flattered by split luck.
+>
+> **`eval/adapters.py` is still `np.nanmax`. R1 is still NOT promoted.** That remains deliberate until
+> gate 3 is answered.
+>
+> ### 🔴 THE BLOCKER IS DATA ACQUISITION, AND IT NEEDS THE USER
+>
+> Gate 3 cannot start. Both targets are blocked on acquisition, not code:
+> - **DADA-2000** — single **~53 GB** Baidu Pan archive (`9pab`; a Google Drive mirror is mentioned).
+>   The Air has **~30 GB free**. We need only 221 of its 2,000 clips, so **if the Drive mirror is a
+>   per-file folder this becomes easy — that is the first thing to check.**
+> - **DAD** — **Google Form request to the authors**, no publicly posted terms. The user must submit
+>   it, and the terms must be confirmed in writing before use (§22/§23 licence discipline).
+>
+> **Read order for a brand-new Claude: this block → §21.5 (session 10 findings) → §13 (exact next
+> action) → §12 (what not to redo) → `NEW_PLAN.md` R1 gate-3 block → §21.4 (session 9).**
+
+> # ▶ SESSION 9 (2026-09-16, afternoon) — history, superseded by the SESSION 10 block above
 >
 > **Nothing is running. Nothing is partially done. Nothing was committed.**
 >
@@ -1955,23 +2035,69 @@ Do not reverse these without new evidence.
   committed number; a mismatch here would be this project's own B1 bug repeated. Other frame rates
   belong in `NEW_PLAN.md` R2 as an *ensemble*, never as a replacement. Full argument in §21.4 item 9.
 
+**SESSION 10 decisions:**
+
+- **D36 — "Real-time on Apple Silicon GPU" is now permitted language; "CPU-capable" is not.**
+  **Why:** `NEW_PLAN.md` §7.3 banned both until measured. Measured (§21.5 item 4): MPS 0.871 s/window
+  against a 1.00 s budget at a 1 Hz alert cadence (**keeps up**), CPU 1.917 s (**does not**), CPU
+  2.20× slower. **The permitted sentence must carry "compute only"** — decode dominates end-to-end
+  (~97 s/clip vs ~55 s compute) and is excluded from the measurement. `scripts/hw_bench.py`.
+- **D37 — Beta remains the calibration map of record; isotonic is rejected despite a better ECE.**
+  **Why:** Tier 1 shows isotonic reaching ECE 0.0560 but dropping AP to 0.8342, while beta reaches
+  0.0809 with AP **bit-identical** at 0.8596. Isotonic is only weakly monotone, so it collapses ties
+  and destroys ranking. Paying 0.025 AP for 0.025 ECE is a bad trade for a detection product.
+- **D38 — The deployable calibration number is Tier 1's, not Tier 3's.** **Why:** Tier 3
+  (cross-fitted, beta ECE 0.0503) uses all the data and produces **no shippable map**; §6 forbids
+  reporting it as a deployed result. Tier 1 (ECE **0.0809** [.062,.127]) fits on a calibration half
+  and reports on an evaluation half that had no part in the fit. **Quoting Tier 3 as a product
+  figure overstates deployed calibration by ~60%.** Score source is now a `--source` parameter so
+  R1 promotion means a re-run, not a rewrite.
+- **D39 — R1's gate 3 splits into 3a (mechanism, DADA-2000) and 3b (AP, DAD's 466-clip test split),
+  and R1 must survive both.** **Why:** the original AP design was thought uncomputable but is not
+  (DAD has 301 negatives); and DAD is degenerate for the mechanism test (collision-time IQR 0.16 s,
+  structurally frame 90 ≈ normalised 0.90, near the clip end like Nexar). §21.5 item 2. **This is a
+  decision of record — the user signed it off** and it is committed in `NEW_PLAN.md` at `d0bc237`.
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
-Those are **proposals** pending the user's explicit acceptance; they become D32+ only if accepted.
-**Also not decided:** the §21.3 item 2 redesign of R1 gate 3 — it is a proposed fix to a real plan
-defect and needs the user's sign-off.
+Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
+gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
+~~Also not decided: the §21.3 item 2 redesign of R1 gate 3.~~ **RESOLVED — see D39.**
 
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
 
-**Added after SESSION 9 — do NOT redo these, and do NOT undo them:**
+**Added after SESSION 10 — do NOT redo these, and do NOT undo them:**
 
-- **🔴 Do not `git checkout`, `git restore`, `git stash` or otherwise discard `progress.md`.** It
-  holds **both** session 8's and session 9's handoffs, uncommitted. Discarding it destroys two
-  sessions of state that exists nowhere else.
-- **Do not rebuild `eval/timing.py`.** It exists, it is 331 lines, its 7 self-checks pass, and it is
-  untracked only because the user has not yet approved the commit. Run
-  `~/envs/badas/bin/python -m eval.timing --self-check` if you need to confirm it still works.
+- **🔴 Do not run gate 3 on DAD as the MECHANISM test.** Measured: DAD's `Time-of-collision` has
+  IQR **0.16 s** (84% within 0.25 s of exactly 3.00 s) and is structurally frame 90 of 100 at 30 fps
+  = normalised ~0.90, near the clip end like Nexar. There is nothing for the peak to track. **DADA-2000
+  is the mechanism target** (IQR 4.63 s); DAD is the **AP** target (§21.5 item 2, `NEW_PLAN.md` R1).
+- **Do not repeat the claim that the external sets have no negatives.** The vendored
+  `*_concensus.csv` files are positives-only, but they are *timing* annotations. **DAD's test split
+  is 466 clips: 165 pos + 301 neg.** Session 8's conclusion, and session 10's first plan change
+  built on it, were both too strong and are corrected in `d0bc237`.
+- **Do not re-measure CPU vs MPS.** Answered (D36): **MPS 0.871 s/window, CPU 1.917 s/window**, CPU
+  2.20× slower, MPS keeps up with a 1 Hz cadence and CPU does not. `scripts/hw_bench.py` reproduces
+  it. Do not write a second timing script — `scripts/badas_smoke.py` already takes `BADAS_DEVICE`.
+- **Do not claim "CPU-capable" or bare "real-time".** Only *"real-time at a 1 Hz alert cadence on
+  Apple Silicon GPU (MPS), compute only"* is earned. Decode dominates end-to-end and is excluded.
+- **Do not quote ECE 0.0498 or 0.0503 as a deployed/product calibration figure.** Those are Tier 3
+  (cross-fitted, no shippable map). **The deployable number is Tier 1 beta ECE 0.0809** [.062,.127].
+  §6 forbids reporting Tier 3 as a deployed result.
+- **Do not rewrite `eval/calibration.py`'s Tier 3 path.** Verified bit-identical to the pre-session
+  version after the Tier 1/2 additions. Tiers 1 and 2 are new; Tier 3 is unchanged.
+- **Do not build a second reliability plotter.** `eval/plots.py` already renders it from
+  `--emit`-produced JSON: `~/envs/crashdet/bin/python eval/plots.py runs/calibration/*.json`.
+- **Do not download DoTA.** ~55 GB against ~30 GB free on the Air. Also do not assume the Studio has
+  room — its ~40 GB figure is from session 1 (2026-09-11) and is **stale and unverified**.
+
+**Added after SESSION 9 — still current:**
+
+- ~~**Do not discard `progress.md`** — it holds uncommitted handoffs.~~ **RESOLVED in session 10:**
+  committed at `fbf127c` and pushed. The general warning still stands for any *new* uncommitted work.
+- **Do not rebuild `eval/timing.py`.** It exists, it is 335 lines, its 7 self-checks pass, and it is
+  **committed at `024bec9`**. Run `~/envs/badas/bin/python -m eval.timing --self-check` to confirm.
 - **Do not "fix" `eval/reduction_study.load_traces` to keep the NaN offset.** It strips leading NaNs
   deliberately and correctly for ranking; `heldout_half.py` and `reduction_study.py` both depend on
   that. `eval/timing.py` has its own `load_traces_abs()` for the time base. §21.4 item 5.
@@ -2145,12 +2271,54 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-16 16:45, end of session 9**
+## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-17, end of session 10**
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 ###
+### **Establish whether DADA-2000's Google Drive mirror allows per-clip download of the 221 test
+### clips. This single fact decides whether gate 3a is a 6-hour overnight run or is blocked on disk.**
+###
+### ```bash
+### df -h /                       # Air free space; ~30 GB as of session 8's check
+### open https://github.com/JWFangit/LOTVS-DADA
+### ```
+###
+### **Why this first:** gate 3 is the test that decides R1, the only measured detection improvement
+### this project has (+0.0556 AP). It is blocked on **data acquisition, not code**. DADA-2000's
+### primary distribution is a single **~53 GB** Baidu Pan archive (extraction code `9pab`) against
+### **~30 GB free** — it does not fit. But **we need only 221 of its 2,000 clips**, and the repo
+### mentions "DADA-2000 in the google drive for worldwide utilization". **If that mirror is a
+### per-file folder, we download ~221 clips instead of 53 GB and the blocker evaporates.** If it is
+### one archive too, gate 3a is genuinely disk-blocked and the user must choose: free disk on the
+### Air, check the Studio's real free space (the ~40 GB figure is from session 1, 2026-09-11, and is
+### **stale**), or attach an external drive.
+###
+### The clip ids to match are the 221 rows of
+### `vendor/badas-open/annotation/dada2000_small_test_concensus.csv`.
+###
+### **Do NOT start any download without telling the user the size and the terms first.** DADA-2000's
+### repo carries **no licence statement at all** (verified session 10) — §22/§23 licence discipline
+### applies and this project has already excluded BDD100K on licence grounds.
+###
+### **In parallel, and needing the USER not Claude:** DAD (gate 3b, 466 clips incl. 301 negatives)
+### is distributed by a **Google Form request to the authors** at
+### http://aliensunmin.github.io/project/dashcam/ with **no publicly posted terms**. Claude cannot
+### submit it. Ask the user to send the request, and record the terms in writing when they arrive.
+###
+### **Before gate 3a's correlation is believed, run the time-base check (§21.5 item 3):** decode one
+### DADA clip, compare its true duration and fps against its `Time-of-collision`. DAD's own two
+### readings disagree by 1.5 s, and a systematic offset would corrupt 3a silently.
+###
+### ---
+###
+### ### 13-S9. Session 9's next action — ✅ **DONE in session 10.** Kept for history.
+###
 ### **Commit and push the two outstanding files. Ask the user first — they were asked twice in
 ### session 9 and said "wait" both times, so this is PENDING THEIR GO-AHEAD, not agreed.**
+###
+### **Status: COMPLETE.** The user approved in session 10. `fbf127c` (progress.md) and `024bec9`
+### (eval/timing.py), both pushed. All three guards verified reproducing before committing. The
+### original specification follows.
 ###
 ### ```bash
 ### cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
@@ -2493,7 +2661,43 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S9. NEXT 3–5 ACTIONS  ·  **written end of SESSION 9. This supersedes §14 below.**
+## 14-S10. NEXT 3–5 ACTIONS  ·  **written end of SESSION 10. This supersedes §14-S9 below.**
+
+After §13's DADA-mirror check:
+
+1. **Resolve gate 3's data acquisition** — whichever route §13 establishes. If the Drive mirror is
+   per-file, fetch the 221 DADA test clips and run the tail-scoring pass (~6 h, Air overnight). If
+   not, put the disk decision to the user before anything else. Ask the user to submit DAD's Google
+   Form in parallel — it is the only path to gate 3b and Claude cannot do it.
+   → **Model: sonnet · Effort: medium** for the acquisition mechanics.
+2. **🔴 Run gate 3a (mechanism) on DADA-2000, then gate 3b (AP) on DAD's 466 clips.**
+   **This is the test that decides R1.** Run the §21.5 item 3 time-base check first. Reuse
+   `eval/timing.py::load_traces_abs` (keeps the absolute NaN offset — the 2-second trap) and its
+   `t_peak` argmax; do not rebuild them. Report the correlation with its CI **and the annotation's
+   own IQR beside it**, so a reader can see whether there was variance to explain.
+   → **🔴 Model: opus · Effort: high** — `NEW_PLAN.md` R1 marks this opus/high itself, and session
+   10 just demonstrated why: the first two attempts at specifying this gate were both wrong.
+3. **Decide R1 on gate 3's result.** If both pass, promote: `eval/adapters.py:129` `np.nanmax` →
+   last-window, **then refit calibration on the new scores** (`--source last_window`, which is
+   already supported) and re-run every committed metric. If either fails, record the kill and keep
+   `nanmax`. → **Model: opus · Effort: high.**
+4. **Settle the 0.0498 vs 0.0503 discrepancy** (§21.5 item 11). The committed script gives beta
+   Tier 3 ECE 0.0503; `progress.md` §21.1 and `NEW_PLAN.md` §3.4 quote 0.0498 from session 7's
+   in-conversation script. The committed script is reproducible and should win; correcting the two
+   documents is then a small plan-document edit. → **Model: sonnet · Effort: low.**
+5. **Track B and Track C.** Buy a dashcam; send 10 fleet messages. Both are **P0 in `README.md`
+   §41**, both need no code and no compute, and both are at **zero across TEN sessions** while the
+   engineering track keeps advancing. `NEW_PLAN.md` §9 sets a kill condition: **< 3 replies by end of
+   week 2 → formally close Track C and stop listing it.** README §40/§45 both call Track B the moat.
+   → **Model: haiku · Effort: low** (drafting only; sending is the user's).
+
+**Also available, unblocked, if gate 3 stalls on data:** `NEW_PLAN.md` R4 (flip TTA, 100-clip pilot
+then full tail pass) and R2 (multi-scale at 4/16 fps) are the next Week-2 items and need no new
+datasets — only compute on clips already downloaded.
+
+---
+
+## 14-S9. NEXT 3–5 ACTIONS  ·  **written end of SESSION 9 (SUPERSEDED by §14-S10 above).**
 
 After §13's commit + push:
 
@@ -2747,6 +2951,229 @@ persistence k=4/8/16 all below max. Every averaging form is worse, for the reaso
 
 ---
 
+## 21.5 SESSION 10's FINDINGS — added 2026-09-17. Read after the top banner.
+
+**1. Sessions 8 and 9's handoff is now COMMITTED AND PUSHED. CONFIRMED.** `fbf127c` (813 insertions
+to `progress.md`) and `024bec9` (`eval/timing.py`, 335 lines). Session 8's `§17-S8` had claimed a
+clean tree while its own handoff sat uncommitted; that claim was false for two sessions and one
+`git checkout` would have destroyed both. **All three regression guards were re-run and reproduced
+exactly BEFORE committing** — the stop condition ("if any number moves, do not commit") did not fire.
+The user approved the commit and push explicitly.
+
+**2. 🔴 R1 GATE 3's REDESIGN WAS ITSELF WRONG, TWICE, AND WAS CORRECTED THE SAME SESSION.
+CONFIRMED — this is the most important finding of the session.**
+
+Sequence: `c005757` committed session 8's proposed redesign on the user's sign-off. Then, checking
+DAD's construction *before* downloading it, two errors surfaced, fixed in `d0bc237`.
+
+**Error 1 — "the AP test cannot be computed" was too strong.** Session 8 verified the vendored
+`vendor/badas-open/annotation/*_concensus.csv` files are positives-only. That is TRUE and was
+re-verified independently in session 10:
+
+| Set | n | Event-type |
+|---|---|---|
+| `dad_test_concensus.csv` | 165 | 151 Collision + 14 Near-collision |
+| `dada2000_small_test_concensus.csv` | 221 | 198 + 23 |
+| `dota_test_concensus.csv` | 598 | 562 + 36 |
+
+**But those files are collision-TIMING annotations, and a negative clip has no collision to time.**
+Their composition says nothing about the underlying datasets. From the authors' own project page
+(http://aliensunmin.github.io/project/dashcam/): DAD is **1,750 clips — 620 positive / 1,130
+negative**; train 1,284 = 455/829; **test 466 = 165 positive / 301 NEGATIVE.** Corroborated by BADAS
+publishing **AP 0.66 / AUC 0.87 on DAD** — both metrics require two classes. **The AP comparison
+`NEW_PLAN.md` R1 originally specified is computable after all**, from the full DAD download.
+
+**Error 2 — DAD is the wrong dataset for the mechanism test regardless. CONFIRMED by measurement:**
+
+| Set | n | `Time-of-collision` median | **IQR** | usable? |
+|---|---|---|---|---|
+| DAD | 165 | 2.96 s | **0.16 s** | ❌ 84% within 0.25 s of exactly 3.00 s |
+| DADA-2000 | 221 | 5.33 s | **4.63 s** | ✅ range 0.37–14.43 s |
+| DoTA | 598 | 4.65 s | 1.95 s | ✅ range 0.90–14.40 s, but disk-blocked |
+
+The mechanism test asks whether the score peak **tracks** the annotated collision time. **Against a
+near-constant there is nothing to track** — a null result would be uninterpretable, neither pass nor
+fail. And the constant is **structural, not observed**: DAD's page states the accident occurs "at the
+last 10 frames" of a 100-frame clip — frame 90, which at 30 fps is **exactly 3.00 s**, matching the
+clustering. So DAD's collision sits at normalised **~0.90 — near the clip end, much like Nexar's
+0.975.** DAD is not an untruncated mid-clip contrast at all, on either count.
+
+**Resulting design, committed in `NEW_PLAN.md` R1's gate-3 block. R1 must survive BOTH:**
+
+| Test | Dataset | Why | Cost (~97 s/clip, D10) |
+|---|---|---|---|
+| **3a — mechanism** (peak tracks annotation) | **DADA-2000**, 221 clips | only set with real variance | ~6.0 h, Air overnight |
+| **3b — AP** (last-window should LOSE untruncated) | **DAD full test**, 466 clips | restores the original design | ~7.5 h, Air overnight |
+
+**3. A time-base trap that would corrupt gate 3a silently. NEEDS VERIFICATION before 3a is run.**
+Our trace timestamps are real seconds (`t = index / target_fps`, upstream resampling to 8 fps). The
+consensus annotation's seconds are only the same seconds if the annotators used each clip's true
+frame rate. **DAD's own two readings disagree by 1.5 s**: its page describes 100-frame clips as 5 s
+(⇒ 20 fps, frame 90 = 4.50 s), while the annotation clusters at 3.00 s (⇒ 30 fps). **Before trusting
+any offset on DADA, decode one clip and check its true duration and fps against its annotation.**
+Recorded in the plan.
+
+**4. CPU vs MPS MEASURED. CONFIRMED — `NEW_PLAN.md` §7.3's ban is now partially lifted (D36).**
+`scripts/hw_bench.py`, M4 Air, one window (16 frames @ 8 fps = 2.0 s of video), budget 1.00 s per
+window at a 1 Hz alert cadence:
+
+```
+mps   0.871 s/window   0.87x budget   KEEPS UP
+cpu   1.917 s/window   1.92x budget   TOO SLOW
+CPU is 2.20x slower than MPS
+```
+
+§7.3 predicted *"plausibly real-time on MPS, probably not on CPU"* — **confirmed.** MPS 0.871 s also
+independently re-confirms **D10**'s 0.856 s/window. **Permitted now:** *"real-time at a 1 Hz alert
+cadence on Apple Silicon GPU (MPS), compute only."* **Still forbidden:** "CPU-capable", and any
+"real-time" claim that does not carry the compute-only caveat or names other hardware.
+
+Two limitations recorded in the module rather than smoothed over:
+- **COMPUTE ONLY.** End-to-end is ~97 s/clip against ~64 windows × 0.87 s ≈ 55 s of compute, so
+  **decode already dominates** — `NEW_PLAN.md` §11 point 4's least-verified assumption, now with
+  supporting arithmetic. A deployed system decodes a live stream, not a file, so its decode cost is
+  not ours to extrapolate.
+- **RUN-ORDER SPREAD.** Timing both devices in one process slows the second. CPU measured **1.680 s**
+  in a fresh process and **1.917 s** after MPS; MPS **0.860 s** and **0.871 s**. Every CPU figure is
+  above budget and every MPS figure below, so the verdict is stable across the spread.
+
+**No new measurement code was written for this.** `scripts/badas_smoke.py` already timed one window
+and already took a `BADAS_DEVICE` env var; `hw_bench.py` adds the two-device comparison, the cadence
+arithmetic, and the derived claim sentence.
+
+**5. CALIBRATION TIERS 1 AND 2 EXIST AND ARE COMMITTED. CONFIRMED.** `eval/calibration.py` extended
+(not duplicated — it already owned `CALIBRATORS`). Tier 1 = stratified 333/334 split, fixed seed, map
+fit on the calibration half, every metric reported on the evaluation half only.
+
+```
+TIER 1, evaluation half (n=334, pos=167)
+map             ECE                  adaptive ECE   Brier    NLL      AP
+uncalibrated    0.3273 [.282,.374]   0.3273         0.2927   1.0793   0.8596
+beta            0.0809 [.062,.127]   0.0841         0.1426   0.4468   0.8596
+isotonic        0.0560 [.049,.107]   0.0648         0.1391   0.4343   0.8342
+platt           0.0908 [.068,.134]   0.0898         0.1447   0.4494   0.8596
+temperature     0.2209 [.177,.263]   0.2344         0.2109   0.6102   0.8596
+
+TIER 2, evaluation-half ECE over 100 random stratified splits
+beta         median 0.0596   5-95% [0.0405, 0.0850]
+platt        median 0.0662   5-95% [0.0484, 0.0890]
+isotonic     median 0.0592   5-95% [0.0361, 0.0898]
+temperature  median 0.2014   5-95% [0.1655, 0.2387]
+uncalibrated median 0.3299   5-95% [0.3147, 0.3461]
+```
+
+**🔴 THE DEPLOYABLE NUMBER IS WORSE THAN THE ACHIEVABLE ONE, and that is the whole point of the tier
+split.** Beta's Tier 1 ECE is **0.0809** against Tier 3's **0.0503** — half the fit data plus an
+honest held-out report. **Quoting 0.0498/0.0503 as a product figure overstates deployed calibration
+by roughly 60%.** Tier 2 also shows seed 0 is a slightly **unlucky** split (0.0809 sits near the upper
+end of [0.0405, 0.0850]), so the headline is not flattered by split luck.
+
+**Beta remains the right map** (D37): near-best ECE at **zero** AP cost. Isotonic wins on ECE but
+drops AP 0.025 — it is only weakly monotone, and the Tier 1 AP column now shows that directly instead
+of asserting it.
+
+**6. The score source is now a parameter, so R1 promotion is a re-run not a rewrite (D38).**
+`--source` replaces the hard-coded `runs/baselines/` path. Tier 3 always read nanmax scores; if R1 is
+promoted the map **must** be refit, and `python -m eval.calibration --tier1 --source last_window`
+does it. The source is printed in every report and written into every emitted file, because a
+calibration map fit on one reduction is meaningless against another.
+
+**7. Adaptive (equal-mass) ECE added, as §6 requires — and it is not decoration.** Equal-width ECE
+can look excellent purely because scores pile into one or two bins, which is exactly this model's
+shape (see `runs/calibration/reliability.png`: the uncalibrated bottom panel shows >100 of 334 clips
+in the top bin). The self-check builds a case where **equal-width reports 0.0000 — "perfectly
+calibrated" — while adaptive reports 0.0990.**
+
+**8. A self-check of mine was wrong and was REPLACED, not loosened** — third session running that
+this has happened and been recorded. The first adaptive-ECE case compared 0.46 against 0.45: both
+large, no contrast, demonstrating nothing. The replacement requires equal-width to look *clean*
+(< 0.01) **while** adaptive exposes real error (> 0.05) — strictly harder to satisfy. Same discipline
+as session 8's D30 null-control fix and session 9's item 8.
+
+**9. The existing reliability plotter was reused with zero new plotting code.**
+`python -m eval.calibration --tier1 --emit runs/calibration` writes one `plots.py`-shaped JSON per
+map, so `~/envs/crashdet/bin/python eval/plots.py runs/calibration/*.json` renders §6's reliability
+diagram unchanged. `runs/calibration/reliability.png` and `pr_curve.png` are committed. The diagram
+reads correctly: uncalibrated sits far below the diagonal (it says 0.95 and 68% are collisions; it
+says 0.55–0.85 and almost none are), beta and isotonic track it.
+
+**10. Tier 3 output verified BIT-IDENTICAL to the pre-change version. CONFIRMED.** The pre-edit
+`eval/calibration.py` was checked out to a scratch copy and run: every figure matches to 14 decimal
+places. The Tier 1/2 additions changed no existing behaviour.
+
+**11. A pre-existing number discrepancy, NOT introduced this session. NEEDS VERIFICATION.**
+The committed script gives beta Tier 3 ECE **0.0503**; `progress.md` §21.1 item 3 and `NEW_PLAN.md`
+§3.4 both quote **0.0498**, which came from session 7's in-conversation script. The committed script
+is the reproducible one and should be treated as authoritative. Neither document was edited for this
+— it is recorded here for the next session to settle.
+
+**12. All four regression guards reproduce exactly, run after every change.** `eval/benchmark.py`
+(T3: AUC 0.5339 / AP 0.5218 / 332,325,2,8), `eval.reduction_study` (max 0.8349, last_window 0.8905
++0.0556 [+0.0263,+0.0876]), `eval.timing --self-check` (7/7), `eval.heldout_half --self-check` (null
+median ΔAP +0.0025). **No committed number moved this session.**
+
+### 21.5b — FILE / REPOSITORY CHANGES (session 10)
+
+| Path | Change | What it is and why |
+|---|---|---|
+| `eval/timing.py` | **committed** (`024bec9`, 335 lines) | Session 9's build; per-frame trace → `t_start`/`t_peak`/`t_end`, README §27's incident-record field 2. Two-stage threshold (D32). `--self-check` 7/7, `--emit DIR` writes 351 JSON records. Owns `load_traces_abs()` — the NaN-offset-preserving loader that avoids the 2-second trap. |
+| `eval/calibration.py` | **modified** (+292 lines) | Was Tier 3 only. Now Tiers 1+2 as well: `tier1()`, `tier2()`, `adaptive_ece()`, `bootstrap_ci()`, `load_scores(source)`, `_emit()`, plus a `--tier1 / --source / --emit` CLI. Self-check 1 → 6 checks. **Tier 3 path verified bit-identical.** |
+| `scripts/hw_bench.py` | **new** (151 lines) | CPU-vs-MPS throughput; states the 1 Hz cadence budget *before* measuring so the bar cannot move, derives the permitted claim sentence from the measurement, and self-checks the arithmetic (including that an unmeasurable device is never called real-time). |
+| `NEW_PLAN.md` | **modified** (+108 lines) | R1 gate-3 block (3a/3b), its correction, the kill condition, §11 point 1's residual-risk update. **The only plan-document change; user-approved twice.** |
+| `runs/calibration/` | **new** | 5 × `tier1_nanmax_*.json` (evaluation half, `plots.py`-shaped) + `reliability.png` + `pr_curve.png`. |
+| `progress.md` | **modified** | `fbf127c` recovered sessions 8+9; this handoff adds session 10. |
+
+**Not touched, deliberately:** `eval/adapters.py` (still `np.nanmax` — R1 unpromoted), `eval/benchmark.py`,
+`eval/reduction_study.py`, `eval/heldout_half.py`, `eval/plots.py`, `README.md`, all of `vendor/`.
+
+### 21.5c — GIT STATE at end of session 10
+
+```
+branch:        main
+HEAD:          37f02b0
+origin/main:   37f02b0        (git log origin/main..HEAD is EMPTY)
+git status:    clean          (no modified, no untracked)
+```
+
+Session 10's commits, oldest first: `fbf127c` · `024bec9` · `c005757` · `faa823e` · `d0bc237` ·
+`37f02b0`. The previous session's HEAD was `252d282`.
+
+**Nothing to avoid overwriting — everything is pushed.** The standing caution still applies to the
+667 `.npz` traces in `runs/baselines2/` (~20 h of MPS time, committed at `252d282`): **never
+force-push**, and if a push is rejected, STOP and report.
+
+### 21.5d — TECHNICAL STATE (what actually works, end of session 10)
+
+**Works, committed, reproducible:**
+- **Scoring pipeline.** `eval/adapters.py::BadasOpen` wraps vendored BADAS-Open (V-JEPA2 ViT-L),
+  sliding window 16 frames @ 8 fps stride 1, clip reduction `np.nanmax`. 667 Nexar test-public clips
+  scored; 667 per-frame traces committed.
+- **Metrics harness.** `eval/benchmark.py` — one code path for three models, shared duration table
+  so FP/hour denominators are comparable, leakage check, self-checking.
+- **R1 study.** `eval/reduction_study.py` (gate 1) and `eval/heldout_half.py` (gate 2), both with
+  paired bootstrap and a null control.
+- **Temporal localisation.** `eval/timing.py` — incident-record field 2.
+- **Calibration.** `eval/calibration.py` Tiers 1, 2, 3 + reliability diagrams via `eval/plots.py`.
+- **Hardware.** `scripts/hw_bench.py`.
+
+**Does not work / not built:**
+- **R1 is not promoted** — `adapters.py:129` is still `np.nanmax`, deliberately, pending gate 3.
+- **Gate 3** — designed, not run; blocked on data.
+- **Calibration Tier 4** (external transfer) — not written; needs external data, same blocker.
+- **R2 / R3 / R4 / R5 / R6 / R7 / R9** — none started.
+- **Incident record** — 2 of ~10 fields. `ego_involved`, severity, closing speed, GPS are omitted
+  (not null-filled) by design (D34).
+- **`code/crash_detection_enhanced.py`** — legacy, retired model, only ever syntax-checked; its deps
+  are not installed. Do not assume it runs.
+- **Tracks B and C** — zero across ten sessions.
+
+**Known limitations that bound every number here:** 0.899 h (54 minutes) of negative footage is the
+denominator ceiling, so **92.3 FP/hour** at recall 0.80 is the honest state and calibration cannot
+change it (D28). Nexar's `time_of_event` is corrupt for all 334 positives, so timing is a
+**capability, not a metric** — no mTTA, ever, from this benchmark.
+
+---
+
 ## 21.4 SESSION 9's FINDINGS — added 2026-09-16 16:45 IST. Read after the top banner.
 
 **1. `eval/timing.py` EXISTS AND WORKS. CONFIRMED.** 331 lines, untracked. Executes §13 exactly as
@@ -2955,6 +3382,33 @@ Detection is a commodity input (BADAS is free and Apache-2.0). Against §27's ~1
 **exactly one field currently works** (collision detected), and it is the commodity one. **The 667
 committed per-frame traces newly unblock `t_start`/`t_peak`/`t_end`** — §13 step 2, zero compute.
 That would be the second working field and the first non-commodity one.
+
+---
+
+## 21.2b DATA / LICENSING — SESSION 10 ADDITIONS (gate-3 datasets). Read with §21.2 below.
+
+**All from primary sources this session. Both are UNRESOLVED on licence and both are needed for
+R1's gate 3, so neither can be used in a commercial claim until its terms are in writing.**
+
+| Asset | Composition | Distribution | Size | Licence | Status |
+|---|---|---|---|---|---|
+| **DAD** (gate 3b) | 1,750 clips, 620 pos / 1,130 neg, six Taiwanese cities. **Test split 466 = 165 pos + 301 neg.** 100 frames/clip, 720p, accident nominally in "the last 10 frames" | **Google Form request to the authors** — http://aliensunmin.github.io/project/dashcam/ | not stated | 🔴 **NO terms posted publicly** | **NOT downloaded. The USER must submit the form.** |
+| **DADA-2000** (gate 3a) | 2,000 videos, 658,476 frames, 1584×660, ~6.1 h @ 30 fps. We need only the **221 test clips** in `dada2000_small_test_concensus.csv` | Baidu Pan, code `9pab` (train/test ~53 GB) or `ahyz` (full ~116 GB); **a Google Drive mirror is mentioned** — https://github.com/JWFangit/LOTVS-DADA | **~53 GB compressed** | 🔴 **NO licence statement in the repo at all** | **NOT downloaded. ~53 GB vs ~30 GB free — does not fit unless the Drive mirror is per-file.** |
+
+**Three things this changes:**
+1. **DAD's 301 test negatives are the fact that unblocked gate 3b.** Corroborated by BADAS
+   publishing AP 0.66 / AUC 0.87 on DAD — impossible on one class. `README.md` §49 does not record
+   this; adding it there would be a reasonable future edit.
+2. **Both are YouTube/web-derived** (DADA explicitly: YouTube, Youku, Bilibili, iQiyi, Tencent),
+   which is the same provenance problem already flagged for CCD and DoTA in §21.2 and README §23.
+3. **Neither may support a commercial claim** until terms are obtained. They can still serve as
+   **internal falsification tests** — gate 3's only purpose is to try to kill R1, not to ship.
+   Keep that distinction explicit if either is ever cited externally. Precedent: BDD100K was
+   **excluded** from this project on exactly these grounds (`NEW_PLAN.md` §8.2).
+
+**DoTA remains excluded** — ~55 GB against ~30 GB free on the Air, and the Studio's ~40 GB figure is
+from session 1 (2026-09-11), **stale and still below 55 GB**. Re-check `df -h` before any claim
+about Studio capacity.
 
 ---
 
@@ -3202,7 +3656,56 @@ never made**, and §13 records the recommendation (unknowns first, with the reas
 
 ---
 
-## 15.9 PLAN POSITION — where the repo sits against BOTH planning documents (session 9)
+## 15.10 PLAN POSITION — where the repo sits against BOTH planning documents (SESSION 10, current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. Three tracks run concurrently
+  from week 1 (§41): **A** model & measurement, **B** UK data/benchmark, **C** customer discovery.
+- **What README says should happen:** Track A phases 4→5→6; Track B the hard-negative benchmark
+  (§34, the moat per §40/§45); Track C 30 UK fleet calls. §27 defines the product as the
+  **structured incident record**, not detection.
+- **Completed:** Track A is well advanced — falsification suite closed, BADAS baseline measured
+  (AP 0.8349 / AUC 0.8498), evaluation harness built, R1 at 2 of 3 gates, calibration **Tiers 1, 2
+  and 3**, incident-record field 2 (`t_start`/`t_peak`/`t_end`), operating point derived from the PR
+  curve (§41 Phase 2 task 5), and now a **measured CPU/MPS throughput figure**.
+- **Remains:** Phase 6. **Tracks B and C are at ZERO after TEN sessions** — still the single largest
+  gap between the master plan and reality, and still not a technical blocker.
+
+### `NEW_PLAN.md` POSITION (detailed/current plan)
+
+- **Current task:** Week 1, Track A. `NEW_PLAN.md` is still labelled a **PROPOSAL** — see the
+  alignment note below.
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate. Every comparison by
+  **paired** bootstrap (§1). Week 1 = confirm R1, calibration §6 Tiers 1–3, operating-point policy,
+  CPU/MPS benchmark (§7.3).
+- **Completed:** R1 gates 1 ✅ and 2 ✅. §3.2's mechanism confirmed at full n ✅. Calibration
+  **Tier 3 ✅, Tier 1 ✅, Tier 2 ✅**. Operating-point policy ✅. **CPU/MPS benchmark ✅ (§7.3 closed,
+  session 10).** **Week 1 is now essentially complete apart from gate 3.**
+- **Remains:** **R1 gate 3 (3a on DADA + 3b on DAD) — blocked on data acquisition**, then R4 / R2 /
+  R3 (Week 2), calibration Tier 4 (transfer), fuse.
+
+### ALIGNMENT
+
+**No conflict. They are aligned and operate at different altitudes** — README gives the roadmap and
+the product definition; `NEW_PLAN.md` gives the detailed experiment sequence inside README's Track A.
+
+**The gate-3 defect that stood across sessions 8 and 9 is now CLOSED** — redesigned and then
+corrected in session 10 (`c005757`, `d0bc237`), both on explicit user sign-off. `NEW_PLAN.md` R1 now
+carries a gate-3 block specifying 3a (DADA mechanism) and 3b (DAD AP). **There is no longer a known
+defect in either planning document.**
+
+**Two stale statements in `NEW_PLAN.md`, deliberately NOT edited** (they record progress, not plan,
+and §13 of the session brief forbids editing plans merely to record progress — flagged here for the
+user to decide):
+1. Its header still reads **"Status: PROPOSAL — nothing implemented."** That is now false: R1 gates
+   1–2, calibration Tiers 1–3, the operating point and the hardware benchmark are all implemented.
+   The user was told and did not ask for a change.
+2. §3.4 quotes beta ECE **0.0498**; the committed script gives **0.0503** (§21.5 item 11).
+
+---
+
+## 15.9 PLAN POSITION — session 9 (HISTORY, superseded by §15.10 above)
 
 ### `README.md` POSITION (master plan)
 
@@ -3247,6 +3750,42 @@ document is known to be wrong.
 ---
 
 ## 16. README MODIFICATION STATUS
+
+## SESSION 10 — README CHANGED: **NO.** NEW_PLAN CHANGED: **YES, twice — both user-approved.**
+
+### `README.md` — **NOT CHANGED.**
+The master plan did not change. Nothing discovered this session alters the roadmap, the phases, the
+product definition (§27) or the track structure (§41). Every session-10 result is *progress against*
+the existing plan, and progress belongs here, not in the README.
+
+**One README-adjacent fact worth noting without editing it:** §49's dataset table describes DAD as
+"1,750 clips, six Taiwanese cities", which is correct, but nothing in the README records that DAD's
+**test split carries 301 negatives** — the fact that unblocked gate 3b. It is recorded in
+`NEW_PLAN.md` R1 and in §21.5 item 2 here. Adding it to §49 would be a reasonable small edit for a
+future session; it was not made because the master plan itself did not change.
+
+### `NEW_PLAN.md` — **CHANGED, twice, both on explicit user sign-off.**
+
+**Change 1 (`c005757`) — R1's gate 3 redesigned.** *Why it was a genuine plan change, not progress:*
+the gate as written specified an AP comparison on DoTA/DADA and **could not be executed**. It had
+blocked R1's last gate across sessions 8 and 9 awaiting a decision. A plan step that cannot be run is
+a defect in the plan, so fixing it is a plan change. The user approved the redesign (peak position
+vs annotated `Time-of-collision`) before it was written.
+
+**Change 2 (`d0bc237`) — that redesign corrected.** *Why:* checking DAD's construction before
+downloading revealed two errors in change 1 — the AP test **is** computable (DAD's test split has
+301 negatives) and DAD is **degenerate** for the mechanism test (collision-time IQR 0.16 s). Gate 3
+now splits into 3a (DADA mechanism) and 3b (DAD AP), with R1 required to survive both. The user
+approved this before it was written.
+
+Also updated in the same two commits, as dependent text: R1's kill condition, and §11 point 1's
+residual-risk note (mitigations (a) and (b) marked discharged against the measured gate 1/2 results).
+
+**Nothing else in either document was touched.** In particular the two stale statements in
+`NEW_PLAN.md` (§15.10) were deliberately left alone, because correcting them would be recording
+progress rather than changing the plan.
+
+---
 
 ## SESSION 9 — README CHANGED THIS SESSION: **NO.** NEW_PLAN CHANGED: **NO.**
 
@@ -3450,7 +3989,69 @@ not in `README.md`.**
 
 ---
 
-## 17-S9. FINAL HANDOFF CHECK  ·  **SESSION 9, 2026-09-16 16:45 IST. This supersedes §17-S8 below.**
+## 17-S10. FINAL HANDOFF CHECK  ·  **SESSION 10, 2026-09-17. This supersedes §17-S9 below.**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | §1. **Not "crash detection"** — `README.md` §27's structured incident record. Detection is a commodity input (BADAS-Open is free, Apache-2.0). **Two of ~10 fields now work.** |
+| 2. What does README say the plan is? | §41, via §15.10. Three parallel tracks: A model/measurement, B UK data, C customer calls. **Unchanged this session.** |
+| 3. What does NEW_PLAN say? | §15.10. Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory. **Week 1 now complete except gate 3.** |
+| 4. Which phase are we in? | Phase 4 COMPLETE, Phase 5 gate PASSED, inside `NEW_PLAN.md` Week 1. **Tracks B and C at zero across TEN sessions.** |
+| 5. What did the PREVIOUS session complete? | Session 9: `eval/timing.py` built (uncommitted), §3.2 reproduced at full n=667, the 8 fps question answered. §21.4. |
+| 6. What did THIS session complete? | **Six commits, all pushed.** Rescued sessions 8+9's handoff; committed `timing.py`; redesigned **and then corrected** R1 gate 3; measured CPU vs MPS; built calibration Tiers 1+2. §21.5. |
+| 7. What evidence/results exist? | §21.5. MPS 0.871 s/window KEEPS UP at 1 Hz, CPU 1.917 s TOO SLOW. Tier 1 beta ECE **0.0809** [.062,.127] with AP unmoved at 0.8596. Tier 2 beta median 0.0596. DAD collision-time IQR **0.16 s** vs DADA **4.63 s**. All four regression guards reproduce exactly. |
+| 8. What failed / negative results? | **A plan change I committed was wrong and I corrected it the same session** (§21.5 item 2) — DAD has 301 negatives and is degenerate for the mechanism test. **The deployable ECE (0.0809) is ~60% worse than the figure the project has been quoting (0.0503).** CPU is not real-time. One of my own self-checks was wrong and was **replaced with a stronger one, not loosened** (item 8). |
+| 9. What is broken or uncertain? | **Gate 3 is blocked on DATA ACQUISITION** — DADA's 53 GB archive vs ~30 GB free, DAD behind a Google Form. The time-base compatibility of DADA's annotation is **unverified** and would corrupt 3a silently (item 3). The 0.0498-vs-0.0503 discrepancy is unsettled (item 11). Studio free disk still unknown. |
+| 10. What decisions are made? | §11 — D1–D35, **plus D36–D39 (session 10)**. D39 settles gate 3's design (3a DADA + 3b DAD) and, unlike the rest of R1–R9, **is** a decision of record — the user signed it off. |
+| 11. What files changed? | `eval/calibration.py` (+292), `eval/timing.py` (new, committed), `scripts/hw_bench.py` (new), `NEW_PLAN.md` (+108), `runs/calibration/*` (new), `progress.md`. **All committed and pushed. HEAD `37f02b0`.** |
+| 12. What is the exact next action? | **§13 — check whether DADA-2000's Google Drive mirror allows per-clip download of the 221 test clips.** That one fact decides whether gate 3a runs overnight or is disk-blocked. |
+| 13. What must NOT be redone? | §12, especially the **new session-10 block at its top** — above all: do not run the mechanism test on DAD, do not repeat "the external sets have no negatives", do not re-measure CPU/MPS, do not quote 0.0503 as deployable, do not download DoTA. |
+| 14. Did either plan change, and why? | §16 — **README NO. NEW_PLAN YES, twice, both user-approved**: gate 3 was unexecutable as written, then the fix itself needed correcting. Both are plan defects, not progress. |
+| 15. BLOCKED vs UNKNOWN? | **BLOCKED:** gate 3, on data acquisition only (DADA disk/mirror; DAD's Google Form needs the *user*). **UNKNOWN, not blocked:** whether the DADA Drive mirror is per-file; Studio's real free disk; DADA's annotation time base; DAD's and DADA's licence terms. |
+
+### What session 10 did, precisely
+
+1. **Full project recovery from zero memory** — read `NEW_PLAN.md` in full, `progress.md`'s banners
+   and §§12/13/21.3/21.4/15.9/17-S9, `README.md` §27/§41/§49, then **verified the claims against the
+   repo** (667 traces, git state, all guards re-run) rather than trusting the handoff.
+2. **Committed and pushed sessions 8+9's stranded work** after the user's explicit go-ahead, running
+   all three guards first as §13 required.
+3. **Redesigned R1's gate 3** on the user's sign-off, then **found two errors in that redesign** by
+   checking DAD's actual construction before downloading it, and corrected it — also on sign-off.
+4. **Measured CPU vs MPS**, reusing `badas_smoke.py` rather than writing new timing code, and
+   recorded the run-order spread rather than reporting a single flattering number.
+5. **Built calibration Tiers 1 and 2**, extending the existing module, parameterising the score
+   source so R1 promotion is a re-run, and **verifying Tier 3 stayed bit-identical**.
+6. **Replaced one of its own self-checks** after it failed to demonstrate the property it claimed to.
+7. **Did not touch `progress.md` during the work** — only now, on the handoff prompt.
+
+### SESSION END STATE
+
+**Nothing is running. Nothing is partially implemented. Everything is committed and pushed.**
+`git status` clean, `git log origin/main..HEAD` empty, HEAD `37f02b0` on `main`.
+
+The session ended on this handoff request. The one thing left mid-flight is **gate 3's data
+acquisition**, which stopped at a decision point rather than a half-finished state: the DADA Drive
+mirror has not been checked, and DAD's Google Form has not been submitted (the user must do that).
+**No download was started**, deliberately — neither dataset's terms have been confirmed, and this
+project has already excluded BDD100K on licence grounds.
+
+### MODEL / EFFORT HANDOFF
+
+- **Immediate next action (check the DADA mirror, resolve acquisition): sonnet · medium.** Mechanics
+  and a web/disk check, fully specified in §13.
+- **🔴 Switch to opus · high BEFORE running or interpreting gate 3.** `NEW_PLAN.md` R1 marks it
+  opus/high, and session 10 is the evidence for why: **two successive attempts to specify this gate
+  were both wrong**, and each was only caught by checking a primary source instead of a summary. The
+  leakage and selection reasoning is the most consequential judgment left in the project.
+- **Then R1's promotion decision: opus · high.** It invalidates or revalidates every committed
+  number.
+- **Tier-4 calibration, R4/R2 implementation, the 0.0498 fix: sonnet · medium/low.**
+- **Switch before next task? NO** for the acquisition check; **YES** before gate 3 itself.
+
+---
+
+## 17-S9. FINAL HANDOFF CHECK  ·  **SESSION 9, 2026-09-16 16:45 IST (history — superseded by §17-S10).**
 
 | Question | Answer |
 |---|---|
