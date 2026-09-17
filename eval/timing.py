@@ -59,16 +59,20 @@ TARGET_RECALL = 0.80
 PROMINENCE_FRACTION = 0.5
 
 
-def load_traces_abs():
+def load_traces_abs(frames_dir=FRAMES_DIR):
     """{clip_id: (valid_scores, fps, offset)} -- offset is the absolute index of the first
     scored frame, which `reduction_study.load_traces` throws away.
 
     That function strips leading NaNs and is correct for its own job (ranking a clip needs
     no time base). Timing needs the offset back, so this reads the .npz directly rather
     than changing a loader two other committed scripts depend on.
+
+    `frames_dir` defaults to Nexar's committed sweep. It is a parameter so gate 3a can read
+    an external corpus's traces through THIS loader rather than writing a second one --
+    duplicating the offset logic is exactly the 2-second trap the docstring above names.
     """
     out = {}
-    for path in glob.glob(os.path.join(FRAMES_DIR, "*.npz")):
+    for path in glob.glob(os.path.join(frames_dir, "*.npz")):
         clip_id = os.path.splitext(os.path.basename(path))[0]
         with np.load(path) as f:
             scores, fps = f["scores"], float(f["target_fps"])
