@@ -26,3 +26,6 @@ data/nexar/**/*.mp4
 
 # BADAS-Open weights (3.7 GB) - gated HF download, re-fetchable, never commit
 models/badas/
+
+# DADA-2000 gate 3a clips (1350 MiB) - rebuilt from Drive, never commit
+data/dada2000/
