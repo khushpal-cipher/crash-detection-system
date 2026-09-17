@@ -1,10 +1,153 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-17, end of session 10 (continued)**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-17 evening, end of session 12**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
-> # ▶▶ SESSION 10 CONTINUATION (2026-09-17, after the 7e1ea9a handoff) — READ THIS FIRST
+> **🔴 A DETACHED SCORING RUN MAY STILL BE EXECUTING.** See the SESSION 12 block immediately below
+> — check it before doing anything else.
+
+> # ▶▶▶▶ SESSION 12 (2026-09-17, evening) — READ THIS FIRST
+>
+> ### 🔴 A SCORING RUN IS STILL EXECUTING RIGHT NOW. DO NOT START A SECOND ONE.
+>
+> `scripts/score_external.py` is running **detached** (`nohup` + `caffeinate`, PID was 9372) over
+> the 220 DADA clips. At session end it had scored **34/220, zero failures**, and had **~7 h left**.
+> It survives this session ending. **Before doing anything else:**
+> ```bash
+> cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+> wc -l < runs/gate3a/scores.jsonl          # 220 when complete
+> pgrep -f score_external && echo RUNNING || echo NOT RUNNING
+> tail -3 runs/gate3a/run.log
+> grep -c '"reason"' runs/gate3a/scores.jsonl   # failures; was 0
+> ```
+> **If RUNNING:** let it finish. Do not launch another — two processes would interleave writes to
+> the same `scores.jsonl`. **If NOT RUNNING and the count is < 220:** it died; **just re-run the
+> same command**, it resumes from `scores.jsonl` and re-does nothing (proven this session — the
+> full run correctly skipped the 20 pilot clips).
+> ```bash
+> PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+>   ~/envs/badas/bin/python scripts/score_external.py \
+>       --clips-dir data/dada2000/gate3a --out runs/gate3a
+> ```
+>
+> ### What session 12 did
+>
+> **Committed session 11's entire uncommitted deliverable (5 commits), landed and checksum-verified
+> gate 3a's 220 clips, measured the real scoring cost, and started the full dense run.**
+> **Gate 3a itself has NOT been run. R1 is still undecided.**
+>
+> | | |
+> |---|---|
+> | Commits | **5**, `1312211` → `32716cd`. **NOT PUSHED** — user deferred; ask before pushing. |
+> | All five guards | re-ran BEFORE committing, **reproduce EXACTLY** |
+> | `eval/adapters.py:129` | still `np.nanmax`. **R1 still NOT promoted.** |
+> | Clips on disk | `data/dada2000/gate3a/` — 220 mp4 + 2 files, 1.3 GB, **220/220 SHA-256 verified** |
+> | Pilot | 20/20 scored, 0 failures, **1.858 s/window**, full run **~8.3 h** |
+> | Full run | **IN PROGRESS, 34/220 at session end** |
+>
+> ### 🔴 THREE TRAPS CAUGHT THIS SESSION — do not re-create them
+>
+> 1. **The notebook in the repo was the WRONG ONE.** `progress.md` listed
+>    `scripts/colab_dada_extract.ipynb` as a session-11 deliverable, but the file at that path was
+>    the **abandoned first attempt** — BADAS ids (forbidden by D45), a Drive folder
+>    (`dada2000_test221`) that was never created, no JPEG fix, and it stopped at the "this is frames
+>    not video" gate. The real 79 KB notebook was **outside git** at
+>    `~/dev/crash_detection/the_cell_which_is_in_colab/`. **Swapped and committed at `b772e93`.**
+>    Committing the stale one would have made a notebook built on the forbidden annotation the
+>    project's permanent provenance record.
+> 2. **`gate3_mechanism.py` DEFAULTED to the forbidden BADAS CSV.** `DEFAULT_ANNOTATION` pointed at
+>    `vendor/badas-open/annotation/dada2000_small_test_concensus.csv`, so running the gate without
+>    `--annotation` would have used the exact file D45 rules out. Repointed to the D45 file;
+>    guard 5 re-run after the change, still **PASS**.
+> 3. **The download landed at `data/dada2000_gate3a/`, which `.gitignore` did NOT cover.** The rule
+>    is `data/dada2000/` — underscore, not slash. **git would have committed 1.3 GB of video.**
+>    Moved to `data/dada2000/gate3a/` (the path every committed command already expects) and
+>    confirmed with `git check-ignore -v`, not assumed.
+>
+> ### The corpus is verified, not merely present (CONFIRMED)
+>
+> ```
+> 220/220 clips byte-identical to manifest.json      (scripts/verify_manifest.py, PASS)
+> id join annotation <-> disk: 220/220, 0 unmatched
+> position    median 0.541  IQR 0.282  range 0.084-0.995
+> seconds     median 5.50s  IQR 4.57s          <- vs gate's 1.0s interpretability floor
+> in final 10% of clip: 3.6%                   <- vs Nexar positives' 73.7%
+> clip length median 10.87s  min 2.37s  max 40.67s  total 40.7 min
+> clips under 2.0s (would yield no trace): 0   <- the risk was checked and is ZERO
+> ```
+> On the first 5 clips, **trace length matched the expected frame count EXACTLY** (75/75, 19/19,
+> 102/102, 101/101, 118/118), each with exactly 16 leading NaNs. **The time base survives Colab →
+> mp4 → download → scorer intact.**
+>
+> **Read order for a brand-new Claude: this block → §21.8 → §13 (exact next action) → §12 (what NOT
+> to redo) → §11 D49–D51 → §15.12 → §17-S12 → then the SESSION 11 block below for prior context.**
+
+> # ▶▶▶ SESSION 11 (2026-09-17) — READ THIS FIRST (superseded by the SESSION 12 block above)
+>
+> **Nothing is running. Nothing is half-done in the repo. NOTHING IS COMMITTED — four files are
+> uncommitted and they are this session's entire deliverable.**
+>
+> ### 🔴 THE MOST IMPORTANT FACT: CRITICAL STATE LIVES OUTSIDE THIS REPOSITORY
+>
+> **220 DADA-2000 clips (1350 MiB) now exist in the user's Google Drive at
+> `MyDrive/dada2000_gate3a`**, together with `dada_gate3a_annotation.csv` and `manifest.json`
+> (SHA-256 per clip). **They are NOT on this Mac and NOT in git.** They took ~2 h of Colab work to
+> produce. A fresh session that does not read this line will not find them and may try to rebuild
+> them. **They are the input to gate 3a and the next action depends on them.**
+>
+> ### What session 11 built (all self-checked, all uncommitted)
+>
+> | File | Status |
+> |---|---|
+> | `scripts/score_external.py` (174 ln) | NEW — score any clip dir, reuses `BadasOpen` unchanged, resumable. 4 self-checks **PASS** |
+> | `eval/gate3_mechanism.py` (410 ln) | NEW — gate 3a analysis, 3 verdicts. 6 self-checks **PASS** |
+> | `eval/timing.py` | MODIFIED, **one line**: `load_traces_abs(frames_dir=FRAMES_DIR)`. 7/7 still **PASS** |
+> | `scripts/colab_dada_extract.ipynb` | NEW — the Colab extraction notebook |
+>
+> **All five regression guards reproduce EXACTLY** (re-run at end of session): T3 AUC 0.5339 /
+> AP 0.5218 / 332,325,2,8 · reduction max 0.8349, last_window 0.8905 **+0.0556** [+0.0263, +0.0876] ·
+> timing 7/7 · heldout null median ΔAP +0.0025 · gate3_mechanism PASS.
+> **`eval/adapters.py`, `eval/benchmark.py`, `eval/run_baselines.py` were NOT touched.**
+> **`eval/adapters.py:129` is still `np.nanmax`. R1 is still NOT promoted.**
+>
+> ### 🔴 FOUR THINGS THAT WOULD HAVE SILENTLY CORRUPTED GATE 3a — each caught by a check
+>
+> 1. **DADA's Drive mirror is a 6-part split zip, 116.75 GB** — the *full* benchmark, not the 53 GB
+>    subset. **Not per-file.** (5 × 19.9 GB `.z01`–`.z05` + 17.25 GB `.zip`.)
+> 2. **It stores extracted frames, not video.** The notebook's gating check **halted** rather than
+>    produce something unscoreable.
+> 3. **🔴 BADAS's `dada2000_small_test_concensus.csv` ids DO NOT MAP onto this archive.** Only
+>    **132/221** matched, and `41_007` claims a collision at **12.37 s in an 87-frame (2.9 s) clip**.
+>    Nine of DADA's 61 type folders are absent from this mirror. **Using those ids would have paired
+>    each clip's score peak against a DIFFERENT clip's collision time** and produced a confident,
+>    meaningless correlation.
+> 4. **The frames are JPEG named `.png`.** ffmpeg failed loudly on the fake signature
+>    (`Invalid PNG signature 0xFFD8FF...`). Had it mis-decoded quietly, gate 3a would have run on
+>    corrupt frames.
+>
+> ### 🔴 PLAN-LEVEL CHANGE: gate 3a's annotation source (D45)
+>
+> **From** BADAS's consensus CSV (221 clips, collision in seconds) **to DADA's own `Sheet1`** in
+> `dada标注.xlsx` (`accident frame` beside `total frames`). Forced by finding 3. **Better anyway:
+> position is `accident_frame / total_frames`, a RATIO — frame rate cancels completely**, killing
+> the silent-fps-offset risk `NEW_PLAN.md` R1 warns about. Mapping proven independently: sheet
+> `total frames` == on-disk PNG count for **1949/1962** clips.
+>
+> ### The corpus is right for the test (CONFIRMED)
+>
+> ```
+>                     collision position   IQR     in final 10% of clip
+>   Nexar positives        0.975            —           73.7%     <- truncated
+>   DAD                    ~0.90          0.16 s      degenerate
+>   DADA (220 selected)    0.541          0.282         3.6%      <- untruncated
+> ```
+> **That is the contrast gate 3a needs in order to discriminate at all.**
+>
+> **Read order for a brand-new Claude: this block → §21.7 → §13 (exact next action) → §12 (what NOT
+> to redo) → §11 (D45–D48) → §15.11 → then the SESSION 10 blocks below for prior context.**
+
+> # ▶▶ SESSION 10 CONTINUATION (2026-09-17, after the 7e1ea9a handoff)
 >
 > **Session 10 wrote a handoff (`7e1ea9a`), then KEPT GOING.** Everything in the SESSION 10 block
 > below is still accurate; this block records what happened after it. **Read both.**
@@ -1483,6 +1626,24 @@ From `runs/falsification/RESULTS.md`, `T124_local_videos.json`, `T5_source_leaka
 
 ---
 
+## 7.3 FILES CHANGED IN SESSION 12 (verified against `git show --stat` and the working tree)
+
+| Path | Change | Why it matters |
+|---|---|---|
+| `scripts/score_external.py` | **committed** (`1312211`), unchanged from session 11 | Scores any clip dir, reuses `BadasOpen` untouched, resumable. **Resume proven on real data** this session. |
+| `eval/timing.py` | **committed** (`1312211`), one-line `frames_dir` param | Lets gate 3a read an external corpus's traces through the loader that keeps the absolute NaN offset. A second loader would re-create the 2-second trap. |
+| `eval/gate3_mechanism.py` | **committed** (`191aa7f`), **`DEFAULT_ANNOTATION` changed this session** | Gate 3a. Default repointed from the forbidden BADAS CSV to `data/dada2000/gate3a/dada_gate3a_annotation.csv` (**D50**). Self-check re-run after the change: PASS. |
+| `scripts/colab_dada_extract.ipynb` | **REPLACED** with the real 79 KB notebook, then committed (`b772e93`) | The repo copy was the abandoned BADAS-id attempt (**D49**). Cells 10–19 are dead history, `execution_count: null` — do not clean or follow them. |
+| `.gitignore` | **committed** (`b772e93`), +`data/dada2000/` | Keeps 1.3 GB of video out of git. **Matches the directory, not the prefix** — see D51. |
+| `scripts/verify_manifest.py` | **NEW, committed** (`32716cd`), ~130 ln | The checksum gate. A truncated mp4 still decodes and would corrupt gate 3a silently. Checks byte length before digest so a short file is named as such. Tolerates the flat manifest shape the abandoned notebook wrote. 3 self-checks PASS. |
+| `NEW_PLAN.md` | **committed** (`bfcb91c`), +32 lines, 0 deletions | **The one plan-level change**, user-approved: R1 gate 3a's annotation source → D45. See §15.12. |
+| `data/dada2000/gate3a/` | **NEW on disk, gitignored** | 220 mp4 + `dada_gate3a_annotation.csv` + `manifest.json`, 1.3 GB, **220/220 SHA-256 verified**. |
+| `runs/gate3a/` | **NEW on disk, UNTRACKED and NOT ignored** | `scores.jsonl` + `frames/*.npz` + `run.log`. Being written by the live run. **Commit with the verdict** (§13 step 4). |
+| `eval/adapters.py`, `eval/benchmark.py`, `eval/run_baselines.py` | **NOT TOUCHED** | Why all five guards reproduce exactly. Line 129 is still `np.nanmax`. |
+| `README.md` | **NOT TOUCHED** | The master plan did not change. |
+
+---
+
 ## 7. REPOSITORY CHANGES
 
 **As of end of session 2 (2026-09-12). This supersedes any "this session" labels below the line.**
@@ -2136,6 +2297,62 @@ Do not reverse these without new evidence.
   Caveat recorded: the Studio's free disk is unknown and its stale ~40 GB is itself below DADA's
   53 GB, so it is **not** an automatic solution. **DoTA stays excluded** (~55 GB).
 
+### Decisions made in SESSION 11 (D45–D48)
+
+- **D45 — Gate 3a's annotation source is DADA's OWN `Sheet1` (`dada标注.xlsx`), NOT BADAS's
+  `dada2000_small_test_concensus.csv`.** **Why:** the BADAS ids do not map onto the Drive archive —
+  only 132/221 matched, nine of DADA's 61 type folders are absent, and `41_007` annotates a
+  collision at 12.37 s in an 87-frame (2.9 s) clip. Pairing on those ids would correlate each
+  clip's peak against a different clip's collision. **Evidence it is safe:** sheet `total frames`
+  equals the on-disk PNG count for **1949/1962** clips — an independent quantity confirming the
+  row→folder mapping. **Bonus:** position becomes `accident_frame / total_frames`, a ratio, so the
+  frame rate cancels and `NEW_PLAN.md` R1's "systematic offset would corrupt 3a silently" risk is
+  eliminated rather than merely checked. **Do not "restore" the BADAS CSV.**
+- **D46 — Colab is used for STORAGE/format conversion ONLY; every number is produced on the Mac.**
+  **User's own proposal, adopted.** **Why:** DADA is 116.75 GB against 31 GB free on the Air, so the
+  archive can only be opened somewhere with disk. But scoring on Colab's NVIDIA GPU would make this
+  corpus's scores incomparable with every committed MPS number, a discrepancy we would then have to
+  measure and defend. Colab moves files; it never loads the model. **Note:** this does NOT reverse
+  D2's "no cloud GPU" — that question stays moot. Recorded separately: **D2's stated basis is "no
+  cloud *spend*", and Colab's free tier has no spend, so D2 is narrower than it reads.** Not acted on.
+- **D47 — 220 clips, stratified on COLLISION POSITION, seed 0.** **Why:** all 1945 usable accident
+  clips would be ~90 h of scoring at ~167 s/clip. 220 keeps the originally budgeted ~10 h. Stratified
+  over ten position deciles so the 0.084–0.995 spread survives sampling — a correlation needs the
+  variance. **Stratified on the annotated quantity, never on score** (D41's rule: sampling on the
+  thing you are measuring presupposes the answer).
+- **D48 — Rows that fail a consistency check are DROPPED, never repaired.** **Why:** 30 of 1962
+  sheet rows were excluded (13 frame-count mismatches vs disk, 17 with no accident, plus any
+  out-of-range accident frame). A repaired annotation is an invented one, and gate 3a is a
+  falsification test — inventing its ground truth would defeat the purpose.
+
+### Decisions made in SESSION 12 (D49–D52)
+
+- **D49 — The real Colab notebook REPLACES the repo's stale copy; the stale one is NOT kept.**
+  **Why:** the committed-candidate file was the abandoned attempt built on the BADAS ids D45
+  forbids, pointing at a Drive folder that was never created. Keeping it — even renamed — leaves a
+  file in `scripts/` that a future session could follow into exactly the error D45 exists to
+  prevent. The real notebook is committed **untidied**, dead cells included, because it is the
+  provenance record of what actually ran; the commit message maps the live path by execution count
+  rather than editing the evidence. **User chose this option explicitly.**
+- **D50 — `gate3_mechanism.py`'s `DEFAULT_ANNOTATION` points at the D45 file, not the BADAS CSV.**
+  **Why:** the module that enforces D45 defaulted to the file D45 forbids. A single omitted
+  `--annotation` flag would have produced a confident, meaningless correlation. This is a
+  root-cause fix at the one place all invocations route through, not a note in a docstring.
+  **Evidence it is safe:** the 6 self-checks pass explicit paths and were re-run after the change —
+  still PASS.
+- **D51 — The clips live at `data/dada2000/gate3a/`, and that exact path is load-bearing.**
+  **Why:** `.gitignore` line 31 is `data/dada2000/` — a directory, not a prefix. The download's
+  own name, `data/dada2000_gate3a/`, is **not** matched by it, and git would have accepted 1.3 GB
+  of video. The chosen path is simultaneously the ignored one and the one every committed command
+  and commit message already names. **Do not move the clips.** If they must move, re-check
+  `git check-ignore` rather than assuming.
+- **D52 — Plan the full run against a per-WINDOW rate, not mean s/clip, whenever a pilot may be
+  unrepresentative.** **Why:** the pilot is the first 20 clips *by id*; clip length varies 40× in
+  this corpus (2.37 s to 40.67 s). Mean-s/clip × N is only valid if the pilot's mean duration
+  matches the corpus's. Here it did (11.28 s vs 11.09 s, 2%), so both methods agreed at ~8.3 h and
+  nothing turned on it. **The agreement is a fact about this pilot, not a property of the method** —
+  D40's instruction to measure stands, and on any new corpus compute both.
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
 Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
 gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
@@ -2144,6 +2361,61 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 12 — do NOT redo these, and do NOT undo them:**
+
+- **🔴 Do not start a second scoring run while one is alive.** Two processes append to the same
+  `runs/gate3a/scores.jsonl`. `pgrep -f score_external` first. If it died, **re-run the same
+  command** — resume is proven on real data, it skipped the 20 pilot clips correctly.
+- **🔴 Do not re-download or rebuild the 220 clips.** They are at `data/dada2000/gate3a/`, 1.3 GB,
+  **220/220 SHA-256 verified against `manifest.json`**. Re-verify with
+  `scripts/verify_manifest.py --dir data/dada2000/gate3a --expect 220` (seconds) rather than
+  re-fetching (hours).
+- **🔴 Do not move the clips out of `data/dada2000/gate3a/`** (D51). `.gitignore` matches the
+  directory `data/dada2000/`, not the prefix — `data/dada2000_gate3a/` is NOT ignored, and that is
+  where the download actually landed before being moved.
+- **🔴 Do not "restore" `DEFAULT_ANNOTATION` to the BADAS consensus CSV** (D50). It now points at
+  the D45 file deliberately.
+- **Do not re-swap the Colab notebook** (D49). `scripts/colab_dada_extract.ipynb` is now the real
+  79 KB one. Its cells 10–19 are dead-but-deliberate history (`execution_count: null`) — **do not
+  "clean them up"**, and do not follow them: they use the forbidden BADAS ids.
+- **Do not re-run the 20-clip pilot.** Measured: **1.858 s/window**, 137.9 s/clip, 0 failures, full
+  run ~8.3 h, stop condition not hit. Its 20 clips are already in `scores.jsonl` and are skipped on
+  resume.
+- **Do not re-verify the annotation schema or corpus stats.** Confirmed this session: columns match
+  `load_annotation()` unchanged, id join 220/220, position median 0.541 / IQR 0.282, seconds IQR
+  4.57 s, 3.6% in the final 10%, **0 clips under 2 s**.
+- **Do not re-check the time base.** Trace length matched expected frame count exactly on the first
+  five clips, 16 leading NaNs each.
+- **Do not investigate why DADA is slower than Nexar.** Answered: **1.858 vs 0.871 s/window**, and
+  the cause is decode of 1584×660 frames, not compute — the model resizes everything to 224 px.
+  Recorded as evidence for `NEW_PLAN.md` §11 item 4; not a problem to fix.
+- **Do not push without asking.** 5 commits are local and unpushed; the user explicitly deferred
+  the push decision ("wait for this").
+
+**Added after SESSION 11 — do NOT redo these, and do NOT undo them:**
+
+- **🔴 Do not rebuild the 220 DADA clips.** They exist in the user's Google Drive at
+  `MyDrive/dada2000_gate3a` (220 mp4 + annotation CSV + manifest.json, 1350 MiB). ~2 h of Colab
+  work. Verified: `built 220/220 failed 0`, every clip's frame count matched the spreadsheet.
+- **🔴 Do not use `vendor/badas-open/annotation/dada2000_small_test_concensus.csv` for gate 3a**
+  (D45). Its ids do not map onto the archive — 132/221, and `41_007` annotates a 12.37 s collision
+  in a 2.9 s clip. **Use `dada_gate3a_annotation.csv` that ships with the clips.**
+- **Do not re-derive DADA's frame rate.** Settled and then made irrelevant: clips were stitched at
+  30 fps with frame counts preserved exactly, and position is a ratio, so fps cancels.
+- **Do not "fix" the JPEG/PNG handling.** DADA names JPEG files `.png`; the notebook sniffs magic
+  bytes and passes `-f image2 -c:v mjpeg` explicitly. Letting ffmpeg infer from the extension is
+  what failed. Already solved in `scripts/colab_dada_extract.ipynb`.
+- **Do not download DADA to the Mac.** 116.75 GB against 31 GB free. Only the 220 stitched clips
+  (1350 MiB) are needed and they are already in Drive.
+- **Do not look for a per-file DADA mirror.** Checked in-browser: the Drive folder is a 6-part split
+  zip. The HuggingFace mirror (`JeffreyChou/MM-AU`) is also chunked archives, also frames not video,
+  and is **CC-BY-NC-4.0**.
+- **Do not modify `eval/adapters.py`, `eval/benchmark.py` or `eval/run_baselines.py`.** Session 11
+  deliberately touched none of them; all five guards reproduce exactly because of that.
+- **Do not score DADA on Colab or any CUDA device** (D46). Every committed number is MPS.
+- **Do not re-run the three Colab diagnostics or Cell A/B.** Their findings are recorded in §21.7.
+  The Colab runtime is disposable and its `/content` state is gone; only Drive persists.
 
 **Added after the SESSION 10 CONTINUATION:**
 
@@ -2365,9 +2637,135 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-17, end of session 10 (continued)**
+## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-17 evening, end of SESSION 12**
 
 ### ══ THE ONE EXACT NEXT ACTION ══
+
+### **Check whether the detached 220-clip scoring run finished. When it has, RUN GATE 3a and
+### interpret the verdict.**
+
+**🔴 SWITCH TO OPUS · HIGH BEFORE INTERPRETING THE VERDICT.** `NEW_PLAN.md` R1 marks it opus/high.
+Gate 3 has been specified four times and **three of those were wrong**; every error was caught only
+by checking a primary source instead of trusting a summary.
+
+**Step 1 — is it still running?**
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+wc -l < runs/gate3a/scores.jsonl                # 220 == complete (was 34 at session end)
+pgrep -f score_external && echo RUNNING || echo "NOT RUNNING"
+grep -c '"reason"' runs/gate3a/scores.jsonl     # failed clips; was 0
+tail -3 runs/gate3a/run.log
+```
+- **RUNNING** → let it finish (~7 h from 34/220). Do **not** launch a second process (D-note §12).
+- **NOT RUNNING, count < 220** → it died. **Re-run the identical command**; resume is proven:
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+  ~/envs/badas/bin/python scripts/score_external.py \
+      --clips-dir data/dada2000/gate3a --out runs/gate3a
+```
+- **NOT RUNNING, count == 220** → go to step 2.
+
+**Step 2 — sanity-check the run before reading any verdict.**
+```bash
+ls runs/gate3a/frames/*.npz | wc -l             # expect ~220, matching the scored count
+grep -c '"reason"' runs/gate3a/scores.jsonl     # failures; investigate if > ~5
+```
+A large failure count means the corpus, not R1, is the story — investigate before proceeding.
+
+**Step 3 — 🔴 OPUS · HIGH. Run gate 3a.**
+```bash
+~/envs/badas/bin/python -m eval.gate3_mechanism \
+    --frames-dir runs/gate3a/frames \
+    --annotation data/dada2000/gate3a/dada_gate3a_annotation.csv
+```
+(The `--annotation` default now points here anyway — D50 — but pass it explicitly.)
+
+**Before reading the verdict, check `matched`.** It should be ~220 against 220 annotation rows.
+**A low match count means the id join broke — investigate, do not read the verdict.**
+
+**The three verdicts, and what each means:**
+- **PASS** — the peak tracks the annotated collision **beyond the clip-end null**, *and* the median
+  normalised peak is below 0.90. Truncation is the mechanism; **R1 survives 3a**. Gate 3b (DAD AP)
+  is still open and R1 must survive both, so **do NOT promote `adapters.py:129` on a 3a pass alone.**
+- **FAIL** — peaks pile at the clip end regardless of the annotation. Watch-time drift. **R1 DIES,
+  and Nexar's +0.0556 AP is a benchmark artifact, not a finding.** Keep `np.nanmax`. Record the
+  kill honestly; **do not rescue it with a weaker test.** This project's value is that its numbers
+  are honest.
+- **UNINTERPRETABLE** — annotation IQR below the 1.0 s floor. **Not a pass.** (Unlikely here: the
+  corpus measures 4.57 s, already confirmed.)
+
+**🔴 The gate turns on the PAIRED DIFFERENCE `r_measured − r_null`, not on `r_measured`.** In the
+module's own self-check a pure watch-time-drift model scores r = **+0.944** against the annotation
+and is correctly **FAILED**, because the clip-end null scores **+0.944** too. **A headline
+correlation near +0.9 is not evidence of anything on its own.** Read the Δ and its CI.
+
+**Step 4 — after the verdict.** Commit `runs/gate3a/` (scores + 220 `.npz` traces, ~1 MB — Nexar's
+667 traces are committed precedent at 2.6 MB) with the verdict in the message. Then ask the user
+about pushing the now-6 commits. Then record the outcome for the next handoff.
+
+---
+
+### ══ SESSION 11's next action (SUPERSEDED — kept for its detail) ══
+
+### **Commit session 11's four files, then download `MyDrive/dada2000_gate3a` to the Mac and
+### verify it against `manifest.json`.**
+
+**Why this and not scoring:** the four files are this session's entire deliverable and are
+**uncommitted** — one `git checkout` destroys them. And the 220 clips exist only in Google Drive;
+until they are on disk and checksum-verified, the ~10 h scoring run cannot start and a truncated
+download would corrupt gate 3a silently (a half-downloaded mp4 still decodes).
+
+**Step 1 — commit (ask the user first; §12 says never push without asking).**
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+git status --short     # expect: M eval/timing.py + 3 untracked, and NOTHING else
+```
+Verify all five guards reproduce BEFORE committing (numbers in §21.7). If any moved, **STOP**.
+Suggested split: (1) `scripts/score_external.py` + `eval/timing.py` (the frames_dir parameter
+exists to serve it); (2) `eval/gate3_mechanism.py`; (3) `scripts/colab_dada_extract.ipynb`.
+Messages should carry the evidence — the four silent-corruption traps, and D45's annotation change.
+End each with `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`.
+
+**Step 2 — get the clips onto the Mac.** User downloads `MyDrive/dada2000_gate3a` (1350 MiB;
+31 GB free, fits). Suggested destination `data/dada2000/gate3a/` — **and confirm it is gitignored**;
+220 mp4 files must not enter git.
+
+**Step 3 — verify against the manifest. This is gating, not optional.**
+```python
+# every clip's sha256 must match manifest.json, and the count must be 220
+```
+A mismatch means a corrupt download: re-download that clip, do not proceed.
+
+**Step 4 — the 20-clip pilot** (`--limit 20`), which measures real s/clip. D40: **do not plan
+against ~167 s/clip**, that is Nexar's rate. Stop condition already coded in: > 18 h implied for
+220 clips → re-plan onto the Studio or subsample **stratified on collision position, never on
+score**.
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+  ~/envs/badas/bin/python scripts/score_external.py \
+      --clips-dir data/dada2000/gate3a --out runs/gate3a --limit 20
+```
+
+**Step 5 — full dense run, stride 1** (D41: tail-scoring is forbidden for 3a — it presupposes the
+answer). Resumable via `scores.jsonl`.
+
+**Step 6 — run gate 3a. 🔴 SWITCH TO OPUS · HIGH BEFORE THIS.**
+```bash
+~/envs/badas/bin/python -m eval.gate3_mechanism \
+    --frames-dir runs/gate3a/frames \
+    --annotation data/dada2000/gate3a/dada_gate3a_annotation.csv
+```
+Three verdicts. **PASS** — peaks track the annotated collision and sit materially before the clip
+end; R1's mechanism survives. **FAIL** — peaks pile at the clip end regardless; the score merely
+drifts with watch-time, R1 dies, and Nexar's +0.0556 is a benchmark artifact. **UNINTERPRETABLE** —
+not a pass.
+
+**🔴 The asymmetry that protects the schedule:** **gate 3a can kill R1 on its own.** DAD (gate 3b)
+is needed only to *confirm* a pass. So a DAD non-reply does not block the most valuable outcome.
+
+---
+
+### ══ SESSION 10's next action (SUPERSEDED — kept for its detail) ══
 ###
 ### **Build `eval/gate3_mechanism.py` and `scripts/score_external.py` — the two unblocked pieces of
 ### gate 3. They need NO downloaded data and are fully testable against synthetic traces.**
@@ -2817,7 +3215,153 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S10b. NEXT 3–5 ACTIONS · **written end of SESSION 10 (continued). Supersedes §14-S10.**
+## 14-S12. NEXT 3–5 ACTIONS · **written end of SESSION 12. Supersedes §14-S11.**
+
+1. **Check the detached run** (`wc -l < runs/gate3a/scores.jsonl`; `pgrep -f score_external`). Let
+   it finish, or re-run the identical command to resume. **Never start a second process.**
+   → **sonnet · medium** (it is a `wc` and a `pgrep`).
+2. **🔴 SWITCH TO OPUS · HIGH. Run gate 3a** and interpret it. Check `matched` ≈ 220 *before*
+   reading the verdict. **Read the paired Δ and its CI, not `r_measured`** — a drift model scores
+   +0.944 on `r_measured` alone. → **opus · high.**
+3. **Act on the verdict.**
+   - **FAIL** → R1 dies. Keep `np.nanmax`. Record the kill plainly; `NEW_PLAN.md` §10 puts "no
+     detection gain survives" at ~25% and says it **must be reported, not rescued**. Then
+     `NEW_PLAN.md` §10's order says the next candidates are **R4 (flip TTA, cheap) → R2
+     (multi-scale) → R3 (JEPA surprise)**.
+   - **PASS** → R1 survives 3a but is **NOT promoted**: gate 3b (DAD AP) is still open and R1 must
+     survive both. Do not touch `adapters.py:129`.
+   → **opus · high** either way; this is the R1 promotion decision.
+4. **Commit `runs/gate3a/`** (scores + ~220 `.npz`, ~1 MB; Nexar's 667 traces are committed
+   precedent at 2.6 MB) with the verdict in the message. **Then ask about pushing** — 5 commits are
+   local and the user deferred the push. → **sonnet · medium.**
+5. **Track B / Track C.** Zero progress across **twelve** sessions now. `NEW_PLAN.md` §9 sets a hard
+   kill condition (< 3 replies by end of Week 2 → formally close Track C). Neither is technically
+   blocked; both need the user. **This is the largest plan-vs-reality gap in the project.**
+   → **haiku · low** for drafting; the sending is the user's.
+
+**In parallel, blocked on the user:** DAD's authors have not replied (email to
+`corgi1205@gmail.com`; the official form's agreement document is a dead link). **This does not
+block the valuable outcome — 3a can kill R1 on its own.** If 3a passes and DAD is still silent
+after ~2 weeks, evaluate a substitute corpus with real negatives — **not before**.
+
+---
+
+## 14-S11. NEXT 3–5 ACTIONS · **written end of SESSION 11. SUPERSEDED by §14-S12.**
+
+1. **Commit the four files** (ask the user first). Verify all five guards reproduce before
+   committing; if a number moves, STOP. This session's entire deliverable is uncommitted.
+2. **Download `MyDrive/dada2000_gate3a` → `data/dada2000/gate3a/`** (1350 MiB) and **verify every
+   SHA-256 against `manifest.json`**. Confirm the path is gitignored — 220 mp4s must not enter git.
+3. **20-clip pilot** with `scripts/score_external.py --limit 20`. Replace D40's estimate with the
+   measured s/clip. Stop condition is coded in (> 18 h for 220).
+4. **Full dense stride-1 run**, ~10 h overnight, resumable.
+5. **🔴 SWITCH TO OPUS · HIGH. Run and interpret gate 3a.** Then decide R1: both 3a and 3b must
+   pass to promote. **3a alone can kill it** — in which case record the kill, keep `np.nanmax`, and
+   report the honest outcome (`NEW_PLAN.md` §10 puts this at ~25% and says it must be reported, not
+   rescued with a weaker experiment).
+
+**In parallel, blocked on the user:** DAD's authors have not replied (email sent to
+`corgi1205@gmail.com`; the official form's agreement document is a dead link). If 3a passes and DAD
+is still silent after ~2 weeks, evaluate a substitute corpus with real negatives — **not before**,
+it would be wasted work.
+
+---
+
+## 15.12 PLAN POSITION — SESSION 12 (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged this
+  session.**
+- **What the README says should happen:** three concurrent tracks from week 1 (§41) — **A**
+  model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. The product is the
+  **structured incident record** (§27), not detection, which is a commodity.
+- **Completed:** Track A's measurement path. Two incident-record fields work: "collision detected"
+  and `t_start`/`t_peak`/`t_end`.
+- **Remains:** **Tracks B and C are at ZERO after twelve sessions.** Neither is technically blocked.
+  README §41 explicitly calls Track B the moat and Track C the real critical path to a startup
+  outcome, and warns against sequencing them last. **This is the biggest gap between plan and
+  reality, and it is not a compute problem.**
+
+### `NEW_PLAN.md` POSITION (detailed plan)
+
+- **Current task:** **R1, gate 3a.** Week 1 is complete except this.
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap
+  everywhere (§1). R1 must survive gate 3a (DADA mechanism) **and** 3b (DAD AP).
+- **Completed:** gates 1 ✅ and 2 ✅; §3.2 mechanism at full n ✅; calibration Tiers 1–3 ✅;
+  operating point ✅; CPU/MPS ✅; gate 3a's code ✅; **gate 3a's corpus acquired, on disk and
+  checksum-verified ✅**; **cost measured ✅**; **scoring run started and ~15% done.**
+- **Remains:** finish the sweep (~7 h), **run gate 3a**, then 3b when DAD arrives, then decide R1.
+
+### ALIGNMENT
+
+**No conflict.** README gives the roadmap and product definition; `NEW_PLAN.md` gives the
+experiment sequence inside README's Track A.
+
+**🔴 THE DIVERGENCE FLAGGED IN §15.11 IS NOW RESOLVED.** Session 11 found that `NEW_PLAN.md` R1
+named an annotation file that cannot be used, and deliberately left the plan unedited, flagging it
+for the user. **Session 12 asked, and the user approved the edit.** `NEW_PLAN.md` R1's gate-3 block
+now carries a correction block (commit `bfcb91c`, +32 lines, nothing deleted) naming DADA's own
+`Sheet1` / `dada_gate3a_annotation.csv` as 3a's annotation, with the evidence (132/221 matched;
+`41_007` = a 12.37 s collision in a 2.9 s clip) and the note that position is a **ratio**, so the
+block's own "a systematic offset would corrupt 3a silently" warning is **discharged for 3a** and
+still binds 3b. **The plan and the repository now agree. Do not "restore" the BADAS CSV.**
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (carried from §15.11).
+These are progress drift, not plan changes, and §13 forbids editing a plan to record progress:
+1. Header reads "Status: PROPOSAL — nothing implemented" — false.
+2. §3.4 quotes beta ECE 0.0498; the committed script gives 0.0503.
+3. The gate-3 block says "~30 GB free"; measured is now **25 GB** (31 before the 1.3 GB download).
+
+---
+
+## 15.11 PLAN POSITION — SESSION 11 (HISTORY, superseded by §15.12 above)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. Unchanged this session.
+- **What README says should happen:** Track A phases 4→5→6; Track B the UK hard-negative benchmark
+  (§34, the moat per §40/§45); Track C 30 UK fleet calls. §27 defines the product as the
+  **structured incident record**, not detection.
+- **Completed:** Track A — falsification suite closed, BADAS baseline measured, harness built, R1 at
+  2 of 3 gates with **gate 3a now unblocked and its data acquired**, calibration Tiers 1–3, incident
+  field 2, operating point, CPU/MPS throughput.
+- **Remains:** Phase 6. **Tracks B and C are at ZERO after ELEVEN sessions** — still the largest
+  plan-vs-reality gap, still not a technical blocker.
+
+### `NEW_PLAN.md` POSITION (detailed/current plan)
+
+- **Current task:** Week 1, Track A — **R1 gate 3**, specifically **3a**.
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate, every comparison by paired
+  bootstrap (§1). R1 must survive gate 3a (DADA mechanism) **and** 3b (DAD AP).
+- **Completed:** gates 1 ✅ and 2 ✅; §3.2 mechanism at full n ✅; calibration Tiers 1–3 ✅;
+  operating point ✅; CPU/MPS ✅. **Gate 3a's code is written and self-checked, and its 220-clip
+  corpus is acquired** — the acquisition blocker that stood across sessions 8–10 is **CLOSED**.
+- **Remains:** score the 220 clips (~10 h), run 3a, then 3b when DAD arrives.
+
+### ALIGNMENT
+
+**No conflict.** README gives the roadmap and product definition; `NEW_PLAN.md` gives the experiment
+sequence inside README's Track A.
+
+**One divergence the next Claude must know about, recorded here and deliberately NOT edited into
+`NEW_PLAN.md`:** R1's gate-3 block names
+`vendor/badas-open/annotation/dada2000_small_test_concensus.csv` (221 clips, IQR 4.63 s) as 3a's
+annotation. **Session 11 proved those ids do not map onto the obtainable archive** and switched to
+DADA's own `Sheet1` (**D45**, §21.7 items 5–6). The plan's *intent* is unchanged and better served —
+same dataset, same question, a sounder ground truth, and 220 clips with IQR 0.282 normalised /
+4.57 s. **This is a plan-level change and the user may wish to edit `NEW_PLAN.md` R1 to match.**
+It was left unedited because §13 of the session brief forbids editing plans merely to record
+progress, and the user was not asked.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately unedited** (carried from §15.10):
+1. Header reads "Status: PROPOSAL — nothing implemented" — false.
+2. §3.4 quotes beta ECE 0.0498; the committed script gives 0.0503.
+3. The gate-3 block says "~30 GB free"; measured is **31 GB** (was 34 GB before this session).
+
+---
+
+## 14-S10b. NEXT 3–5 ACTIONS · **written end of SESSION 10 (continued). SUPERSEDED by §14-S11.**
 
 After §13 (building the two unblocked code pieces):
 
@@ -3136,6 +3680,221 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.8 SESSION 12 FINDINGS — added 2026-09-17 evening. Read after the top banner.
+
+**1. ALL FIVE REGRESSION GUARDS REPRODUCE EXACTLY (CONFIRMED).** Re-run before any commit:
+```
+benchmark.py          T3 AUC 0.5339  AP 0.5218  TP/FP/FN/TN 332/325/2/8
+                      FP/hour 361.4 over 0.90 h   p@r0.80 0.5253   ECE 0.4880
+reduction_study       max 0.8349   last_window 0.8905  +0.0556  [+0.0263, +0.0876]
+                      max_x_last +0.0555  last4_mean +0.0383  top3 -0.0136  p90 -0.0488
+timing --self-check   7/7 PASS
+heldout_half          null median ΔAP +0.0025, halves disjoint and stratified
+gate3_mechanism       PASS (6 checks) — re-run AGAIN after the DEFAULT_ANNOTATION change, still PASS
+```
+
+**2. 🔴 THE COMMITTED NOTEBOOK WAS THE ABANDONED ONE (CONFIRMED — the finding of this session).**
+`progress.md` §17-S11 listed `scripts/colab_dada_extract.ipynb` as a deliverable. The file there
+was 17 KB, mtime 13:51, and was the **superseded first attempt**:
+
+| | repo copy (17 KB) | real notebook (79 KB, 17:58) |
+|---|---|---|
+| Clip ids | **BADAS consensus CSV** — forbidden by D45 | DADA `Sheet1`, stratified, seed 0 |
+| Drive dest | `MyDrive/dada2000_test221` — never created | `MyDrive/dada2000_gate3a` |
+| JPEG-named-`.png` fix | absent | present (cell 20) |
+| Annotation CSV | never written | `dada_gate3a_annotation.csv` |
+| Ends at | the "frames not video" stop | 220 clips + manifest in Drive |
+
+The real one was **outside git** at `~/dev/crash_detection/the_cell_which_is_in_colab/`. Swapped
+and committed at `b772e93`. **It is a working scratchpad, deliberately left untidied** — cells
+10–19 are the dead original path and never executed (`execution_count: null`). Live path by
+execution count: cells 2,4 (mount, index) → 5,6,7 (three diagnostics) → **8 (CELL A: selection +
+one-clip proof)** → **20 (the JPEG fix, which REDEFINES `build()`)** → **21 (CELL B: build 220,
+write annotation, copy to Drive)** → 22 (resume after the disconnect). Cell 20 ran *last*
+(exec 52) — that is §21.7 item 10's "an older cell silently restored the pre-JPEG-fix `build()`".
+
+**3. 🔴 `gate3_mechanism.py` DEFAULTED TO THE FORBIDDEN ANNOTATION (CONFIRMED, FIXED).**
+`DEFAULT_ANNOTATION` pointed at `vendor/badas-open/annotation/dada2000_small_test_concensus.csv`.
+Running `python -m eval.gate3_mechanism --frames-dir ...` **without** `--annotation` would have
+silently used the file D45 forbids — the exact trap D45 exists to prevent, sitting inside the
+module that enforces D45. Repointed to `data/dada2000/gate3a/dada_gate3a_annotation.csv`, with the
+reasoning in a comment above it. Self-check re-run after the change: **PASS**. Committed `191aa7f`.
+
+**4. 🔴 THE DOWNLOAD PATH DEFEATED THE .gitignore RULE (CONFIRMED, FIXED).** The user's download
+landed at `data/dada2000_gate3a/`. The rule added this session is `data/dada2000/` — a directory,
+not a prefix — so `data/dada2000_gate3a/` was **NOT ignored** and `git status` showed 1.3 GB of
+video as untracked-and-committable. Moved to `data/dada2000/gate3a/`, which is both the ignored
+path and the path every committed command and commit message already names. Verified with
+`git check-ignore -v`, not assumed.
+
+**5. THE 220 CLIPS ARE ON DISK AND BYTE-VERIFIED (CONFIRMED).**
+`scripts/verify_manifest.py --dir data/dada2000/gate3a --expect 220` → **`verified 220 clips …
+PASS -- byte-identical to the manifest`**. 222 files, 1.3 GB. Disk after: **25 GB free** (was 31).
+`manifest.json` is **nested** — `{"fps":30,"n":220,"failed":[],"clips":{name:{sha256,bytes}}}` —
+not the flat dict the abandoned notebook wrote; a verifier assuming flat would have failed on the
+real file.
+
+**6. THE ANNOTATION IS THE RIGHT SHAPE AND THE CORPUS IS RIGHT FOR THE TEST (CONFIRMED).**
+Columns: `id, Event-type, Time-of-collision, accident_frame, total_frames, position, clip_seconds`
+— `load_annotation()` reads `id`/`Event-type`/`Time-of-collision` **unchanged, no code change
+needed**. Id join **220/220, 0 unmatched**. Stats reproduce §21.7 item 9 exactly: position median
+0.541 / IQR 0.282 / range 0.084–0.995; seconds IQR **4.57 s** (floor is 1.0 s); **3.6%** in the
+final 10% vs **Nexar positives' 73.7%**. **Clips under 2.0 s: 0** — the "16 frames @ 8 fps = 2 s of
+leading NaN yields no trace" risk is measured at zero, not merely flagged.
+
+**7. THE TIME BASE SURVIVES THE ROUND TRIP (CONFIRMED).** For the first five scored clips, the
+`.npz` trace length equalled `round(clip_seconds × 8)` **exactly** — 75/75, 19/19, 102/102, 101/101,
+118/118 — each with exactly 16 leading NaNs. Colab → mp4 → Drive → download → scorer introduces no
+frame drift.
+
+**8. COST MEASURED — AND DADA IS 2.1× SLOWER PER WINDOW THAN NEXAR (CONFIRMED).**
+20-clip pilot, 20/20 scored, **0 failures**:
+```
+MEASURED 137.9 s/clip over 20 clips
+  script's extrapolation:  221 clips = 8.5 h    466 DAD clips = 17.9 h
+  pilot total: 2758 s over 1485 windows -> 1.858 s/window
+  D36's Nexar MPS figure:  0.871 s/window  ->  DADA is 2.1x slower PER WINDOW
+  total windows, all 220 clips: 15,998
+  ESTIMATE A  mean s/clip x 220        = 8.4 h   (the script's method)
+  ESTIMATE B  s/window x total windows = 8.3 h   (duration-aware)
+  STOP CONDITION (> 18 h): NOT HIT
+```
+**Two estimates were computed deliberately**, because the pilot is the *first 20 clips by id*, not
+a random sample of durations — had those 20 been unrepresentative, the script's mean-s/clip method
+would have been wrong in that direction. They agree only because the pilot's mean clip length
+(11.28 s) is within **2%** of the corpus mean (11.09 s). **A future pilot on another corpus must
+not assume this.**
+**The 2.1× is a real finding:** the model resizes every input to 224 px, so per-window *compute* is
+identical — the extra cost is decoding DADA's 1584×660 frames. This is direct evidence for
+`NEW_PLAN.md` §11 item 4, which names "decode dominates" as the plan's least-verified assumption.
+It now has a number. **Not acted on; recorded.**
+
+**9. THE RESUME LOGIC WORKS ON REAL DATA (CONFIRMED).** The full run reported
+`clips: 220  already scored: 20  to score: 200` and did not re-score the pilot clips. Previously
+only proven against synthetic logs in the self-check.
+
+**10. GATE 3a HAS NOT BEEN RUN. R1 IS UNDECIDED.** No verdict exists. Nothing in this session
+touched `eval/adapters.py`, `eval/benchmark.py` or `eval/run_baselines.py`; line 129 is still
+`np.nanmax`.
+
+**11. `README.md` was NOT modified. `NEW_PLAN.md` WAS modified — one user-approved plan change**
+(D45's annotation source, commit `bfcb91c`, +32 lines, no deletions). See §15.12.
+
+---
+
+## 21.7 SESSION 11 FINDINGS — added 2026-09-17. Read after the top banner.
+
+**1. `scripts/score_external.py` and `eval/gate3_mechanism.py` NOW EXIST (CONFIRMED).** Session 10
+promised both and built neither (§21.6 item 8). Both are written and self-checked.
+
+`scripts/score_external.py` (174 ln) — scores an arbitrary clip directory. Reuses
+`eval/adapters.py::BadasOpen` **completely unchanged** (`save_frames_dir` already writes the exact
+`.npz` format `timing.load_traces_abs` reads). Replicates only the resume behaviour: appends to
+`scores.jsonl` with `flush()`+`fsync()`, skips ids already present. Prints running mean s/clip and
+computes D40's stop condition itself. No labels, no metrics. **4 self-checks PASS** (missing log
+resumes from scratch; a truncated final line is ignored while earlier clips still resume; only
+unscored clips are queued; a failed clip is recorded so it is not retried forever).
+
+`eval/gate3_mechanism.py` (410 ln) — gate 3a. **6 self-checks PASS**, all on synthetic traces:
+known peak recovered; NaN offset carried (dropping it shifts every timestamp 2 s — the documented
+trap); fps read per-clip; tracking traces → **PASS**; clip-end traces → **FAIL**; DAD-like
+near-constant annotation → **UNINTERPRETABLE**.
+
+**2. 🔴 THE CLIP-END NULL IS NOT ZERO CORRELATION — the design flaw caught before it mattered.**
+The plan said "correlate measured `t_peak` with annotated `Time-of-collision`". **That test would
+have confirmed R1 regardless of the truth.** If longer clips also have later collisions, a model
+that *always* peaks at the clip end still correlates strongly with the annotation — purely through
+duration. So `gate3_mechanism.py` constructs the null explicitly (every clip peaks at its last
+representable index, `(total-1)/fps`) and the gate turns on the **paired difference**
+`r_measured − r_null`, bootstrapped on the same resampled clips. The self-check proves it works:
+
+```
+FAIL case:  measured +0.944   clip-end null +0.944   Δ +0.000  CI [+0.000, +0.000]
+PASS case:  measured +0.999   clip-end null +0.944   Δ +0.056  CI [+0.037, +0.100]
+```
+**Identical headline correlation of 0.944 in both. Only the subtraction separates them.**
+Also: the UNINTERPRETABLE case scores r = +0.866 with a CI excluding zero and is **still refused**,
+because the IQR floor is tested *before* the correlation is read.
+
+**3. 🔴 DADA's Drive mirror: 6-part split zip, 116.75 GB (CONFIRMED in-browser).**
+`DADA2000.z01`–`.z05` at 19.9 GB each + `DADA2000.zip` at 17.25 GB + `dada标注.xlsx` (251 KB).
+This is the **full benchmark** (repo: "about 116G"), not the 53 GB train/test subset. **Not
+per-file** — the question open across two sessions is answered. DAD's page states no size; the
+HuggingFace mirror `JeffreyChou/MM-AU` is also chunked archives, frames not video, **CC-BY-NC-4.0**.
+
+**4. 🔴 DADA ships extracted frames, not video (CONFIRMED).** 3,246,795 `.png` + 649,358 `.mat`.
+Per-clip sub-folders: `images` (RGB), `fixation`, `maps`, `seg`, `semantic` — 649,358 each; DADA is
+a driver-*attention* dataset. The notebook's gating check **halted** rather than proceed. Resolved
+by stitching `images/` to mp4 with ffmpeg, which leaves the entire scoring path unchanged.
+
+**5. 🔴 BADAS's DADA ids DO NOT MAP onto this archive (CONFIRMED — the most dangerous finding).**
+Only **132/221** matched. Nine of DADA's 61 type folders are absent (archive has 52, 1962 clips).
+Worse, the matched ones are wrong too: at 30 fps, **11/132 have their annotated collision AFTER the
+clip ends**, e.g.
+
+```
+   clip   frames  dur@30  t_coll   over by
+ 41_007       87    2.90   12.37    +9.47     <- a 12.4 s collision in a 2.9 s clip
+ 38_039      190    6.33   12.12    +5.78
+  4_008      290    9.67   13.32    +3.65
+```
+No frame rate from 10 to 60 fps makes all 132 consistent. **The annotation describes different
+videos.** Had this not been checked, gate 3a would have correlated each clip's peak against another
+clip's collision time and produced a confident, meaningless number. → **D45.**
+
+**6. DADA's own spreadsheet replaces it, and the mapping is PROVEN (CONFIRMED).** `dada标注.xlsx`
+`Sheet1`: 1962 rows × 19 cols including `video`, `type`, `accident frame`, `total frames`,
+`whether an accident occurred`. **Sheet `total frames` == on-disk PNG count for 1949/1962 clips** —
+an independent quantity confirming the row→folder mapping rather than assuming it. 1945 rows have
+an accident; 1932 usable after all consistency filters (D48).
+
+**7. The corpus is right for gate 3a (CONFIRMED).** Over 1945 accident clips: normalised collision
+position **median 0.540, IQR 0.299, range 0.051–1.000**; **84.0% mid-clip** (0.2–0.8); only **3.3%**
+in the final 10%. Seconds (at 30 fps) median 5.50 s, **IQR 4.67 s** — well above gate 3a's 1.0 s
+interpretability floor. Against **Nexar positives at 0.975 / 73.7%** and **DAD at ~0.90 / IQR
+0.16 s (degenerate)**. This is the untruncated contrast the test needs.
+
+**8. 🔴 DADA's frames are JPEG named `.png` (CONFIRMED).** ffmpeg exit 69,
+`Invalid PNG signature 0xFFD8FFE000104A46` — `FFD8FF` is JPEG, `4A46` is "JF" of JFIF. PIL read them
+fine (it sniffs content), which is why image dimensions checked out at a clean even 1584×660 while
+ffmpeg failed. Fixed by sniffing magic bytes and passing `-f image2 -c:v mjpeg` **before** `-i`.
+**It failed loudly rather than mis-decoding quietly — that is the good outcome.**
+
+**9. THE 220 CLIPS WERE BUILT AND ARE IN GOOGLE DRIVE (CONFIRMED).**
+```
+built 220/220   failed 0
+annotation: 220 rows -> dada_gate3a_annotation.csv
+  position  median 0.541  IQR 0.282  range 0.084-0.995
+  seconds   median 5.50s  IQR 4.57s
+  in final 10%: 3.6%   (Nexar positives 73.7%)
+copied 222 files to /content/drive/MyDrive/dada2000_gate3a  (1350 MiB)
+```
+Every clip's mp4 frame count was asserted equal to the spreadsheet's `total frames` during
+assembly, so the time base survives the round trip. Stitched at 30 fps; annotation seconds are
+`accident_frame / 30`, the **same** 30, so seconds and frames cannot drift apart. `manifest.json`
+carries a SHA-256 per clip. **Position, the quantity the gate turns on, is a ratio and is
+frame-rate-independent.**
+
+**10. Colab interruption handled without loss (CONFIRMED).** The user disconnected mid-run; Colab
+kept executing past what was visible on screen, reaching 153 clips rather than the ~30 last seen. A
+stale Drive FUSE mount then hung `7z`. Resolved by `force_remount=True`, clearing partial work dirs,
+and resuming — the resume logic in `build()` worked as designed. A separate incident: re-running an
+older cell silently restored the pre-JPEG-fix `build()`; caught from the `build(rec, quiet)`
+signature in a traceback.
+
+**11. DAD access: the official route is BROKEN (CONFIRMED).** The request form at
+`docs.google.com/forms/d/e/1FAIpQLScXl3MKc7k3XR7ZkIgj_tAKBv8JWDvvz3nUMrvxE83bwBIzYQ/viewform` is
+live and requires a "Signed Agreement link", but the agreement document it points to
+(`drive.google.com/file/d/0B8xI2Pbo0n2gakhFZWtqdGpTdE0`) returns **"the file you have requested does
+not exist"**. The form therefore **cannot be completed as written**. Page last updated March 2017.
+**The user emailed `corgi1205@gmail.com` (Fu-Hsiang Chan, listed contact) instead. No reply yet.**
+DAD's raw videos are a separate download from its CNN features — the features archive is not usable
+here, video is required.
+
+**12. No plan document was modified. Guards re-run at end of session — all five reproduce exactly.**
 
 ---
 
@@ -4342,7 +5101,122 @@ not in `README.md`.**
 
 ---
 
-## 17-S10b. FINAL HANDOFF CHECK · **SESSION 10 CONTINUATION, 2026-09-17. Supersedes §17-S10.**
+## 17-S12. FINAL HANDOFF CHECK · **SESSION 12, 2026-09-17 evening. Supersedes §17-S11.**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | Not a crash detector — detection is a commodity (BADAS-Open, Apache-2.0). README §27: the product is the **structured incident record**. Two of ~10 fields work: "collision detected" and `t_start`/`t_peak`/`t_end`. |
+| 2. Master plan? | `README.md` §41 — three concurrent tracks: **A** model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. **Unchanged.** |
+| 3. Detailed plan? | `NEW_PLAN.md` — Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory. |
+| 4. Current phase? | README Phase 4 complete / Phase 5 gate passed. `NEW_PLAN.md` Week 1, **R1 gate 3a — scoring in progress**. |
+| 5. Previous session (11)? | Built `score_external.py` + `gate3_mechanism.py` + the Colab notebook, acquired 220 DADA clips to Drive. **Committed nothing.** |
+| 6. THIS session (12)? | **Committed all of it (5 commits)**, caught that the committed-candidate notebook was the *wrong one*, fixed a `DEFAULT_ANNOTATION` pointing at the forbidden CSV, fixed a `.gitignore` miss that would have committed 1.3 GB of video, landed + **SHA-256-verified 220/220 clips**, measured cost (**1.858 s/window**, ~8.3 h), and **started the full dense run (34/220 at session end)**. Edited `NEW_PLAN.md` R1 with the user's approval. |
+| 7. Evidence? | §21.8. **All five guards reproduce exactly.** `verify_manifest` 220/220 PASS. Pilot 20/20, 0 failures. Trace length == expected frame count exactly on 5 clips. Corpus: position median 0.541, IQR 0.282, **3.6%** in final 10% vs Nexar's 73.7%; seconds IQR 4.57 s vs the 1.0 s floor. |
+| 8. What failed? | Nothing broke. Three latent traps were caught **before** they cost anything (stale notebook, forbidden default annotation, gitignore miss). **Gate 3a has NOT been run — R1 is undecided.** |
+| 9. Unknown? | **Whether gate 3a passes — genuinely open, and it can kill R1 on its own.** Whether the detached run completes cleanly. Whether DAD's authors reply. |
+| 10. Decisions? | §11 — D1–D48, **plus D49–D52**. |
+| 11. Not to redo? | §12 — above all: **do not start a second scoring run**, do not re-download the clips, do not move them out of `data/dada2000/gate3a/`, do not restore the BADAS CSV anywhere. |
+| 12. Exact next action? | §13 — check whether the run finished; when it has, **switch to OPUS · HIGH** and run gate 3a. |
+| 13. Next 3–5? | §14-S12. |
+| 14. Plans need editing? | **No.** `NEW_PLAN.md`'s one genuine divergence was fixed this session with user approval (`bfcb91c`). The three known-stale statements are progress drift and stay unedited by design. |
+| 15. 🔴 State outside the repo? | **A DETACHED PROCESS IS STILL RUNNING** (`nohup`+`caffeinate`, was PID 9372). The 220 clips remain in `MyDrive/dada2000_gate3a` as the re-download source. |
+
+### GIT STATE at end of session 12
+
+Branch `main`, HEAD **`32716cd`**, **5 commits ahead of `origin/main` — NOT PUSHED** (the user
+deferred: "wait for this"). Working tree:
+```
+ M progress.md          <- this handoff; READ-ONLY during the next session until its handoff prompt
+?? runs/gate3a/         <- scores.jsonl + frames/*.npz + run.log, ~150 KB and growing. NOT ignored,
+                           NOT committed. Commit it WITH the gate 3a verdict (§13 step 4).
+```
+Commits made this session, oldest first:
+```
+1312211  Add scripts/score_external.py -- gate 3's scoring plumbing        (+ eval/timing.py)
+191aa7f  Add eval/gate3_mechanism.py -- gate 3a, with the clip-end null that decides it
+b772e93  Add the Colab notebook that built gate 3a's 220 clips, and ignore the clips
+bfcb91c  NEW_PLAN.md R1: correct gate 3a's annotation source (D45)
+32716cd  Add scripts/verify_manifest.py -- the checksum gate before gate 3a scores
+```
+**`eval/adapters.py`, `eval/benchmark.py`, `eval/run_baselines.py` were NOT touched.**
+**`eval/adapters.py:129` is still `np.nanmax`. R1 is still NOT promoted.**
+
+### SESSION END STATE — what was happening when this session stopped
+
+**The 220-clip dense stride-1 scoring run was still executing**, detached, at **34/220 with zero
+failures** and roughly **7 hours remaining**. It is not a background job of the Claude session — it
+is a `nohup`'d OS process and continues after the session ends.
+
+Everything else is complete: commits made, clips verified, pilot measured, plan aligned.
+**Nothing is half-written in the repository.** The only unfinished thing is the run itself, and the
+only work it blocks is gate 3a.
+
+**What is NOT done:** gate 3a has not been run, **R1 is undecided**, `runs/gate3a/` is uncommitted,
+and the 5 commits are unpushed.
+
+### MODEL / EFFORT HANDOFF
+
+- **Recommended model:** **Opus**
+- **Recommended effort:** **high**
+- **Why:** the next substantive act is running and *interpreting* gate 3a and then deciding R1.
+  `NEW_PLAN.md` R1 marks it opus/high. Gate 3 has been specified four times and three were wrong;
+  each error was caught only by reading a primary source. The specific trap: a watch-time-drift
+  model scores `r_measured = +0.944` against the annotation and must still **FAIL**, because the
+  clip-end null scores +0.944 too. Reading the headline correlation instead of the paired Δ would
+  confirm R1 regardless of the truth.
+- **Switch before next task? YES** — but only before step 3 of §13. Steps 1–2 (checking whether a
+  process is alive, counting lines) are **sonnet · medium** work.
+
+---
+
+## 17-S11. FINAL HANDOFF CHECK · **SESSION 11, 2026-09-17. SUPERSEDED by §17-S12.**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | Not a crash detector — detection is a commodity (BADAS-Open, Apache-2.0). README §27: the product is the **structured incident record**. Two of ~10 fields work: "collision detected" and `t_start`/`t_peak`/`t_end`. |
+| 2. Master plan? | `README.md` §41 — three concurrent tracks: **A** model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. Unchanged. |
+| 3. Detailed plan? | `NEW_PLAN.md` — Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory. |
+| 4. Current phase? | README Phase 4 complete / Phase 5 gate passed. `NEW_PLAN.md` Week 1, **R1 gate 3a**. |
+| 5. Previous session (10)? | Committed 6 things; found DAD/DADA/DoTA **not downloaded**; found two errors in its own plan change; **promised two modules and built neither**. |
+| 6. THIS session (11)? | Built both promised modules (`score_external.py`, `gate3_mechanism.py`) + the Colab notebook + a 1-line `timing.py` param. **Acquired gate 3a's data: 220 DADA clips in Google Drive.** Caught four silent-corruption traps. Changed gate 3a's annotation source (D45). |
+| 7. Evidence? | §21.7. 5 guards reproduce exactly. 10 self-checks PASS across 2 new modules. `built 220/220 failed 0`. Corpus: position median **0.541**, IQR 0.282, **3.6%** in final 10% vs Nexar's 0.975 / 73.7%. Mapping proven 1949/1962. |
+| 8. What failed? | BADAS's DADA ids **do not map** onto the obtainable archive (132/221; `41_007` = 12.37 s collision in a 2.9 s clip). ffmpeg failed on JPEG-named-`.png`. A Colab disconnect cost ~0 clips but exposed a stale-mount hang and a silently-restored old `build()`. **Nothing scored yet; R1 undecided.** |
+| 9. Unknown? | Real s/clip for DADA (pilot measures it). Whether DAD's authors reply. Whether gate 3a passes — genuinely open. |
+| 10. Decisions? | §11 — D1–D44, **plus D45–D48**. |
+| 11. Not to redo? | §12 — above all: **do not rebuild the 220 clips** (they are in Drive) and **do not use the BADAS DADA CSV**. |
+| 12. Exact next action? | §13 — commit the four files, then download + checksum-verify the clips. |
+| 13. Next 3–5? | §14-S11. |
+| 14. Plans need editing? | **Possibly one:** `NEW_PLAN.md` R1's gate-3 block names an annotation file that cannot be used (D45). Left unedited; flagged in §15.11 for the user to decide. |
+| 15. 🔴 State outside the repo? | **YES — `MyDrive/dada2000_gate3a`: 220 mp4 + `dada_gate3a_annotation.csv` + `manifest.json`, 1350 MiB.** The Colab runtime is disposable; `/content` is gone. Drive persists. |
+
+### GIT STATE at end of session 11
+
+Branch `main`, HEAD **`d75d279`**, in sync with `origin/main` (0 unpushed). **No commits were made
+this session.** Working tree:
+```
+ M eval/timing.py                     <- 6 insertions, 2 deletions: frames_dir parameter
+?? eval/gate3_mechanism.py            <- 410 lines, NEW
+?? scripts/score_external.py          <- 174 lines, NEW
+?? scripts/colab_dada_extract.ipynb   <- NEW
+```
+**Do not overwrite or `git checkout` these four.** `eval/adapters.py`, `eval/benchmark.py` and
+`eval/run_baselines.py` are untouched and must stay that way.
+
+### DATASET / LICENSING STATE — session 11 additions
+
+| Dataset | Status | Licence |
+|---|---|---|
+| Nexar test-public | 667 clips, 2.7 GB, on disk, committed traces | nexar-open-data |
+| **DADA-2000** | Full mirror is a **6-part split zip, 116.75 GB**, frames-not-video. **220 clips stitched to mp4 and in Google Drive.** Not on the Mac. | **NONE posted** — internal falsification only (D43) |
+| DAD | **Not obtained.** Form's agreement doc is a dead link; emailed authors, no reply. | **NONE posted** (D43) |
+| DoTA | Not downloaded, not needed | **MIT** — the only one citable externally |
+| MM-AU (HF DADA mirror) | Not used — chunked archives, frames not video | **CC-BY-NC-4.0** |
+
+Disk on the Air: **31 GB free** (was 34 GB at session 10). The 1350 MiB download fits.
+
+---
+
+## 17-S10b. FINAL HANDOFF CHECK · **SESSION 10 CONTINUATION, 2026-09-17. SUPERSEDED by §17-S11.**
 
 | Question | Answer |
 |---|---|
