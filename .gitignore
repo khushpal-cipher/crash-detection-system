@@ -29,3 +29,6 @@ models/badas/
 
 # DADA-2000 gate 3a clips (1350 MiB) - rebuilt from Drive, never commit
 data/dada2000/
+
+# Colab staging bundle - derived, rebuild with scripts/make_colab_bundle.py
+runs/colab_bundle.tar.gz
