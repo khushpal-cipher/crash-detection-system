@@ -1,13 +1,321 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-17 evening, end of session 12**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-18, end of session 14**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
-> **🔴 A DETACHED SCORING RUN MAY STILL BE EXECUTING.** See the SESSION 12 block immediately below
-> — check it before doing anything else.
+> **🔴 R1 IS DEAD. GATE 3a WAS RUN AND IT FAILED.** Nothing is executing. Nothing is half-written.
+> The project has moved off detection tuning and onto **Step 2 — a real FP/hour denominator** —
+> which is **BLOCKED on data acquisition**. See the SESSION 14 block immediately below.
 
-> # ▶▶▶▶ SESSION 12 (2026-09-17, evening) — READ THIS FIRST
+> # ▶▶▶▶▶▶▶ SESSION 14 (2026-09-18) — READ THIS FIRST
+>
+> ### What this session did, in one line
+>
+> **Ran gate 3a (R1 died), shipped the MVP incident-record CLI, and declared the FP/hour counting
+> convention — then hit a hard acquisition blocker on Step 2 and stopped rather than improvise.**
+>
+> | | |
+> |---|---|
+> | Commits | **3**: `9afeb5a`, `90e8a58`, `aae37b2`. **NOT PUSHED** — user instructed "do not push until I explicitly tell you". |
+> | HEAD | `aae37b2`, **9 commits ahead of `origin/main`** |
+> | Working tree | `M progress.md` only (this file) |
+> | `eval/adapters.py:129` | still `np.nanmax`. **R1 was NOT promoted, and now never will be on this evidence.** |
+> | Five regression guards | re-run **twice** this session (before `90e8a58` and before `aae37b2`), reproduce **EXACTLY** |
+>
+> ---
+>
+> ### 1. 🔴 GATE 3a: **FAIL**. R1 IS DEAD. (CONFIRMED)
+>
+> The 13-session-old question is answered. Command and full transcript are committed at
+> `runs/gate3a/verdict.txt`; re-runnable in seconds over committed `.npz` files.
+>
+> ```
+> traces 220   annotation rows 220   matched 220   unmatched 0 / 0
+> annotation IQR   4.57 s   (floor 1.00 s)                  -> interpretable
+> tracking   spearman measured +0.729  clip-end null +0.694
+>            delta +0.035   95% CI [-0.063, +0.134]         -> INCLUDES ZERO  ❌
+> position   median normalised peak 0.566   (bar 0.900)     -> PASSES         ✅
+> GATE 3a VERDICT: FAIL
+> ```
+> Both criteria are required. Tracking fails ⇒ the gate fails. `NEW_PLAN.md` §13 makes gate 3a an
+> **independent kill condition for R1**, so R1 dies as a mechanism claim and `adapters.py:129`
+> stays `np.nanmax`. Nexar's +0.0556 AP is **not attributable to truncation** on this evidence.
+>
+> #### 🔴 THE MODULE'S CANNED FAILURE MESSAGE IS WRONG FOR THIS FAILURE — do not quote it
+>
+> `gate3_mechanism.py` prints *"the score drifts with watch-time"* on any FAIL. **This data
+> refutes that.** Peaks sit mid-clip at **0.566**, with only **7.7%** in the final 10% against
+> Nexar positives' **73.7%**. A watch-time-drift model would pile peaks at the clip end. It did
+> not. **The position criterion — the one that tests drift — PASSED.**
+>
+> So the outcome is **neither of the two stories `NEW_PLAN.md` anticipated**. The peak is mid-clip,
+> not drifting, yet carries almost no *rank* information about collision time beyond what clip
+> duration already supplies: `r(duration, t_coll)` is **+0.694** by itself and `t_peak` reaches
+> only **+0.729**.
+>
+> #### ⚠️ AN UNRESOLVED METHODOLOGICAL TENSION — recorded, NOT used to rescue R1
+>
+> Post-hoc diagnostics (in `9afeb5a`'s commit message, labelled post-hoc there too):
+> ```
+> |t_peak - t_coll|   median 0.69 s   61.8% within 1.0 s   median signed +0.05 s (unbiased)
+> normalised peak vs normalised collision position: spearman +0.533  CI [+0.403, +0.649]
+> ```
+> These *look like* tracking and **conflict with the verdict**. Both readings can be true because
+> **Spearman sees only ranking, not accuracy**: the clip-end null ranks clips well (+0.694) while
+> being wildly wrong in absolute terms (predicts ~10.8 s when truth is ~5.5 s).
+> **The declared verdict STANDS and was not altered.** Two reasons the diagnostics do not rescue
+> R1: they are post-hoc, and the normalised correlation divides both quantities by the same random
+> denominator, which induces positive correlation on its own (spurious correlation of ratios).
+> 🔴 **A tempting "fix" that is actually rigged:** an absolute-error test against the *clip-end*
+> null would pass trivially, because that null is biased by ~half a clip length — even a model
+> that always guessed "halfway through" would beat it while carrying zero information. If this is
+> ever revisited, the null must be a **constant-position model (~0.54 × duration)**, and the
+> user must approve it as a pre-registered test first. **This was offered and the user has not
+> ruled on it.**
+>
+> ---
+>
+> ### 2. ✅ THE MVP SHIPPED — `scripts/detect.py` (commit `90e8a58`)
+>
+> README §27's product ladder puts *"CLI + API: video in → JSON incident records out"* at weeks
+> 1–4 and calls it the MVP. **Every component existed and was validated; the thing itself did
+> not.** This is glue only — no model, no metric, no new science.
+> **Nothing in `eval/` was modified** (four of those files are regression guards).
+>
+> Run on the three real demo videos:
+> ```
+> crash1.mov  score 0.9966  calibrated 0.8411  incident 3.75-5.75s, peak 4.375
+> crash2.mov  score 0.9961  calibrated 0.8118
+> safe.mp4    score 0.9758  calibrated 0.5717  <- 🔴 FALSE POSITIVE, over the 0.9733 gate
+> ```
+> **`safe.mp4` is 30 s of ordinary driving and it trips the alarm.** That is 92.3 FP/hour made
+> concrete on one file, and it is the project's binding constraint made visible — not a defect in
+> the CLI. Note also what calibration buys: raw 0.9758 vs 0.9966 are nearly indistinguishable;
+> calibrated **0.57 vs 0.84** separates "barely over the line" from "confident". Calibration is
+> monotone and **cannot** change FP/hour (D28); the self-check asserts that monotonicity.
+>
+> ---
+>
+> ### 3. ✅ FP/HOUR COUNTING CONVENTION DECLARED — `eval/fp_rate.py` (commit `aae37b2`)
+>
+> A gap in `NEW_PLAN.md`, not a coding task: FP/hour on Nexar is **clip-level** (83 alerting clips
+> ÷ 0.899 h), but comma2k19/ZOD are continuous footage with no clips, and **the plan never defines
+> what counts as one false positive.** §7.2's "10 h at 1 Hz" is a *compute* instruction; §7.3's
+> "1 Hz alert cadence" is a real-time feasibility statement. The candidates differ by **~10×**:
+>
+> | | chances/hour | |
+> |---|---|---|
+> | **A** per-alert, every 1 Hz decision over threshold | 3600 | reported beside |
+> | **B** per-segment, 9.72 s, one FP if any decision fires | 370 | **HEADLINE** |
+>
+> **B is headline** because it is the only convention making a comma2k19 number comparable to the
+> 92.3 already reported, and README §12 sets that precedent for the retired model. **Segment length
+> 9.72 s is MATCHED, not chosen** — the measured mean of the 333 Nexar negative clips, which makes
+> 3600/9.72 = 370.4 segments/hour agree with Nexar's own 370.3 clips/hour.
+>
+> **The self-check ties the new code to the committed number:** applied to Nexar's 333 committed
+> negative traces with one segment per clip, convention B returns **exactly 83 FP over 0.899 h =
+> 92.3 FP/hour**. Reproduced, not asserted.
+>
+> #### 🔴 A REAL TRAP FOUND BY READING THE VENDORED SOURCE (CONFIRMED)
+>
+> `vendor/badas-open/badas/utils/sliding_window.py::_create_predictive_frame_array` returns one
+> value **per frame**, but **only every `stride`-th frame is a real prediction**. The gaps are
+> **linearly interpolated** and the tail past the last prediction is that value **extended flat**.
+> **At the stride 8 that gives a 1 Hz cadence, SEVEN OF EVERY EIGHT TRACE VALUES ARE NOT MODEL
+> OUTPUT.** Counting array entries over threshold would count interpolation as alerts, with
+> nothing raising an error. `fp_rate.prediction_indices()` recovers the real ones and every count
+> routes through it. (Segment `nanmax` happens to be immune — interpolation never exceeds its
+> endpoints — but the per-alert count is not.)
+> **Consequence: `eval/timing.py::load_traces_abs` DROPS `stride` and must NOT be used for
+> strided traces.** `fp_rate.load_trace()` reads the `.npz` directly for exactly this reason.
+>
+> ---
+>
+> ### 4. 🔴 STEP 2 IS BLOCKED ON DATA ACQUISITION — this is where the session stopped
+>
+> **Neither comma2k19 nor ZOD is on disk.** Verified by searching the repo, the whole home
+> directory and `/Volumes`; the only `zod` hits are the **JavaScript validation library** in
+> `node_modules`. Same pattern session 10 found with DAD/DADA/DoTA.
+>
+> | Dataset | On disk | Access | Size |
+> |---|---|---|---|
+> | comma2k19 | ❌ | direct, no request needed | **~100 GB in 10 chunks** of ~10 GB / ~200 one-min segments / **3.33 h each** |
+> | ZOD | ❌ | 🔴 **manual email grant** | not published until granted |
+>
+> **Local disk: 31 GB free.** → the user chose to run on **Google Colab + Drive** instead.
+>
+> **✅ USER ACTIONS TAKEN THIS SESSION (reported by the user, not verifiable from here):**
+> - **ZOD access email SENT** to `opendataset@zenseact.com`. Draft and a terms checklist are
+>   committed at `docs/zod_access_request.md` — **update that file when a reply arrives.**
+> - **Nexar test-public (all 667, 2.7 GB) UPLOADING to Google Drive**, for the equivalence gate.
+>
+> 🟢 **comma2k19 ships synced IMU + CAN** (`processed_log/`: acceleration, gyro, magnetometer,
+> car_speed, steering_angle, wheel_speeds). That is **R9's precondition satisfied** — `NEW_PLAN.md`
+> §13 lists "downloaded release ships no IMU/CAN" as an R9 kill condition and on this evidence it
+> will not fire. **Still to be verified against the actual downloaded bytes.**
+>
+> ---
+>
+> ### 5. ⚠️ A PLAN WAS WRITTEN BUT **NOT APPROVED AND NOT BUILT**
+>
+> `~/.claude/plans/i-will-give-you-snug-cook.md` holds a full design for
+> `scripts/colab_comma2k19.ipynb`. **`ExitPlanMode` was REJECTED — the user said "wait", then
+> asked for this handoff.** The notebook **does not exist**. The plan file is scratch, outside the
+> repo, and is a **proposal, not a decision of record.** Its substance is preserved in §21.11 and
+> §14-S14 below so nothing is lost if that file is.
+>
+> **Read order for a brand-new Claude: this block → §21.11 → §13 (exact next action) → §12 (what
+> NOT to redo) → §11 D53–D58 → §15.14 → §17-S14 → then the SESSION 13 blocks below for context.**
+
+> # ▶▶▶▶▶▶ SESSION 13 CONTINUATION (2026-09-18, ~00:10–08:40 IST) — prior context
+>
+> **Session 13 wrote a handoff at ~21:50 on 2026-09-17, then KEPT GOING** (the SESSION 10
+> precedent). Everything in the SESSION 13 block below is still accurate; this block records what
+> happened after it. **Read both.**
+>
+> ### ✅ NOTHING IS RUNNING. THE SWEEP IS COMPLETE.
+>
+> ```
+> scores.jsonl       220 / 220          process   NOT RUNNING (exited cleanly)
+> failures             0                .npz       220  (matches the scored count exactly)
+> runs/gate3a/       928 KB total       frames/    880 KB
+> ```
+> The log's final lines are the normal completion summary, **not** an error. Do **not** re-run the
+> scorer — it would find 220 already scored and do nothing, but there is no reason to.
+>
+> ### 🔴 GATE 3a WAS STILL NOT RUN. R1 IS STILL UNDECIDED.
+>
+> The session reached the model-switch gate, issued the required **OPUS · HIGH** recommendation,
+> and **stopped to wait for the user's confirmation, which never came before the session ended.**
+> `eval/adapters.py:129` is still `np.nanmax`. **This is the single outstanding action and
+> everything it needs is now ready.**
+>
+> ### ✅ ALL FIVE REGRESSION GUARDS RE-RUN AND REPRODUCED **EXACTLY** (CONFIRMED)
+>
+> This **discharges the NEEDS VERIFICATION flag** the 21:50 handoff raised. Run at 08:31–08:36 on
+> 2026-09-18, on a quiet GPU after the sweep exited:
+> ```
+> benchmark.py        T3 AUC 0.5339  AP 0.5218  TP/FP/FN/TN 332/325/2/8
+>                     FP/hour 361.4 over 0.90 h   p@r0.80 0.5253   ECE 0.4880
+> reduction_study     n=667 pos=334 neg=333
+>                     max          0.8349    —
+>                     last_window  0.8905   +0.0556  [+0.0263, +0.0876]  excludes zero
+>                     max_x_last   0.8904   +0.0555  [+0.0274, +0.0865]  excludes zero
+>                     last4_mean   0.8732   +0.0383  [+0.0101, +0.0688]  excludes zero
+>                     top3_mean    0.8213   -0.0136  [-0.0242, -0.0026]  excludes zero
+>                     p90          0.7862   -0.0488  [-0.0750, -0.0237]  excludes zero
+>                     area_gt_half 0.6549   -0.1800  [-0.2273, -0.1268]  excludes zero
+> timing --self-check          7/7 PASS
+> heldout_half --self-check    null median ΔAP +0.0025, halves disjoint and stratified
+> gate3_mechanism --self-check PASS (6 checks)
+> ```
+> **Every figure matches §21.8 item 1 to the last digit.** Nothing drifted across the 8 h sweep.
+>
+> ### 🟢 NEW MEASURED NUMBER — the full run's own cost summary (CONFIRMED)
+>
+> ```
+> MEASURED 124.9 s/clip over 200 clips
+>   extrapolated:  221 DADA clips = 7.7 h     466 DAD clips = 16.2 h
+> ```
+> **The 20-clip pilot OVERESTIMATED by ~10%** (137.9 → 124.9 s/clip actual). This is fresh evidence
+> for **D52** and it cuts the opposite way to the worry: the pilot was conservative, not optimistic.
+> **Two consequences worth carrying forward:**
+> 1. D40's instruction to measure rather than assume is reaffirmed — but the direction of pilot
+>    error is not predictable, so a pilot remains a planning tool, never a guarantee.
+> 2. **Gate 3b on DAD's 466 clips projects to 16.2 h** — **under** D40's 18 h stop condition. If DAD
+>    ever arrives, the run is affordable on the Air overnight without re-planning onto the Studio.
+>    (DAD's clips are a fixed 5 s vs DADA's variable 2.4–40.7 s, so treat 16.2 h as an upper bound.)
+>
+> ### What the continuation did NOT do
+>
+> No gate run, no verdict, no commit, no push. `runs/gate3a/` is still untracked and
+> `progress.md` is still modified-but-uncommitted. **No planning document was touched.**
+>
+> **Read order for a brand-new Claude: this block → the SESSION 13 block below → §21.9 → §13
+> (exact next action) → §12 (what NOT to redo) → §11 D45–D52 → §15.13 → §17-S13.**
+
+> # ▶▶▶▶▶ SESSION 13 (2026-09-17, ~21:20–21:50 IST) — the earlier part of the same session
+>
+> ### ⚠️ (SUPERSEDED — the run has since FINISHED; see the CONTINUATION block above.)
+>
+> At the 21:50 handoff it was at **48/220, zero failures**, mean **137.7 s/clip**, roughly
+> **6.6 h remaining**. It completed at ~08:30 on 2026-09-18 with 220/220 and zero failures. It is a detached `nohup` + `caffeinate` OS
+> process, not a session job, and it survives this session ending. **Before anything else:**
+> ```bash
+> cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+> wc -l < runs/gate3a/scores.jsonl            # 220 == complete (was 48 at session end)
+> pgrep -f score_external && echo RUNNING || echo "NOT RUNNING"
+> grep -c '"reason"' runs/gate3a/scores.jsonl # failures; was 0
+> ls runs/gate3a/frames/*.npz | wc -l         # must match the scored count
+> tail -3 runs/gate3a/run.log
+> ```
+> **RUNNING** → let it finish; two processes would interleave writes into the same
+> `scores.jsonl`. **NOT RUNNING and < 220** → it died; re-run the identical command, resume is
+> proven on real data:
+> ```bash
+> PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+>   ~/envs/badas/bin/python scripts/score_external.py \
+>       --clips-dir data/dada2000/gate3a --out runs/gate3a
+> ```
+>
+> ### 🔴 SESSION 13 CHANGED NOTHING IN THE REPOSITORY, AND THAT IS THE CORRECT OUTCOME
+>
+> **Zero commits. Zero tracked files modified** (`git diff --stat` is empty). `git status --short`
+> is still exactly `?? runs/gate3a/`. HEAD is still **`f351579`**, still **6 ahead of
+> `origin/main`**, still unpushed. `eval/adapters.py:129` is still `np.nanmax`.
+> **Gate 3a has still NOT been run. R1 is still UNDECIDED.**
+>
+> This was a ~30-minute session whose only available project work — gate 3a — was blocked behind
+> ~6.6 h of GPU time. The honest options were *verify* or *fabricate progress*. It verified.
+>
+> ### What session 13 actually did
+>
+> **A full project recovery and an independent audit of session 12's handoff, plus the first
+> end-to-end trace of the evaluation code that any handoff has recorded.** Findings in §21.9.
+>
+> | Check | Result |
+> |---|---|
+> | `git log -1` / ahead count | `f351579`, 6 ahead, unpushed ✅ matches the handoff |
+> | `git status --short` | only `?? runs/gate3a/` ✅ |
+> | `eval/adapters.py:129` | `return float(np.nanmax(per_frame))` — **R1 NOT promoted** ✅ |
+> | `DEFAULT_ANNOTATION` | → `data/dada2000/gate3a/dada_gate3a_annotation.csv` ✅ (D50 intact) |
+> | `git check-ignore -v` | `.gitignore:31 data/dada2000/` covers the clips ✅ (D51 intact) |
+> | `verify_manifest.py --expect 220` | **`verified 220 clips … PASS -- byte-identical`** ✅ |
+> | `gate3_mechanism.py` imports | `load_traces_abs`, **not** `load_traces` ✅ (2-second trap avoided) |
+> | Run health | 48/220, 0 failures, **0 errors/tracebacks in `run.log`** ✅ |
+>
+> ### 🔴 THE FIVE MPS REGRESSION GUARDS WERE **NOT** RE-RUN THIS SESSION
+>
+> They all exercise the MPS path and would have contended with the live sweep for the GPU.
+> **NEEDS VERIFICATION — run all five before any commit**, as §13 step 3 requires. The last
+> confirmed run is session 12's (§21.8 item 1) and every number there is still the standing
+> baseline.
+>
+> ### One discrepancy found, and it is benign
+>
+> §17-S12 records HEAD **`32716cd`**, "**5** commits ahead", and a working tree containing
+> `M progress.md`. Reality is `f351579`, **6** ahead, tree clean but for `runs/gate3a/`.
+> **Cause: §17-S12 was written *before* the handoff commit that contains it.** Pure
+> self-reference, not an error, and nothing depends on it. Recorded so the next session does not
+> spend time on it a fourth time.
+>
+> ### ⚠️ A PROCESS EVENT WORTH KNOWING ABOUT
+>
+> The user pasted the **end-of-session handoff prompt** at session *start*, immediately after
+> `/clear`, together with the session-start prompt. The two directly contradict each other — one
+> orders `progress.md` updated now, the other declares it READ-ONLY for the whole session. Since
+> the conversation was empty, writing a handoff would have meant inventing a session that never
+> happened. The conflict was named rather than silently resolved; the user confirmed the
+> **session-start prompt** was the intended one. **If this recurs, name it and ask — do not
+> write a handoff for an empty conversation.**
+>
+> **Read order for a brand-new Claude: this block → §21.9 → §13 (exact next action) → §12 (what
+> NOT to redo) → §11 D49–D52 → §15.13 → §17-S13 → then the SESSION 12 block below for prior
+> context.**
+
+> # ▶▶▶▶ SESSION 12 (2026-09-17, evening) — prior context (superseded by SESSION 13 above)
 >
 > ### 🔴 A SCORING RUN IS STILL EXECUTING RIGHT NOW. DO NOT START A SECOND ONE.
 >
@@ -2353,6 +2661,50 @@ Do not reverse these without new evidence.
   nothing turned on it. **The agreement is a fact about this pilot, not a property of the method** —
   D40's instruction to measure stands, and on any new corpus compute both.
 
+### Decisions made in SESSION 14 (D53–D58)
+
+- **D53 — R1 IS DEAD. `eval/adapters.py:129` stays `np.nanmax`, and gate 3b is moot for
+  promotion.** **Why:** gate 3a FAILED on the rule declared in `gate3_mechanism.py` *before* any
+  measurement, and `NEW_PLAN.md` §13 makes 3a an independent kill condition. **Evidence:**
+  spearman Δ +0.035, CI [−0.063, +0.134], includes zero. **Do not promote last-window on the
+  strength of the Nexar +0.0556 — that number is real but unexplained, and unexplained is not
+  promotable.** R1 could only return via a user-approved pre-registered re-test (D54).
+- **D54 — The post-hoc diagnostics do NOT reopen R1, and any re-test must use a
+  constant-position null.** **Why:** |t_peak−t_coll| median 0.69 s looks like tracking and
+  conflicts with the verdict, but it is post-hoc, and the obvious absolute-error test against the
+  **clip-end** null is rigged — that null is biased by ~half a clip length, so a model that always
+  guessed mid-clip would beat it while carrying zero information. A legitimate re-test uses a
+  **constant-position (~0.54 × duration)** null and must be pre-registered with the user's
+  approval. **Status: offered, NOT ruled on.**
+- **D55 — FP/hour on continuous footage is counted per 9.72 s SEGMENT (headline), with the 1 Hz
+  per-alert count reported beside it. Never one without the other, never pooled across corpora.**
+  **Why:** `NEW_PLAN.md` defines no counting rule and the candidates differ ~10× on identical
+  footage. B is the only convention comparable to the committed 92.3, and README §12 sets the
+  precedent. **9.72 s is the measured mean of Nexar's 333 negative clips — matched, not chosen**,
+  so 3600/9.72 = 370.4 segments/h agrees with Nexar's 370.3 clips/h. **Evidence it is right:**
+  convention B reproduces exactly 83 FP / 92.3 FP/hour on the committed traces.
+- **D56 — Step 2 runs on Google Colab + Drive, not locally.** **Why:** 31 GB free locally against
+  a ~100 GB dataset, and the project has had zero GPU budget for 14 sessions while Colab offers a
+  free T4. **User's decision.** Precedent exists: session 11 built the DADA corpus this way.
+  **Condition attached (D57).**
+- **D57 — No Colab-produced number is believable until an MPS-equivalence gate passes.**
+  **Why:** the 0.9733 threshold was derived from scores computed on Apple MPS. If a CUDA T4
+  scores differently, comma2k19's FP/hour is measured against a threshold that means something
+  else and comparability to 92.3 — the whole point — is gone, silently. **Gate:** re-score 100
+  Nexar negatives at stride 1 on Colab and compare per-clip `nanmax` to
+  `runs/baselines/badas-open/scores.jsonl`. **Bar, declared in advance: median |Δ| < 0.002 AND
+  ≤ 1 of 100 crossing 0.9733.** Fail → **HALT**; the contingency (re-deriving the threshold from
+  a full 667-clip Colab sweep, ~7 h) **requires user sign-off**. The checkpoint must also be
+  byte-identical: sha256 `6b1ba915…7042aa`.
+- **D58 — comma2k19's IMU/CAN is extracted in the same pass, and R9's three-way partition is
+  assigned AT EXTRACTION TIME, by route id, seed 0, recorded in `manifest.json`.** **Why:**
+  extracting later means re-downloading ~30 GB, and `NEW_PLAN.md` §10 says R9 rides on this same
+  pass. The partition timing is the important half: §R9 requires **mine / fit / report** thirds
+  and warns that collapsing any two inflates the headline. **A partition chosen after seeing
+  scores is not a partition.** Assigning by route prevents segments of one drive straddling
+  partitions. **User approved the extraction.** This commits the project to nothing about R9,
+  which remains unapproved and on a separate track.
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
 Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
 gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
@@ -2361,6 +2713,67 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 14 — do NOT redo these:**
+
+- **🔴 Do not re-run gate 3a expecting a different answer, and do not "fix" it.** It ran, it
+  FAILED, the verdict is committed at `runs/gate3a/verdict.txt` and in `9afeb5a`. Re-running is
+  free (seconds, over committed `.npz`) and is fine for *verification*; re-specifying the gate to
+  get a pass is forbidden. Gate 3 has been specified four times and three were wrong — the
+  version that ran is the one whose thresholds were declared before measurement.
+- **🔴 Do not promote `eval/adapters.py:129` to last-window.** R1 is dead (D53). The +0.0556 AP on
+  Nexar is real but unexplained.
+- **🔴 Do not rescue R1 with an absolute-error test against the CLIP-END null.** It is rigged —
+  that null is biased by ~half a clip length, so even "always guess mid-clip" beats it (D54). Any
+  re-test needs a constant-position null AND the user's prior approval.
+- **Do not re-derive the FP/hour counting convention.** Settled in D55 and implemented in
+  `eval/fp_rate.py`, whose self-check reproduces the committed 83 FP / 92.3 FP/hour.
+- **🔴 Do not use `eval/timing.py::load_traces_abs` on strided traces.** It drops `stride`, and at
+  stride 8 seven of every eight trace values are interpolated, not model output. Use
+  `eval/fp_rate.py::load_trace` + `prediction_indices()`. This is a silent-wrong-number trap.
+- **Do not modify `eval/{adapters,benchmark,timing,calibration}.py`.** Four of the five regression
+  guards. They were re-run twice this session and reproduce exactly.
+- **Do not re-search for comma2k19 or ZOD on disk.** Neither is there; the repo, the whole home
+  directory and `/Volumes` were searched (the `zod` hits are a JavaScript library in
+  `node_modules`). This is an acquisition blocker, not a code one.
+- **Do not re-look-up the dataset facts.** comma2k19: ~100 GB, 10 chunks of ~10 GB / ~200
+  one-minute segments / 3.33 h, ships IMU+CAN, `video.hevc` is a raw HEVC elementary stream. ZOD:
+  manual email grant, request already sent.
+- **Do not re-send the ZOD email.** The user sent it this session. Update
+  `docs/zod_access_request.md` when a reply arrives.
+- **Do not rebuild `scripts/detect.py` or `eval/fp_rate.py`.** Both committed, both self-checked.
+
+**Added after the SESSION 13 CONTINUATION — do NOT redo these:**
+
+- **✅ Do not re-run the 220-clip sweep.** It is COMPLETE: 220/220, 0 failures, 220 `.npz`,
+  928 KB in `runs/gate3a/`. Re-running would find everything already scored and do nothing.
+- **✅ Do not re-run the five regression guards before gate 3a.** They were re-run on a quiet GPU at
+  08:31–08:36 on 2026-09-18 and reproduce **exactly** (§21.10 item 3). Run them again only before a
+  commit that follows further code changes.
+- **Do not re-derive the scoring cost.** Measured over 200 clips: **124.9 s/clip**, which
+  extrapolates to 7.7 h for 221 DADA clips and **16.2 h for DAD's 466** — under D40's 18 h stop
+  condition (§21.10 item 2).
+- **Do not investigate the killed background task.** Answered: it was an *older session's* watcher
+  job, not the scorer; the scorer (RSS 0.20 GB) survived and finished (§21.10 item 5).
+- **Do not re-examine the running mean's wander** (136.1 → 150.3 → 136.1 → 124.9 s/clip). Explained
+  by 40× clip-length variation in this corpus. Not thermal, not a leak.
+
+**Added after SESSION 13 — do NOT redo these:**
+
+- **🔴 Do not start a second scoring run.** Unchanged from session 12 and still the single most
+  damaging mistake available: two processes append to the same `runs/gate3a/scores.jsonl`.
+  `pgrep -f score_external` first. If it died, **re-run the same command** — resume is proven.
+- **Do not re-verify session 12's handoff.** Done this session, seven checks, all pass (§21.9
+  item 1). Re-verify only the cheap ones if something looks wrong.
+- **Do not re-investigate the §17-S12 git mismatch** (5 vs 6 commits ahead). Answered: §17-S12 was
+  written before the commit containing it. Self-reference, benign (§21.9 item 4).
+- **Do not re-trace the evaluation architecture from scratch.** Recorded in §21.9 item 5, including
+  the adapter contract, the canonical durations table, the two-loader 2-second trap, and the live
+  vs dead file inventory.
+- **🔴 Do NOT treat the five MPS guards as verified.** Session 13 deliberately did not run them
+  (GPU contention with the live sweep). **Run all five before any commit.**
+- **Do not write a handoff for an empty conversation.** If the end-of-session prompt arrives at
+  session start (it did this session), name the conflict and ask rather than inventing a session.
 
 **Added after SESSION 12 — do NOT redo these, and do NOT undo them:**
 
@@ -2637,7 +3050,164 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION  ·  **rewritten 2026-09-17 evening, end of SESSION 12**
+## 13. EXACT NEXT ACTION · **rewritten 2026-09-18, end of SESSION 14**
+
+### ══ THE ONE EXACT NEXT ACTION ══
+
+### **Confirm the Nexar upload to Drive has finished, then BUILD `scripts/colab_comma2k19.ipynb`
+### — the Colab notebook that acquires comma2k19 and scores it. Do NOT score anything until its
+### MPS-equivalence gate passes (D57).**
+
+**Why this and not something else:** R1 is dead (D53), so `NEW_PLAN.md` §10's detection ladder no
+longer leads. The binding constraint on the product is **FP/hour: 92.3 measured, < 0.1 target, on
+a 0.899 h denominator where the smallest expressible non-zero rate is 1.1/hour.** The target
+metric is arithmetically unmeasurable on the current corpus. §8.2 selects comma2k19 and ZOD to fix
+exactly that, and §8.1 marks them the only *genuinely independent* evidence tier this project has.
+
+**Everything that does not need the data is already done:** the counting convention
+(`eval/fp_rate.py`, D55), the scoring plumbing (`scripts/score_external.py --stride 8` is exactly
+1 Hz at `target_fps 8.0`), and the verifier (`scripts/verify_manifest.py`). **No new scoring code
+is required.** What is missing is the notebook.
+
+**Step 0 — check what the user's upload actually produced.** Ask, or check Drive. The equivalence
+gate needs Nexar clips reachable from Colab.
+
+**Step 1 — build the notebook.** A full design is in §14-S14 below and, if it still exists, at
+`~/.claude/plans/i-will-give-you-snug-cook.md` (scratch, outside the repo, **a proposal not a
+decision**). Follow `scripts/colab_dada_extract.ipynb`'s pattern: **gating checks that HALT**,
+prove-on-one-clip-first *with timing*, work on Colab local disk then copy to Drive, SHA-256
+manifest in the shape `verify_manifest.py` expects:
+`{"fps":…, "n":…, "failed":[…], "clips": {name: {"sha256":…, "bytes":…}}}`.
+Make it **single-purpose** — the DADA notebook accumulated abandoned cells beside live ones and
+session 12 nearly committed the wrong file.
+
+**Step 2 — 🔴 THE EQUIVALENCE GATE RUNS BEFORE ANY COMMA2K19 FRAME IS SCORED (D57).**
+Re-score **100 Nexar negatives at stride 1** on Colab; compare per-clip `nanmax` against
+`runs/baselines/badas-open/scores.jsonl`. Sample must be deterministic and written into the
+notebook: `sorted(negative_ids)`, `numpy.default_rng(0)`, 100 without replacement.
+**Bar: median |Δ| < 0.002 AND ≤ 1 of 100 crossing 0.9733.** Report max |Δ|, median |Δ|, crossing
+count. **FAIL → HALT and tell the user.** The contingency (full 667-clip Colab sweep to re-derive
+the threshold, ~7 h) **needs sign-off**. Also HALT unless the checkpoint sha256 is
+`6b1ba91504542582412fee5100a17d6e06c87cb09619efec2efc34484f7042aa` (3,979,436,545 bytes).
+
+**Step 3 — frame-rate gate, then the 20-segment pilot.** `video.hevc` is a raw elementary stream
+with no timestamps, so ffmpeg must be *told* a rate: derive it per segment from
+`global_pose/frame_times` and **HALT** if it disagrees with the frame count. Remux `-c copy`
+(lossless). Cross-check decoded duration against `frame_times` to ±0.05 s — the check that
+validated the DADA corpus. **Getting this wrong makes the model watch the road at the wrong speed
+and silently invalidates every score.**
+Then pilot 20 segments at stride 8 and **measure** s/segment.
+**Stop condition, `NEW_PLAN.md` §13 verbatim: pilot throughput implying > 12 h for 10 h of
+footage → stop and re-plan.** Report the measured rate before going further.
+
+**Step 4 — full run, 3 chunks ≈ 10 h**, chunk-by-chunk with each deleted before the next.
+Extract IMU/CAN in the same pass and **assign R9's mine/fit/report partition by route id, seed 0,
+into `manifest.json`, before any score is seen** (D58).
+
+**Step 5 — bring the traces back and produce the number LOCALLY** with
+`~/envs/badas/bin/python -m eval.fp_rate --frames-dir … --label comma2k19`, so the headline comes
+from the same committed code path that reproduces Nexar's 92.3. **B headline, A beside it, both
+with denominators, never pooled with ZOD** (§8.2 — highway-only is a FLOOR, not a general rate).
+
+**Before any commit:** re-run the five regression guards. **Do not push** — 9 commits are pending
+and the user has deferred the push across five sessions; ask.
+
+---
+
+### ══ SESSION 13's next action (SUPERSEDED — gate 3a has since been RUN and FAILED) ══
+
+### **Check whether the detached 220-clip scoring run finished. When it has, re-run the five MPS
+### regression guards, then RUN GATE 3a and interpret the verdict.**
+
+**🔴 UPDATED BY THE SESSION 13 CONTINUATION (2026-09-18 ~08:40). Steps 1–3 ARE NOW DONE.**
+The sweep is **COMPLETE** (220/220, 0 failures, 220 `.npz`), it was sanity-checked, and **all five
+regression guards were re-run and reproduce EXACTLY** (§21.10 item 3). **Go straight to step 4.**
+Steps 1–3 are retained below only so a fresh session can re-confirm cheaply if it wishes — they are
+seconds of work for steps 1–2, minutes for step 3, and none of them is required again.
+
+**🔴 SWITCH TO OPUS · HIGH BEFORE STEP 4.** `NEW_PLAN.md` R1 marks it opus/high. Gate 3 has been
+specified four times and **three of those were wrong**; every error was caught only by checking a
+primary source instead of trusting a summary.
+
+**Step 1 — is it still running?**
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+wc -l < runs/gate3a/scores.jsonl                # 220 == complete (was 48 at session 13's end)
+pgrep -f score_external && echo RUNNING || echo "NOT RUNNING"
+grep -c '"reason"' runs/gate3a/scores.jsonl     # failed clips; was 0
+tail -3 runs/gate3a/run.log
+```
+- **RUNNING** → should not happen; it finished at ~08:30 on 2026-09-18. If something IS running,
+  find out what before touching anything. Do **not** launch a second process.
+- **NOT RUNNING, count < 220** → it died. **Re-run the identical command**; resume is proven:
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i \
+  ~/envs/badas/bin/python scripts/score_external.py \
+      --clips-dir data/dada2000/gate3a --out runs/gate3a
+```
+- **NOT RUNNING, count == 220** → go to step 2.
+
+**Step 2 — sanity-check the run before reading any verdict.**
+```bash
+ls runs/gate3a/frames/*.npz | wc -l             # must match the scored count
+grep -c '"reason"' runs/gate3a/scores.jsonl     # failures; investigate if > ~5
+```
+A large failure count means **the corpus, not R1, is the story** — investigate before proceeding.
+
+**Step 3 — ✅ ALREADY DONE on 2026-09-18 at 08:31–08:36; all five reproduce EXACTLY (§21.10
+item 3). Skip unless code has changed since.**
+```bash
+~/envs/badas/bin/python eval/benchmark.py              # T3 AUC 0.5339 AP 0.5218, 332/325/2/8
+~/envs/badas/bin/python -m eval.reduction_study        # max 0.8349, last_window 0.8905 +0.0556
+                                                      #   CI [+0.0263, +0.0876]
+~/envs/badas/bin/python -m eval.timing --self-check    # 7/7 PASS
+~/envs/badas/bin/python -m eval.heldout_half --self-check      # null median ΔAP +0.0025
+~/envs/badas/bin/python -m eval.gate3_mechanism --self-check   # PASS (6 checks)
+```
+**If ANY committed number has moved, STOP and tell the user before doing anything else.**
+
+**Step 4 — 🔴 OPUS · HIGH. Run gate 3a.**
+```bash
+~/envs/badas/bin/python -m eval.gate3_mechanism \
+    --frames-dir runs/gate3a/frames \
+    --annotation data/dada2000/gate3a/dada_gate3a_annotation.csv
+```
+(The `--annotation` default points here anyway — D50 — but pass it explicitly.)
+
+**Before reading the verdict, check `matched`.** It should be ~220 against 220 annotation rows.
+**A low count means the id join broke — investigate, do not read the verdict.** That is the D45
+failure mode: pairing each clip's peak against a *different* clip's collision.
+
+**The three verdicts, and what each means:**
+- **PASS** — the peak tracks the annotated collision **beyond the clip-end null**, *and* the median
+  normalised peak is below 0.90. Truncation is the mechanism; **R1 survives 3a**. Gate 3b (DAD AP)
+  is still open and R1 must survive both, so **do NOT promote `adapters.py:129` on a 3a pass alone.**
+- **FAIL** — peaks pile at the clip end regardless of the annotation. Watch-time drift. **R1 DIES,
+  and Nexar's +0.0556 AP is a benchmark artifact, not a finding.** Keep `np.nanmax`. Record the kill
+  honestly; **do not rescue it with a weaker test.** `NEW_PLAN.md` §10 puts this outcome at ~25% and
+  says it must be reported as such.
+- **UNINTERPRETABLE** — annotation IQR below the 1.0 s floor. **Not a pass.** (Unlikely: the corpus
+  measures 4.57 s, confirmed twice.)
+
+**🔴 The gate turns on the PAIRED DIFFERENCE `r_measured − r_null`, not on `r_measured`.** In the
+module's own self-check a pure watch-time-drift model scores r = **+0.944** against the annotation
+and is correctly **FAILED**, because the clip-end null scores **+0.944** too. **A headline
+correlation near +0.9 is not evidence of anything on its own.** Read the Δ and its CI.
+Full decision rule and constants: §21.9 item 6.
+
+**Step 5 — after the verdict.** Commit `runs/gate3a/` (scores + ~220 `.npz`, **~950 KB projected**
+from 208 KB at 48 clips — Nexar's 667 traces are committed precedent at 2.6 MB) with the verdict in
+the message. Then **ask the user about pushing** the 6 local commits — the push was explicitly
+deferred and that deferral has been carried across two sessions.
+
+**If FAIL:** `NEW_PLAN.md` §10's order makes the next candidates **R4 (flip TTA, cheap) → R2
+(multi-scale) → R3 (JEPA surprise)**. Plan before implementing; do not invent a new roadmap.
+
+---
+
+### ══ SESSION 12's next action (SUPERSEDED — kept for its detail) ══
+
+### 13-S12. EXACT NEXT ACTION · **SESSION 12 (HISTORY, superseded by §13 above)**
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 
@@ -3215,6 +3785,101 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
+## 14-S14. NEXT 3–5 ACTIONS · **written end of SESSION 14. Supersedes §14-S13b.**
+
+1. **Confirm the Nexar Drive upload finished, then build `scripts/colab_comma2k19.ipynb`.**
+   Sections, each independently re-runnable: (§1) environment + three identity gates — mount
+   Drive, copy `vendor/badas-open/` (228 KB) so Colab runs the *exact* vendored code, fetch
+   `badas_open.pth` from the ungated mirror `getnexar/BADAS-Open`, **HALT unless sha256 matches**;
+   record `torch.__version__`, CUDA version and GPU name into the results as provenance.
+   (§2) equivalence gate. (§3) acquire chunk 1. (§3b) extract IMU/CAN + assign the R9 partition.
+   (§4) frame-rate gate + remux. (§5) pilot 20. (§6) full run 3 chunks. (§7) manifest + return.
+   → **Model: opus · Effort: high** — every corpus-acquisition failure in this project came from
+   an unchecked assumption at exactly these seams.
+2. **Run the equivalence gate and report it before anything else runs** (D57). ~1 h on T4.
+   → **Model: opus · Effort: high** — decides whether any Colab number is comparable to the
+   existing baseline. Nothing downstream is believable until it passes.
+3. **Run the 20-segment pilot; report measured s/segment against §13's 12 h stop condition.**
+   → **Model: sonnet · Effort: medium.**
+4. **Full run (3 chunks ≈ 10 h), then `eval/fp_rate.py` locally.** Report B headline + A beside,
+   with denominators. → **Model: sonnet · Effort: medium**; re-verify at higher effort if the
+   equivalence gate was marginal.
+5. **ZOD when access lands** — update `docs/zod_access_request.md` with the terms **in writing**
+   before any use (§22/§23), then repeat 3–4. **Reported separately from comma2k19, never
+   pooled** (§8.2). → **Model: sonnet · Effort: medium.**
+
+**Standing items that are not blocked and have been at zero for fourteen sessions:**
+**Track B** (UK-HN-500 hard-negative benchmark — README §34/§40 call it the moat; needs a consent
+form, ~£500 and a UK driver) and **Track C** (30 fleet calls — `NEW_PLAN.md` §9 gives a 10-message
+protocol and a hard kill condition: <3 substantive replies by end of Week 2 → formally close it).
+Neither is technically blocked or compute-bound. **This remains the largest gap between plan and
+reality in the project.** Offer them; do not silently drop them.
+
+---
+
+## 14-S13b. NEXT 3–5 ACTIONS · **written 2026-09-18, end of SESSION 13 CONTINUATION.
+## Supersedes §14-S13.**
+
+1. **🔴 SWITCH TO OPUS · HIGH, then RUN GATE 3a.** Everything it needs is ready: sweep complete,
+   corpus checksum-verified, all five guards exact. Check `matched` ≈ 220 **before** reading the
+   verdict. **Read the paired Δ and its CI, not `r_measured`** — a drift model scores +0.944 on
+   `r_measured` alone. → **opus · high.**
+2. **Act on the verdict.**
+   - **FAIL** → R1 dies. Keep `np.nanmax`. Record the kill plainly; `NEW_PLAN.md` §10 puts "no
+     detection gain survives" at ~25% and says it **must be reported, not rescued**. Then §10's
+     order gives **R4 (flip TTA) → R2 (multi-scale) → R3 (JEPA surprise)**.
+   - **PASS** → R1 survives 3a but is **NOT promoted**: gate 3b (DAD AP) is still open and R1 must
+     survive both. Do not touch `adapters.py:129`.
+   → **opus · high** either way; this is the R1 promotion decision.
+3. **Commit `runs/gate3a/` (928 KB) with the verdict in the message**, and commit the outstanding
+   `progress.md` handoff alongside it. **Then ask about pushing** — 6 commits are local and the
+   deferral has now been carried across three sessions. → **sonnet · medium.**
+4. **Track B / Track C.** Zero progress across **thirteen** sessions. `NEW_PLAN.md` §9 sets a hard
+   kill condition (< 3 replies by end of Week 2 → formally close Track C). Neither is technically
+   blocked; both need the user. **Largest plan-vs-reality gap in the project.** Offered twice during
+   session 13's idle windows and not taken up. → **haiku · low** for drafting; sending is the user's.
+5. **If 3a PASSES and DAD is still silent after ~2 weeks**, evaluate a substitute corpus with real
+   negatives — **not before**. Note that gate 3b is now known to be **affordable** if DAD arrives:
+   466 clips × 124.9 s/clip = **16.2 h**, under D40's 18 h stop condition (§21.10 item 2).
+
+**In parallel, blocked on the user:** DAD's authors have not replied (email to
+`corgi1205@gmail.com`; the official form's agreement document is a dead link). **This does not block
+the valuable outcome — 3a can kill R1 on its own, and 3a is now one command away.**
+
+---
+
+## 14-S13. NEXT 3–5 ACTIONS · **SESSION 13 at 21:50 (HISTORY, superseded by §14-S13b above)**
+
+1. **Check the detached run** (`wc -l`, `pgrep`). Let it finish, or re-run the identical command to
+   resume. **Never start a second process.** → **sonnet · medium.**
+2. **Sanity-check, then re-run the five MPS guards** — they are UNVERIFIED since session 12 because
+   session 13 deferred them for GPU contention. **If any committed number moved, STOP.**
+   → **sonnet · medium.**
+3. **🔴 SWITCH TO OPUS · HIGH. Run gate 3a** and interpret it. Check `matched` ≈ 220 *before*
+   reading the verdict. **Read the paired Δ and its CI, not `r_measured`** — a drift model scores
+   +0.944 on `r_measured` alone. → **opus · high.**
+4. **Act on the verdict.**
+   - **FAIL** → R1 dies. Keep `np.nanmax`. Record the kill plainly; `NEW_PLAN.md` §10 puts "no
+     detection gain survives" at ~25% and says it **must be reported, not rescued**. Then §10's
+     order gives **R4 (flip TTA) → R2 (multi-scale) → R3 (JEPA surprise)**.
+   - **PASS** → R1 survives 3a but is **NOT promoted**: gate 3b (DAD AP) is still open and R1 must
+     survive both. Do not touch `adapters.py:129`.
+   → **opus · high** either way; this is the R1 promotion decision.
+5. **Commit `runs/gate3a/`** with the verdict in the message. **Then ask about pushing** — 6 commits
+   are local and the deferral has now been carried across two sessions. → **sonnet · medium.**
+6. **Track B / Track C.** Zero progress across **thirteen** sessions. `NEW_PLAN.md` §9 sets a hard
+   kill condition (< 3 replies by end of Week 2 → formally close Track C). Neither is technically
+   blocked; both need the user. **Largest plan-vs-reality gap in the project.** Offered during
+   session 13's idle GPU window and not taken up. → **haiku · low** for drafting; sending is the
+   user's.
+
+**In parallel, blocked on the user:** DAD's authors have not replied (email to
+`corgi1205@gmail.com`; the official form's agreement document is a dead link). **This does not block
+the valuable outcome — 3a can kill R1 on its own.** If 3a passes and DAD is still silent after
+~2 weeks, evaluate a substitute corpus with real negatives — **not before**.
+
+---
+
 ## 14-S12. NEXT 3–5 ACTIONS · **written end of SESSION 12. Supersedes §14-S11.**
 
 1. **Check the detached run** (`wc -l < runs/gate3a/scores.jsonl`; `pgrep -f score_external`). Let
@@ -3267,7 +3932,119 @@ it would be wasted work.
 
 ---
 
-## 15.12 PLAN POSITION — SESSION 12 (current)
+## 15.14 PLAN POSITION — SESSION 14 (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged this
+  session** — no discovery altered the roadmap.
+- **What the README says should happen:** three concurrent tracks from week 1 (§41) — **A**
+  model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. The product is the
+  **structured incident record** (§27), not detection, which is a commodity because BADAS-Open is
+  free and Apache-2.0. §31 makes **FP/hour the metric that decides whether a fleet keeps the
+  product**, target **< 0.1/hour**.
+- **Completed:** Track A's measurement path, and — new this session — **§27's MVP rung of the
+  product ladder** ("CLI + API: video in → JSON incident records out", weeks 1–4), shipped as
+  `scripts/detect.py`. Three incident-record fields now work: "collision detected",
+  `t_start`/`t_peak`/`t_end`, and a calibrated confidence.
+- **Remains:** the rest of §27's record (ego-involvement, severity bands, physical channel — all
+  blocked on a physical channel that does not exist and must NOT be faked from the score, §44).
+  **Tracks B and C are at ZERO after fourteen sessions.** Neither is technically blocked.
+
+### `NEW_PLAN.md` POSITION (detailed plan)
+
+- **Current task:** **Step 2 — an honest FP/hour denominator** from comma2k19 and ZOD (§8.2), the
+  Week-4 "negatives and consolidation" slot in §7.4.
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate (§10), paired bootstrap
+  everywhere (§1), negatives at 1 Hz with a **pilot first** (§7.2), comma2k19 and ZOD reported
+  **separately, never pooled** (§8.2).
+- **Completed:** gates 1 ✅, 2 ✅, **3a ✅ RUN — and R1 FAILED it** (§13's kill condition fired);
+  §3.2 mechanism at full n ✅; calibration Tiers 1–3 ✅; operating point ✅; CPU/MPS ✅; MVP CLI ✅;
+  **FP/hour counting convention declared and validated against the committed number ✅.**
+- **Remains:** acquire comma2k19 + ZOD, equivalence gate, pilot, full run, FP/hour. Gate 3b (DAD)
+  is **moot for promotion** — R1 is dead on 3a alone. R4/R2/R3 are the surviving detection
+  candidates but are **deliberately deprioritised** below FP/hour (see ALIGNMENT).
+
+### ALIGNMENT
+
+**No conflict between the documents. But there is a live tension between `NEW_PLAN.md` §10's
+stated ordering and the evidence, and it has NOT been resolved by editing the plan.**
+
+§10's "decisive answer" (R1 → R4 → R2 → R3) puts **~65% of expected gain on R1**. **R1 is now
+dead.** The remaining three have stated expected gains of +0.005–0.03 AP each, against §1's own
+bar that anything under ~0.04 is invisible unpaired — and **none of them moves FP/hour**, which is
+README §31's decider. AP and FP/hour are close to decoupled at the shipped operating point.
+
+Session 14 therefore proposed, and the user accepted by instruction, **doing Step 2 (FP/hour)
+before R4/R2/R3**. This is a **re-prioritisation inside the existing plan, not a new roadmap** —
+every element (comma2k19, ZOD, 1 Hz, pilot-first, separate reporting) is already in §7.2/§8.2/§13.
+**`NEW_PLAN.md` was deliberately NOT edited**, because §13 of the session prompt forbids editing a
+plan to record progress, and a re-ordering justified by evidence is arguably a plan change the
+**user should sign off explicitly**.
+
+🔴 **OPEN QUESTION FOR THE USER, carried forward:** should `NEW_PLAN.md` §10 be amended to record
+that R1 is dead and that the sequence re-orders around FP/hour? Session 14 recommended yes, as a
+minimal amendment, and **the user has not ruled on it.** Do not make this edit unilaterally.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (carried unchanged since
+§15.11 — progress drift, not plan changes):
+1. Header reads "Status: PROPOSAL — nothing implemented" — false.
+2. §3.4 quotes beta ECE 0.0498; the committed script gives 0.0503.
+3. The gate-3 block says "~30 GB free"; measured this session is **31 GB** (ordinary disk churn).
+
+---
+
+## 15.13 PLAN POSITION — SESSION 13 (history, superseded by §15.14 above)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged this
+  session** — session 13 changed nothing at all.
+- **What the README says should happen:** three concurrent tracks from week 1 (§41) — **A**
+  model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. The product is the
+  **structured incident record** (§27), not detection, which is a commodity because BADAS-Open is
+  free and Apache-2.0.
+- **Completed:** Track A's measurement path. Two incident-record fields work — "collision detected"
+  and `t_start`/`t_peak`/`t_end`.
+- **Remains:** **Tracks B and C are at ZERO after thirteen sessions.** Neither is technically
+  blocked. README §41 explicitly calls Track B the moat and Track C the real critical path to a
+  startup outcome, and warns against sequencing them last. **This is the biggest gap between plan
+  and reality, and it is not a compute problem.** It was offered during session 13's idle GPU window
+  and not taken up.
+
+### `NEW_PLAN.md` POSITION (detailed plan)
+
+- **Current task:** **R1, gate 3a.** Week 1 is complete except this.
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap
+  everywhere (§1). R1 must survive gate 3a (DADA mechanism) **and** 3b (DAD AP). §13 lists gate 3a
+  failing as an independent kill condition for R1.
+- **Completed:** gates 1 ✅ and 2 ✅; §3.2 mechanism at full n ✅; calibration Tiers 1–3 ✅;
+  operating point ✅; CPU/MPS ✅; gate 3a's code ✅; gate 3a's corpus acquired, on disk and
+  checksum-verified ✅; cost measured ✅; **scoring run 48/220 and advancing.**
+- **Remains:** finish the sweep (~6.6 h), re-run the five guards, **run gate 3a**, then 3b when DAD
+  arrives, then decide R1.
+
+### ALIGNMENT
+
+**No conflict.** README gives the roadmap and product definition; `NEW_PLAN.md` gives the experiment
+sequence inside README's Track A. The divergence flagged in §15.11 was resolved in session 12 with
+the user's approval (commit `bfcb91c`, D45) and **re-verified against the repository this session**:
+`eval/gate3_mechanism.py`'s `DEFAULT_ANNOTATION` points at `data/dada2000/gate3a/
+dada_gate3a_annotation.csv`, matching the plan. **Do not "restore" the BADAS CSV.**
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (carried unchanged from
+§15.12). These are progress drift, not plan changes, and §13 forbids editing a plan to record
+progress:
+1. Header reads "Status: PROPOSAL — nothing implemented" — false.
+2. §3.4 quotes beta ECE 0.0498; the committed script gives 0.0503.
+3. The gate-3 block says "~30 GB free"; measured is **26 GB** (was 25 GB in session 12; the
+   difference is ordinary disk churn, not a project fact).
+
+---
+
+## 15.12 PLAN POSITION — SESSION 12 (HISTORY, superseded by §15.13 above)
+
+
 
 ### `README.md` POSITION (master plan)
 
@@ -3680,6 +4457,262 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.11 SESSION 14 FINDINGS — added 2026-09-18, end of session 14. Read after the top banner.
+
+**1. GATE 3a RAN AND FAILED; R1 IS DEAD (CONFIRMED).** Full numbers in the top banner and in
+`runs/gate3a/verdict.txt` (committed). The gate is pure analysis over committed `.npz` files and
+re-runs in seconds:
+```
+~/envs/badas/bin/python -m eval.gate3_mechanism \
+    --frames-dir runs/gate3a/frames \
+    --annotation data/dada2000/gate3a/dada_gate3a_annotation.csv
+```
+`matched` was **220/220 with zero orphans on either side**, so the D45 id-join failure mode did
+not occur. Annotation IQR **4.57 s** cleared the 1.00 s interpretability floor, so the
+UNINTERPRETABLE rail correctly did not fire.
+
+**2. 🔴 THE TIME BASE WAS CROSS-CHECKED BEFORE THE VERDICT WAS READ (CONFIRMED).** No prior
+session had done this on the real gate-3a data. For all 220 clips, implied trace duration
+`(offset+len)/fps` versus the annotation's own `clip_seconds`: **median error +0.0000 s, mean
+−0.0011 s, max |err| 0.0583 s** — under one frame at 8 fps, i.e. pure rounding. `fps` was 8.0 and
+the NaN offset 16 on **every** clip. **There is no systematic offset, and the 2-second NaN trap
+was not tripped.** This is what licensed reading the verdict at all.
+
+**3. 🔴 THE FAILURE IS NOT THE ONE THE PLAN PREDICTED (CONFIRMED).** See the top banner. Position
+criterion **passed** (median normalised peak 0.566, 7.7% in the final 10% vs Nexar's 73.7%),
+which **refutes the watch-time-drift hypothesis** that the module's canned FAIL text names. The
+duration confound is the actual story: `spearman(duration, t_coll) = +0.694` on its own, while
+`spearman(t_peak, t_coll) = +0.729`. **Do not quote the module's printed FAIL narrative.**
+
+**4. ⚠️ AN UNRESOLVED TENSION, DELIBERATELY NOT RESOLVED (NEEDS USER DECISION).** Post-hoc:
+|t_peak − t_coll| median **0.69 s**, **61.8%** within 1.0 s, median signed **+0.05 s**; normalised
+peak-vs-collision spearman **+0.533** CI [+0.403, +0.649]. These conflict with the verdict because
+Spearman is blind to absolute accuracy while the clip-end null is rank-strong but ~5 s biased.
+**The verdict was NOT changed.** If ever revisited, the null MUST be a constant-position model
+(~0.54 × duration), never the clip-end null — an absolute-error test against the clip-end null is
+rigged in R1's favour and would "pass" a model that always guessed mid-clip. **The user was
+offered a pre-registered re-test and has not ruled on it.**
+
+**5. ✅ THE MVP EXISTS — `scripts/detect.py`, 372 lines, 8 self-checks (CONFIRMED).** Video →
+README §27 JSON incident record. Assembles `BadasOpen.score()`, `timing.gate_at_recall()`,
+`timing.incident()`, `calibration.fit_beta()` and a SHA-256 seal. Design points that must not be
+casually undone:
+- **Policy is derived, never typed.** Threshold read off the PR curve at a stated target recall
+  (B5/§12 forbid hard-coded thresholds); it **independently cross-checks `eval/timing.py` at
+  0.9733**. The calibration map is §6 **Tier 1** — fitted on the stratified calibration half,
+  seed 0 — the only tier the plan permits calling deployable. **Both are embedded in every
+  record**, so a record can be audited against the policy that produced it.
+- **Unproducible fields are OMITTED, never null-filled**: `ego_involved` (D23), severity band,
+  closing speed, GPS, vehicle, driver. A `null` would claim the field is merely empty.
+- **No severity band, deliberately.** §27 wants bands from *measured physical quantities*; there
+  is no physical channel, and deriving a band from the detector score is severity **prediction**,
+  which §44 forbids.
+- **The evidence seal hashes the SOURCE video plus a named window, not a re-encoded cut.**
+  ffmpeg is **not installed** in this environment (only `cv2` 5.0.0; no `imageio_ffmpeg`, no
+  `decord`, no `av`) and cv2 would re-encode, so a cut clip's hash would seal a lossy derivative.
+  The window is already recorded, so cutting is a later extraction step, not a redesign.
+
+**6. 🔴 `safe.mp4` IS A FALSE POSITIVE (CONFIRMED).** 30 s of ordinary driving scores **0.9758**
+against a 0.9733 gate — over by 0.0025 — and produces an incident record. This is 92.3 FP/hour
+made concrete on one file. **It is the correct behaviour of the current system, not a bug in the
+CLI**, and it is the single best demonstration of why Step 2 matters.
+
+**7. ✅ FP/HOUR CONVENTION DECLARED AND TIED TO THE COMMITTED NUMBER (CONFIRMED).**
+`eval/fp_rate.py`, 283 lines, 6 self-checks. Convention B (9.72 s segments) applied to Nexar's
+333 committed negative traces returns **exactly 83 FP over 0.899 h = 92.3 FP/hour**. The new code
+reproduces the old number rather than asserting agreement with it.
+
+**8. 🔴 STRIDED TRACES ARE MOSTLY INTERPOLATED (CONFIRMED, from the vendored source).** See the
+top banner, item 3. At stride 8, **7 of every 8 trace values are not model output**. Also
+re-confirmed: upstream's `if 0 <= target_frame < total_frames` guard **drops the final window**
+(an 81-frame stride-1 clip creates 66 windows and keeps 65 — asserted in `fp_rate`'s self-check).
+**`load_traces_abs` drops `stride` and is unsafe for strided traces.**
+
+**9. 🔴 NEITHER STEP-2 DATASET IS DOWNLOADED (CONFIRMED).** Exhaustive search of repo, home
+directory and `/Volumes`. comma2k19 ~100 GB in 10 chunks (~10 GB / ~200 one-minute segments /
+3.33 h each); ZOD requires a manual email grant. **31 GB free locally.** comma2k19's `video.hevc`
+is a **raw HEVC elementary stream** — no container, no timestamps — inside
+`route_id/segment/{video.hevc, processed_log/, global_pos/, raw_log.bz2, preview.png}`.
+
+**10. ARTEFACT IDENTITIES PINNED FOR THE COLAB WORK (CONFIRMED).**
+```
+models/badas/weights/badas_open.pth
+  sha256 6b1ba91504542582412fee5100a17d6e06c87cb09619efec2efc34484f7042aa
+  bytes  3,979,436,545      (gitignored; from the ungated Apache-2.0 mirror getnexar/BADAS-Open)
+vendor/badas-open/   26 tracked files, ~228 KB   (small enough to ship to Colab intact)
+data/nexar/test-public/  2.7 GB, {positive,negative}/
+Nexar negatives: 333 clips, 0.8992 h, mean 9.72 s, median 9.90, range 7.33-11.33, 370.3 clips/h
+```
+**Colab must load a byte-identical checkpoint or the equivalence gate proves nothing.**
+
+**11. NO EXPERIMENT WAS RUN ON COMMA2K19 OR ZOD. NOTHING WAS DOWNLOADED. NOTHING WAS PUSHED.**
+
+---
+
+## 21.10 SESSION 13 CONTINUATION FINDINGS — added 2026-09-18 ~08:40, after the 21:50 handoff.
+
+**1. THE 220-CLIP DENSE SWEEP COMPLETED CLEANLY (CONFIRMED).** `scores.jsonl` 220/220,
+`grep -c '"reason"'` = **0**, `frames/*.npz` = **220** (matches the scored count exactly), process
+exited on its own rather than being killed. `runs/gate3a/` is **928 KB** total, **880 KB** of it
+traces — against Nexar's committed 2.6 MB precedent, so committing it is uncontroversial.
+The 21:50 projection of ~950 KB was accurate.
+
+**2. 🟢 THE FULL RUN MEASURED 124.9 s/clip — THE PILOT OVERESTIMATED BY ~10% (CONFIRMED).**
+The script's own closing summary:
+```
+MEASURED 124.9 s/clip over 200 clips -- this is the number to plan with, not the Nexar
+sweep's ~167 s/clip (D40).
+  extrapolated: 221 DADA clips = 7.7 h   466 DAD clips = 16.2 h
+```
+The 20-clip pilot measured **137.9 s/clip**; the real figure over 200 clips is **124.9**. **D52's
+concern was that the pilot might be unrepresentative — it was, by ~10%, but in the SAFE direction.**
+The lesson stands and sharpens: a pilot is a planning tool, and **the direction of its error is not
+predictable**, so it can neither be trusted as a floor nor as a ceiling. During the run the observed
+running mean wandered 136.1 → 150.3 → 136.1 s/clip before settling at 124.9; clip length varies 40×
+in this corpus (2.37–40.67 s), which is sufficient to explain the wander without invoking thermal or
+memory effects.
+**🔴 Consequence for gate 3b:** DAD's 466 clips project to **16.2 h**, which is **under D40's 18 h
+stop condition**. If DAD access is ever granted the run is affordable on the Air overnight with no
+re-plan onto the Studio. DAD's clips are a fixed ~5 s against DADA's variable 2.4–40.7 s, so **16.2 h
+is an upper bound**, not a point estimate.
+
+**3. ✅ ALL FIVE REGRESSION GUARDS RE-RUN AND EXACT — the 21:50 NEEDS VERIFICATION is DISCHARGED
+(CONFIRMED).** Executed 08:31–08:36 on 2026-09-18 on a quiet GPU. Every number matches §21.8 item 1
+to the last digit; full transcript in the CONTINUATION block at the top of this file. Headlines:
+T3 AUC **0.5339** / AP **0.5218** / **332,325,2,8**; reduction max **0.8349**, last_window **0.8905**
+= **+0.0556** [+0.0263, +0.0876]; timing **7/7**; heldout null median ΔAP **+0.0025**;
+gate3_mechanism **PASS**. **Nothing drifted across an 8 h GPU sweep.**
+
+**4. THE GUARD-5 SELF-CHECK DEMONSTRATED THE SAFETY RAIL WORKING (CONFIRMED).** Its fourth synthetic
+scenario feeds a near-constant annotation (IQR **0.08 s**) and the module returned
+**UNINTERPRETABLE**, printing *"the annotation is effectively a constant, so there is nothing for the
+peak to track. This is DAD's failure mode and is NOT a pass."* **The rail that stops a degenerate
+corpus being laundered into evidence is not theoretical — it fired, on demand, this session.**
+
+**5. A BACKGROUND WATCHER TASK WAS KILLED FOR LOW MEMORY — NOT THE SCORING RUN (CONFIRMED).**
+Mid-sweep the OS killed a `nohup`'d watcher belonging to an **older Claude session**
+(`a98effef…`, session 12's "watch full run to completion" job). **The scorer itself (PID 9372)
+survived and finished.** Measured at the time: scorer RSS **0.20 GB** — far too small to be an OOM
+target — against swap **9.7 GB used of 11.3 GB** and free+inactive **0.5 GB**, with the pressure
+spread across Chrome, VS Code, Antigravity IDE and **five concurrent `claude` processes**, no single
+one large. **Lesson: on this machine a long detached run is threatened by accumulated swap pressure
+from editors and other Claude sessions, not by its own footprint.** Nothing was killed or closed to
+relieve it — the run finished regardless.
+
+**6. 🔴 GATE 3a WAS NOT RUN. R1 IS UNDECIDED.** The session reached the model-switch gate, issued
+the mandated **OPUS · HIGH** recommendation before running or interpreting the gate, and **stopped
+to await the user's confirmation, which did not arrive before the session ended.** This was
+deliberate: `NEW_PLAN.md` R1 marks the step opus/high, and gate 3 has been specified four times with
+three of those wrong. **`eval/adapters.py:129` is still `np.nanmax`. No verdict exists.**
+
+**7. NOTHING WAS COMMITTED AND NOTHING WAS PUSHED.** `runs/gate3a/` remains untracked;
+`progress.md` remains modified-but-uncommitted; HEAD is still `f351579`, 6 ahead. No planning
+document was touched.
+
+---
+
+## 21.9 SESSION 13 FINDINGS — added 2026-09-17 ~21:50. Read after the top banner.
+
+**1. SESSION 12's HANDOFF IS ACCURATE (CONFIRMED).** Seven independent checks against the
+repository, all matching: HEAD `f351579` / 6 ahead / unpushed; `git status --short` == exactly
+`?? runs/gate3a/`; `git diff --stat` empty; `eval/adapters.py:129` still `np.nanmax`;
+`DEFAULT_ANNOTATION` still the D45 file; `.gitignore:31` still covers the clips via
+`git check-ignore -v`; `scripts/verify_manifest.py --dir data/dada2000/gate3a --expect 220` →
+**`verified 220 clips … PASS -- byte-identical to the manifest`**.
+
+**2. 🔴 THE FIVE MPS REGRESSION GUARDS WERE NOT RE-RUN (NEEDS VERIFICATION).** All five drive
+the MPS path and would have contended with the live sweep for the GPU; §3 of the session-start
+prompt explicitly permits deferring them while a run is alive. **They must be run before any
+commit.** The standing baseline remains §21.8 item 1 — benchmark T3 AUC 0.5339 / AP 0.5218 /
+332,325,2,8; reduction max 0.8349, last_window 0.8905 **+0.0556** [+0.0263, +0.0876]; timing 7/7;
+heldout null median ΔAP +0.0025; gate3_mechanism PASS (6 checks). **No number was re-confirmed
+this session and none is claimed to have been.**
+
+**3. THE SCORING RUN IS HEALTHY (CONFIRMED).** 48/220 at session end, **0 failures**
+(`grep -c '"reason"'`), **0 errors or tracebacks anywhere in `run.log`**, and `.npz` count == scored
+count at every check (38, 46, 47, 48). Rate **137.7 s/clip**, against the pilot's measured 137.9 —
+within 0.2%, so D52's concern about the pilot being unrepresentative has **not** materialised on
+this corpus. Revised remaining: ~6.6 h. `runs/gate3a/` is 208 KB at 48 clips → extrapolates to
+**~950 KB at 220**, comfortably under Nexar's committed 2.6 MB precedent. Disk 26 GB free.
+
+**4. ONE DISCREPANCY, BENIGN (CONFIRMED).** §17-S12 records HEAD `32716cd`, 5 commits ahead, and
+`M progress.md` in the tree. Reality is `f351579`, 6 ahead, tree clean but for `runs/gate3a/`.
+§17-S12 was written *before* the handoff commit that contains it. Self-reference, not error.
+**Do not spend time on this again.**
+
+**5. THE EVALUATION ARCHITECTURE, TRACED END-TO-END — new documentation of existing code, not new
+code.** No prior handoff recorded this, and it is what a fresh session needs in order to reason
+about R1 at all:
+
+```
+data/nexar/test-public/{positive,negative}/*.mp4          667 clips
+        │
+        ▼  eval/adapters.py :: BadasOpen.score()
+   vendor/badas-open  →  V-JEPA2 ViT-L, sliding 16-frame window @ 8 fps, stride 1
+        │
+        ├─→ per-frame trace ─→ runs/baselines2/badas-open/frames/*.npz   ← THE ASSET
+        │
+        └─→ np.nanmax(trace) ─→ one score per clip   ← line 129, the contested line
+                 │
+                 ▼  eval/benchmark.py :: run() → evaluate()
+            AP, ROC-AUC, FP/hour (with denominator), ECE, threshold sweep
+```
+
+- **The adapter contract is `.name` + `.score(clip_path) -> float|None`, and nothing else**
+  (`eval/adapters.py:1-15`). Three models plug in: `BadasOpen`, `AlwaysNegative` (README §31's
+  mandatory trivial baseline), `CachedScores` (replays the retired MobileNetV2+LSTM).
+- **Adapters are deliberately forbidden from knowing labels, durations or metrics.**
+  `benchmark.durations()` is **one canonical duration table** shared by every adapter, so FP/hour
+  denominators are identical across models. A per-adapter denominator would make rates look
+  comparable while being incomparable — a silent bug, made structurally impossible here.
+- **The `.npz` traces are the most valuable artefact in the repository.** An earlier 18 h sweep
+  discarded per-frame scores and kept one number per clip; saving them costs ~1.6 MB
+  (`adapters.py:90-95`) and is why R1 gates 1, 2 and 3a are all **pure analysis over files that
+  already exist**, with no re-scoring.
+- **🔴 There are TWO trace loaders and the difference is a silent 2-second bug.**
+  `reduction_study.load_traces` strips the 16 leading NaNs (correct — ranking needs no clock);
+  `timing.load_traces_abs` keeps the offset (correct — timing does). The 16 NaNs exist because the
+  model needs 16 frames of history; at 8 fps that is **exactly 2 s**. Using the ranking loader for
+  a timing question places every timestamp 2 s early with **no error and no crash**.
+  `gate3_mechanism.py:36-40` imports the correct one and names the trap — **verified this session.**
+- **Live vs dead code.** Live: all 10 files in `eval/`, plus `scripts/{score_external,
+  verify_manifest,hw_bench}.py`. Dead-but-deliberately-kept: `models/crash_model_weights.weights.h5`,
+  `models/feature_extractor_saved/`, `code/`, `scripts/t124_*`, `t3_*`, `t5_*`, `u6_*` — the retired
+  MobileNetV2+LSTM and its falsification suite, committed evidence, forbidden from refactor or
+  resurrection (§12). Leftovers from abandoned forks: `yolov8n.pt`, `LocateAnything-3B_Guide.pdf`.
+- **Three tests, all guarding history rather than features:** `tests/test_leakage.py` (proves the
+  leakage assertion does NOT fire on the real split and DOES fire on an injected overlap),
+  `tests/test_weights_load.py`, `tests/test_score_regression.py` (pins `videos/safe.mp4` at 0.7914 —
+  two independent implementations agreeing to four decimals is what licenses every falsification
+  result built on that path, T3 included).
+
+**6. GATE 3a's DECISION RULE, RE-READ FROM THE PRIMARY SOURCE (CONFIRMED).**
+`eval/gate3_mechanism.py:172-204`. Thresholds are module constants declared *before* any
+measurement so the bar cannot move afterwards: `IQR_FLOOR_S = 1.0`, `MIN_CLIPS = 30`,
+`NORM_PEAK_MAX = 0.90`, `NEXAR_PEAK = 0.975`, `N_BOOT = 10000`, `SEED = 0`. Order matters —
+interpretability is settled **before** any correlation is read, so a near-constant annotation can
+never be laundered into a pass. **Two criteria, both required for PASS:** (a) the paired
+Δ = `r_measured - r_null` has a bootstrap CI whose lower bound > 0, (b) median normalised peak
+< 0.90. A split result is **FAIL with the reason named** — R1 must *survive*, and a mixed outcome
+is not survival.
+**🔴 Re-confirmed the reason the naive test is wrong:** if longer clips also tend to have later
+collisions, a model that always peaks at the clip end still correlates positively with
+`Time-of-collision` purely through duration. In the module's own self-check a pure watch-time-drift
+model scores `r_measured = +0.944` and is correctly FAILED because the clip-end null scores +0.944
+too. **A headline correlation near +0.9 is not evidence of anything by itself.**
+
+**7. TRACKS B AND C ARE NOW AT ZERO ACROSS THIRTEEN SESSIONS.** Not a technical blocker, not
+compute-bound, not waiting on anything. README §41 names Track B the moat and Track C the real
+critical path to a startup outcome. `NEW_PLAN.md` §9 sets a hard kill condition on Track C
+(< 3 substantive replies by end of Week 2 → formally close it and stop listing it). **This remains
+the largest gap between plan and reality in the project.** It was offered to the user this session
+as the one piece of work available while the GPU was busy; the user did not take it up.
+
+**8. NO EXPERIMENT WAS RUN, NO CODE WAS WRITTEN, NO NUMBER WAS PRODUCED.** Gate 3a has not been
+run. R1 is undecided. Nothing in §12 was undone.
 
 ---
 
@@ -4840,6 +5873,55 @@ document is known to be wrong.
 
 ## 16. README MODIFICATION STATUS
 
+### SESSION 14 (2026-09-18) — **NEITHER PLANNING DOCUMENT WAS MODIFIED**
+
+**`README.md` — NOT CHANGED.** Nothing discovered this session alters the roadmap, the phases,
+the product definition or the gates. Gate 3a's failure kills an experiment inside Track A; it does
+not change what Track A is for. The MVP CLI *fulfils* §27's product ladder rather than changing it.
+
+**`NEW_PLAN.md` — NOT CHANGED.** Two things were noticed that could have justified an edit, and
+both were deliberately left for the user:
+1. **§10's ordering is undermined** — it stakes ~65% of expected gain on R1, and R1 is now dead.
+   Session 14 recommended a minimal amendment recording the kill and the re-ordering around
+   FP/hour. **The user has not ruled on it. Do not edit unilaterally.**
+2. **§7.2/§8.2 define no FP counting rule for continuous footage.** Rather than edit the plan,
+   the convention was declared in **code** (`eval/fp_rate.py`, D55) where it is self-checked
+   against the committed 92.3 figure. That is progress, not a plan change, so it belongs here.
+
+The three known-stale statements in `NEW_PLAN.md` (§15.14) were again left unedited.
+
+### SESSION 13 (2026-09-17 ~21:20–21:50) — **NEITHER PLANNING DOCUMENT WAS MODIFIED**
+
+**`README.md` — changed this session: NO.** The master plan was left untouched. Nothing discovered
+this session changes the roadmap, the phases, the gates, the product definition or the architecture
+direction. Session 13 produced no discovery at all — it verified existing state.
+
+**`NEW_PLAN.md` — changed this session: NO.** The detailed plan was left untouched. Its one genuine
+divergence (gate 3a's annotation source) was fixed in session 12 with the user's explicit approval,
+commit `bfcb91c` / D45, and was **re-verified against the repository this session**: the code and the
+plan agree. Its three known-stale statements (header says "PROPOSAL — nothing implemented"; §3.4's
+ECE 0.0498 vs the committed 0.0503; the gate-3 block's "~30 GB free" vs the measured 26 GB) are
+**progress drift, not plan errors**, and remain unedited by design — §13 of the session prompt
+forbids editing a planning document to record progress.
+
+**`progress.md` — changed: YES**, and only at the end, under the user's explicit end-of-session
+handoff prompt. It was treated as READ-ONLY for the entire working portion of the session. This is
+the file where execution history belongs.
+
+### SESSION 13 CONTINUATION (2026-09-18, to ~08:40) — **ALSO NEITHER DOCUMENT MODIFIED**
+
+**`README.md` — changed: NO. `NEW_PLAN.md` — changed: NO.** The continuation completed a sweep and
+re-ran five guards. Both are *execution*, not plan changes, and §13 of the session prompt forbids
+editing a planning document to record progress. **One finding was checked against the plan and
+deliberately NOT written into it:** the measured 124.9 s/clip implies gate 3b on DAD costs 16.2 h,
+comfortably under D40's 18 h stop condition. That is a *measurement about* the plan's cost table,
+not a change to what the plan asks for — `NEW_PLAN.md`'s own gate-3 block already instructs the
+reader to replace its estimates with a measurement, so the plan is being **followed**, not amended.
+The number is recorded in §21.10 item 2 where it belongs.
+
+---
+
+
 ## SESSION 10 CONTINUATION — README CHANGED: **NO.** NEW_PLAN CHANGED: **YES, once more.**
 
 ### `README.md` — **NOT CHANGED.** No discovery in the continuation alters the roadmap, phases,
@@ -5098,6 +6180,280 @@ reframing is settled project direction, it is a legitimate plan-level README edi
 
 **Going forward: progress, session history, experiment results and task status belong in this file,
 not in `README.md`.**
+
+---
+
+## 17-S14. FINAL HANDOFF CHECK · **SESSION 14, 2026-09-18. Supersedes §17-S13b.**
+
+### TECHNICAL STATE — what actually works right now
+
+```
+data/nexar/test-public/{positive,negative}/*.mp4      667 clips, 2.7 GB
+        │
+        ▼  eval/adapters.py :: BadasOpen.score()        <- line 129 = np.nanmax (UNCHANGED)
+   vendor/badas-open  →  V-JEPA2 ViT-L, 16-frame window @ 8 fps, stride 1
+        │
+        ├─→ per-frame trace ─→ runs/baselines2/badas-open/frames/*.npz   ← THE ASSET
+        │
+        ├─→ eval/benchmark.py     AP 0.8349 · AUC 0.8498 · FP/hour · ECE
+        ├─→ eval/timing.py        gate 0.9733 @ recall 0.80 · t_start/t_peak/t_end
+        ├─→ eval/calibration.py   Tier 1 beta map, ECE 0.33 → ~0.05, monotone
+        ├─→ eval/fp_rate.py  NEW  FP/hour on continuous footage (A + B conventions)
+        └─→ scripts/detect.py NEW video → README §27 JSON incident record
+```
+
+**Works and is verified:** the whole path above; gate 3a analysis (`eval/gate3_mechanism.py`) over
+`runs/gate3a/frames/` (220 traces, committed); `scripts/score_external.py` for arbitrary clip dirs
+with `--stride`; `scripts/verify_manifest.py`.
+**Does not exist:** `scripts/colab_comma2k19.ipynb`; any comma2k19 or ZOD data; any FP/hour number
+on independent footage; ffmpeg in this environment (only `cv2` 5.0.0).
+**Partially implemented:** README §27's record — 3 fields of ~10. Ego-involvement, severity bands,
+closing speed and GPS are **absent by design** (no physical channel; faking them from the score is
+forbidden by §44), not merely unfinished.
+**Known limitations:** 92.3 FP/hour against a <0.1 target; 0.899 h denominator, on which the
+smallest expressible non-zero rate is 1.1/hour; timing fields are a *capability*, unvalidated on
+this benchmark because Nexar's `time_of_event` is corrupt for all 334 positives.
+
+### FILE / REPOSITORY CHANGES (session 14)
+
+| Path | Change |
+|---|---|
+| `scripts/detect.py` | **NEW, 372 ln.** The MVP: video → §27 JSON incident record. 8 self-checks. Derives gate + Tier-1 calibration at startup, embeds both in every record. Omits unproducible fields. Seals the source video by SHA-256 + window. |
+| `eval/fp_rate.py` | **NEW, 283 ln.** FP/hour on continuous footage. Conventions A and B declared as constants before any scoring. `prediction_indices()` defeats the interpolation trap. 6 self-checks; reproduces the committed 83 FP / 92.3 FP/hour. |
+| `docs/zod_access_request.md` | **NEW.** ZOD access email (SENT by the user) + a terms checklist that must be completed before any ZOD use (§22/§23). |
+| `runs/gate3a/verdict.txt` | **NEW.** Gate 3a transcript — the primary record of R1's death. |
+| `runs/gate3a/{scores.jsonl,frames/*.npz}` | **COMMITTED** (220 traces, 932 KB). 6.9 h of GPU at a measured 124.9 s/clip; irreplaceable without re-running. |
+| `runs/incidents/{crash1,crash2,safe}.json`, `summary.jsonl`, `frames/*.npz` | **NEW.** Worked examples from the MVP, including the `safe.mp4` false positive. |
+| `eval/*` (others), `README.md`, `NEW_PLAN.md` | **UNTOUCHED.** |
+
+### GIT STATE at end of SESSION 14
+
+```
+branch     main (no branch switching this session)
+HEAD       aae37b2  "Declare the FP/hour counting convention before any footage is scored"
+ahead      9 commits ahead of origin/main   🔴 NOT PUSHED — user deferred, ask before pushing
+tree       M progress.md   (this file, being written now)
+this session's commits, oldest first:
+  9afeb5a  R1 gate 3a: FAIL on DADA-2000. The reduction finding does not survive.
+  90e8a58  Ship the MVP: video in -> JSON incident record out (README §27)
+  aae37b2  Declare the FP/hour counting convention before any footage is scored
+```
+**Do not overwrite:** `runs/gate3a/` (the gate's evidence), `runs/baselines2/badas-open/frames/`
+(the 667 Nexar traces every analysis depends on), `eval/adapters.py:129`.
+
+### REGRESSION GUARDS — re-run TWICE this session, reproduce EXACTLY (CONFIRMED)
+
+```
+benchmark.py        T3 AUC 0.5339  AP 0.5218  TP/FP/FN/TN 332/325/2/8
+                    FP/hour 361.4 over 0.90 h   p@r0.80 0.5253   ECE 0.4880
+reduction_study     max 0.8349 · last_window 0.8905 +0.0556 [+0.0263, +0.0876] excludes zero
+                    max_x_last 0.8904 +0.0555 [+0.0274, +0.0865]
+timing --self-check          7/7 PASS (gate 0.70/0.80/0.95 → 0.9830/0.9733/0.8098, FP 60/83/194)
+heldout_half --self-check    null median ΔAP +0.0025, halves disjoint and stratified
+gate3_mechanism --self-check PASS (6 checks)
+```
+Plus two new suites: `detect.py --self-check` **8/8 PASS**, `fp_rate --self-check` **6/6 PASS**.
+
+### DATASET / LICENSING STATE — session 14 additions
+
+- **comma2k19 — MIT.** ~100 GB, 10 chunks (~10 GB / ~200 one-minute segments / **3.33 h** each).
+  Ships synced **IMU + CAN** in `processed_log/` → **R9's kill condition will not fire**, pending
+  verification against the actual bytes. `video.hevc` is a **raw HEVC elementary stream**. **NOT
+  DOWNLOADED.** No access request needed.
+- **ZOD — CC BY-SA 4.0, commercial use permitted.** Access is a **manual email grant**;
+  **request SENT this session** by the user to `opendataset@zenseact.com`. Sizes unpublished until
+  granted. 🔴 **Terms must be confirmed in writing before use** (§22/§23) — checklist in
+  `docs/zod_access_request.md`.
+- **BADAS-Open checkpoint** — sha256 `6b1ba91504542582412fee5100a17d6e06c87cb09619efec2efc34484f7042aa`,
+  3,979,436,545 bytes, Apache-2.0, ungated mirror `getnexar/BADAS-Open`. Gitignored.
+- **DADA-2000** — unchanged: **no licence posted, internal falsification only (D43)**. Never in an
+  external write-up or a commercial claim. Gate 3a's result is therefore an *internal* finding.
+
+### BLOCKERS (precise)
+
+1. **comma2k19 is not downloaded** and local disk (31 GB) cannot hold it. → resolved in principle
+   by Colab+Drive (D56); needs the notebook, which does not exist.
+2. **ZOD is not granted.** Email sent; waiting on a human at Zenseact. **Genuinely blocking for
+   the ZOD half only** — comma2k19 can proceed without it.
+3. **Nothing else is blocked.** Track B and Track C are not blocked; they are unstarted.
+
+### UNKNOWN / NEEDS VERIFICATION
+
+- **NEEDS VERIFICATION: does a CUDA T4 reproduce MPS scores?** Unknown, and D57's gate exists to
+  answer it. **Nothing from Colab is comparable to the 92.3 baseline until it passes.**
+- **NEEDS VERIFICATION: the Nexar Drive upload completed.** User reported it in progress.
+- **UNKNOWN: comma2k19's true per-segment frame rate.** Must be derived from
+  `global_pose/frame_times`, never assumed — a raw HEVC stream carries no rate.
+- **UNKNOWN: whether the downloaded comma2k19 release really carries IMU/CAN** (documented yes;
+  §R9 explicitly says verify against the actual release, "some mirrors are video-only").
+- **UNKNOWN / user decision pending: the R1 re-test** (D54) and the **`NEW_PLAN.md` §10
+  amendment** (§15.14). Neither was ruled on.
+- **HYPOTHESIS, not measured: that R4/R2/R3 would not move FP/hour.** The reasoning (AP and
+  FP/hour decouple at the operating point) is sound but was not measured this session.
+
+### SESSION END STATE — what was happening when this session stopped
+
+**Nothing was running. Nothing was half-written in the repository.** The session had finished
+three committed pieces of work, hit the Step-2 acquisition blocker, written a design for
+`scripts/colab_comma2k19.ipynb` into the scratch plan file, and called `ExitPlanMode` for
+approval. **The user rejected it with "wait" and then asked for this handoff.**
+
+**Therefore: the Colab notebook was never built.** The plan at
+`~/.claude/plans/i-will-give-you-snug-cook.md` is **unapproved scratch outside the repo**; its
+substance is preserved in §13 and §14-S14 above so nothing is lost if it disappears. **No
+experiment was run on comma2k19 or ZOD. Nothing was downloaded. Nothing was pushed.**
+
+### MODEL / EFFORT HANDOFF
+
+**Recommended model: opus · Effort: high** for the first task.
+**Why:** the next work is building a corpus-acquisition notebook whose failure modes are silent —
+a wrong frame rate makes the model watch the road at the wrong speed, and a hardware score
+difference invalidates the threshold without any error. **Every corpus-acquisition failure this
+project has had** (DADA's mismatched ids, the JPEG-named-PNG frames, the split zip, the wrong
+committed notebook) **came from an unchecked assumption at exactly these seams**, and each was
+caught only by checking a primary source instead of trusting a summary.
+**Switch before next task: YES if currently on a cheaper model.**
+**Drop to sonnet · medium** for the pilot run, the full run and the final `fp_rate` invocation —
+those are mechanical once the gates pass. **Return to opus · high** to interpret the equivalence
+gate if it is marginal, or to interpret the final FP/hour number.
+
+---
+
+## 17-S13b. FINAL HANDOFF CHECK · **SESSION 13 CONTINUATION, 2026-09-18 ~08:40.
+## (history — superseded by §17-S14 above.)**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | Not a crash detector — detection is a commodity (BADAS-Open, Apache-2.0, free, SOTA). README §27: the product is the **structured incident record**, ~10 fields. Two work: "collision detected" and `t_start`/`t_peak`/`t_end`. |
+| 2. Master plan? | `README.md` §41 — three concurrent tracks: **A** model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. **Unchanged.** |
+| 3. Detailed plan? | `NEW_PLAN.md` — Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory (§1). |
+| 4. Current phase? | README Phase 4 complete / Phase 5 gate passed. `NEW_PLAN.md` Week 1, **R1 gate 3a — all inputs READY, gate NOT YET RUN**. Status: **WAITING FOR EVIDENCE** (one command away). |
+| 5. Previous session (12)? | Committed session 11's deliverable (5 commits), caught three latent traps, landed + SHA-256-verified 220/220 clips, measured cost, started the dense run, committed its handoff as `f351579`. |
+| 6. THIS session (13 + continuation)? | **First half (to 21:50):** full project recovery, verified session 12's handoff (7 checks), traced the evaluation architecture end-to-end for the first time, named a contradiction in the user's own prompts rather than writing a handoff for an empty conversation. **Zero repo changes.** **Continuation (to 08:40):** the 220-clip sweep **completed cleanly** (220/220, 0 failures), all **five guards re-run and exact**, a **new measured cost of 124.9 s/clip** recorded. **Still zero commits, and GATE 3a STILL NOT RUN.** |
+| 7. Evidence? | §21.9 and **§21.10**. Sweep 220/220, 0 failures, 220 `.npz`, 928 KB. Guards exact: T3 AUC 0.5339 / AP 0.5218 / 332,325,2,8; reduction max 0.8349 vs last_window 0.8905 = **+0.0556** [+0.0263, +0.0876]; timing 7/7; heldout null +0.0025; gate3_mechanism PASS. Corpus: 220/220 SHA-256 verified, annotation 220 rows + header. |
+| 8. What failed? | **Nothing broke.** The honest characterisation: the session produced all the *inputs* to the decisive experiment and **did not run it**, because it stopped at the mandated model-switch gate and the user did not confirm before the session ended. **R1 remains undecided after thirteen sessions.** |
+| 9. Unknown? | **Whether gate 3a passes — genuinely open, ~25% chance by the plan's own estimate that it kills R1.** Whether DAD's authors reply. |
+| 10. Decisions? | §11 — D1–D52. **Session 13 and its continuation added NO decisions of record.** No choice was made that constrains future work. |
+| 11. Not to redo? | §12 — **do not re-run the sweep** (complete), **do not re-run the five guards** (exact as of 08:36), do not re-derive the 124.9 s/clip cost, do not investigate the killed watcher task, do not re-verify session 12's handoff or re-trace the architecture. |
+| 12. Exact next action? | §13 step 4 — **switch to OPUS · HIGH and run gate 3a.** Steps 1–3 are done. |
+| 13. Next 3–5? | §14-S13b. |
+| 14. Plans need editing? | **No.** Neither `README.md` nor `NEW_PLAN.md` was modified, and no plan-level change was identified. The three known-stale `NEW_PLAN.md` statements stay unedited by design (§15.13). |
+| 15. 🔴 State outside the repo? | **Nothing is running any more.** The 220 clips remain in `MyDrive/dada2000_gate3a` as the re-download source. A scratch plan file at `~/.claude/plans/what-is-wrong-rosy-backus.md` restates §13 and is **not authoritative**; this file is. |
+
+### GIT STATE at end of the SESSION 13 CONTINUATION
+
+Branch `main`, HEAD **`f351579`**, **6 commits ahead of `origin/main` — NOT PUSHED** (deferred by the
+user in session 12; carried again). Working tree:
+```
+ M progress.md      <- THIS handoff plus the 21:50 one. UNCOMMITTED. Do not discard.
+?? runs/gate3a/     <- scores.jsonl (220) + frames/*.npz (220) + run.log, 928 KB, COMPLETE.
+                       NOT ignored, NOT committed. Commit it WITH the gate 3a verdict.
+```
+Apart from `progress.md`, `git diff --stat` is **empty** — no source, test, script or planning
+document was modified at any point in session 13 or its continuation.
+**`eval/adapters.py:129` is still `np.nanmax`. R1 is still NOT promoted.**
+
+### SESSION END STATE — what was happening when this session stopped
+
+**Nothing was executing.** The sweep finished at ~08:30 and its process exited. All five guards had
+been re-run and were green. The session had issued the required **OPUS · HIGH** model-switch
+recommendation and was **waiting for the user to confirm before running gate 3a**. That
+confirmation did not arrive; the end-of-session handoff prompt came instead.
+
+**Nothing is half-written.** No file is in a partial state. The one outstanding *action* is gate 3a
+itself, and it is a single command whose every prerequisite is verified.
+
+**What is NOT done:** **gate 3a has not been run**, **R1 is undecided**, `runs/gate3a/` is
+uncommitted, `progress.md` is uncommitted, and the 6 commits are unpushed.
+
+### MODEL / EFFORT HANDOFF
+
+- **Recommended model:** **Opus**
+- **Recommended effort:** **high**
+- **Switch before next task? YES — immediately.** Unlike the previous handoff, there is no longer
+  any sonnet-tier preamble: the sweep is done and the guards are green, so **the very first
+  substantive act of the next session is running and interpreting gate 3a**, which `NEW_PLAN.md` R1
+  marks opus/high.
+- **Why:** gate 3 has been specified four times and **three were wrong**; each error was caught only
+  by reading a primary source rather than a summary. The concrete trap: a watch-time-drift model
+  scores `r_measured = +0.944` against the annotation and must still **FAIL**, because the clip-end
+  null scores +0.944 too. Reading the headline correlation instead of the paired Δ would confirm R1
+  regardless of the truth. This is also the R1 promotion decision.
+- **After the verdict:** committing and the Track B/C drafting drop to **sonnet · medium** and
+  **haiku · low** respectively.
+
+---
+
+## 17-S13. FINAL HANDOFF CHECK · **SESSION 13 at 21:50 (HISTORY, superseded by §17-S13b above)**
+
+| Question | Answer |
+|---|---|
+| 1. What are we building? | Not a crash detector — detection is a commodity (BADAS-Open, Apache-2.0, free, SOTA). README §27: the product is the **structured incident record**, ~10 fields. Two work: "collision detected" and `t_start`/`t_peak`/`t_end`. |
+| 2. Master plan? | `README.md` §41 — three concurrent tracks: **A** model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. **Unchanged.** |
+| 3. Detailed plan? | `NEW_PLAN.md` — Week 1, Track A: R1 → R4 → R2 → R3 → fuse → calibrate, paired bootstrap mandatory (§1). |
+| 4. Current phase? | README Phase 4 complete / Phase 5 gate passed. `NEW_PLAN.md` Week 1, **R1 gate 3a — scoring in progress, 48/220**. |
+| 5. Previous session (12)? | Committed session 11's entire deliverable (5 commits), caught three latent traps (stale notebook, forbidden default annotation, `.gitignore` miss that would have committed 1.3 GB of video), landed + SHA-256-verified 220/220 clips, measured cost, started the dense run. Then committed its own handoff as `f351579`. |
+| 6. THIS session (13)? | **Nothing was built and nothing was changed — zero commits, zero tracked files modified.** It performed a full project recovery, independently verified session 12's handoff (7 checks, all pass), traced the evaluation architecture end-to-end for the first time (§21.9 item 5), re-read gate 3a's decision rule from the primary source (§21.9 item 6), and confirmed the run is healthy. It also named a conflict in the user's own prompts — the end-of-session handoff prompt was issued at session *start* — rather than silently writing a handoff for an empty conversation. |
+| 7. Evidence? | §21.9. Seven repo checks pass. `verify_manifest` 220/220 PASS. Run at 48/220, **0 failures, 0 errors in `run.log`**, rate 137.7 s/clip vs the pilot's 137.9. ⚠️ **The five MPS guards were NOT re-run** — standing baseline is still §21.8 item 1. |
+| 8. What failed? | Nothing broke, and nothing was attempted that could break. **Gate 3a has NOT been run — R1 remains undecided.** The honest characterisation of session 13 is: a blocked session that verified instead of fabricating progress. |
+| 9. Unknown? | **Whether gate 3a passes — genuinely open, and it can kill R1 on its own.** Whether the five MPS guards still reproduce (**NEEDS VERIFICATION**). Whether the detached run completes cleanly. Whether DAD's authors reply. |
+| 10. Decisions? | §11 — D1–D52. **Session 13 added NO decisions of record**, because it made no choices that constrain future work. |
+| 11. Not to redo? | §12 — above all: **do not start a second scoring run**; do not re-verify session 12's handoff; do not re-trace the architecture; do not re-investigate the §17-S12 git mismatch; **do not treat the five MPS guards as verified.** |
+| 12. Exact next action? | §13 — check whether the run finished; sanity-check it; **re-run the five guards**; then **switch to OPUS · HIGH** and run gate 3a. |
+| 13. Next 3–5? | §14-S13. |
+| 14. Plans need editing? | **No.** Neither `README.md` nor `NEW_PLAN.md` was modified this session, and no plan-level change was identified. The three known-stale `NEW_PLAN.md` statements stay unedited by design (§15.13). |
+| 15. 🔴 State outside the repo? | **A DETACHED PROCESS IS STILL RUNNING** (`nohup` + `caffeinate`). The 220 clips remain in `MyDrive/dada2000_gate3a` as the re-download source. A scratch plan file exists at `~/.claude/plans/what-is-wrong-rosy-backus.md` — it restates §13 and is **not authoritative**; this file is. |
+
+### GIT STATE at end of session 13
+
+Branch `main`, HEAD **`f351579`**, **6 commits ahead of `origin/main` — NOT PUSHED** (the user
+deferred in session 12 and the deferral was carried again). Working tree:
+```
+ M progress.md      <- THIS handoff, written under the end-of-session prompt. UNCOMMITTED.
+                       The user was not asked to commit it; commit it alongside the next
+                       piece of work, or on its own, but do not silently discard it.
+?? runs/gate3a/     <- scores.jsonl + frames/*.npz + run.log, 208 KB at 49 clips and growing.
+                       NOT ignored, NOT committed. Commit it WITH the gate 3a verdict (§13 step 5).
+```
+Apart from this handoff, `git diff --stat` is **empty** — session 13 modified no other tracked file,
+and touched no source, test, script or planning document. The six commits, oldest first:
+```
+1312211  Add scripts/score_external.py -- gate 3's scoring plumbing        (+ eval/timing.py)
+191aa7f  Add eval/gate3_mechanism.py -- gate 3a, with the clip-end null that decides it
+b772e93  Add the Colab notebook that built gate 3a's 220 clips, and ignore the clips
+bfcb91c  NEW_PLAN.md R1: correct gate 3a's annotation source (D45)
+32716cd  Add scripts/verify_manifest.py -- the checksum gate before gate 3a scores
+f351579  Session 12 handoff: session 11's work committed, corpus verified, sweep running
+```
+**`eval/adapters.py`, `eval/benchmark.py`, `eval/run_baselines.py` were NOT touched.**
+**`eval/adapters.py:129` is still `np.nanmax`. R1 is still NOT promoted.**
+
+### SESSION END STATE — what was happening when this session stopped
+
+**The 220-clip dense stride-1 scoring run was still executing**, detached, at **48/220 with zero
+failures** and roughly **6.6 hours remaining** (ETA ~04:00 on 2026-09-18). It is a `nohup`'d OS
+process and continues after the session ends.
+
+**Nothing was half-written.** Session 13 started nothing it did not finish, because it started no
+implementation at all. The only unfinished thing is the run itself, and the only work it blocks is
+gate 3a.
+
+**What is NOT done:** gate 3a has not been run, **R1 is undecided**, the five MPS regression guards
+are unverified since session 12, `runs/gate3a/` is uncommitted, and the 6 commits are unpushed.
+
+### MODEL / EFFORT HANDOFF
+
+- **Recommended model:** **Opus**
+- **Recommended effort:** **high** — but not for the first two steps.
+- **Why:** the next substantive act is running and *interpreting* gate 3a and then deciding R1.
+  `NEW_PLAN.md` R1 marks it opus/high. Gate 3 has been specified four times and three were wrong;
+  each error was caught only by reading a primary source. The specific trap: a watch-time-drift
+  model scores `r_measured = +0.944` against the annotation and must still **FAIL**, because the
+  clip-end null scores +0.944 too. Reading the headline correlation instead of the paired Δ would
+  confirm R1 regardless of the truth.
+- **Switch before next task? YES — but only before §13 step 4.** Steps 1–3 (checking a process,
+  counting lines, running five guard scripts) are **sonnet · medium** work. Committing afterwards is
+  also sonnet · medium. Track B/C drafting is **haiku · low**.
 
 ---
 
