@@ -1,12 +1,194 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-18, end of session 14**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-19, end of session 15**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
-> **🔴 R1 IS DEAD. GATE 3a WAS RUN AND IT FAILED.** Nothing is executing. Nothing is half-written.
-> The project has moved off detection tuning and onto **Step 2 — a real FP/hour denominator** —
-> which is **BLOCKED on data acquisition**. See the SESSION 14 block immediately below.
+> **🔴 R1 IS DEAD (session 14) AND DETECTION TUNING IS NOW MEASURED TO BE THE WRONG LEVER
+> (session 15).** The project is executing **Step 2 — a real FP/hour denominator** on Google
+> Colab. **A Colab run was IN PROGRESS when session 15 ended.** See the SESSION 15 block
+> immediately below.
+
+> # ▶▶▶▶▶▶▶▶ SESSION 15 (2026-09-18 → 2026-09-19) — READ THIS FIRST
+>
+> ### What this session did, in one line
+>
+> **Measured that AP gains do not move FP/hour (the finding that justifies the whole
+> re-prioritisation), built and debugged the comma2k19 Colab notebook against a real T4, found
+> THREE factual errors in this file, and started Tracks B and C after fourteen sessions at zero.**
+>
+> | | |
+> |---|---|
+> | Commits | **6**: `30a523e`, `03e0b2c`, `35b0641`, `d087146`, `76f6ffa`, `8d9e42d` |
+> | HEAD | `8d9e42d`, **16 commits ahead of `origin/main`**. 🔴 **NOT PUSHED** — user has deferred across seven sessions |
+> | Working tree | **CLEAN** (before this handoff commit) |
+> | `eval/adapters.py:129` | still `np.nanmax`. **Unchanged, verified.** |
+> | Five regression guards | re-run before committing, reproduce **EXACTLY** |
+> | New self-checks | `ap_vs_fp` **7/7 PASS**, `make_colab_bundle` **6/6 PASS** |
+>
+> ---
+>
+> ### 1. 🔴 THE HEADLINE FINDING: AP AND FP/HOUR ARE DECOUPLED (CONFIRMED, MEASURED)
+>
+> §17-S14 listed this as *"HYPOTHESIS, not measured: that R4/R2/R3 would not move FP/hour."*
+> **It is now measured**, at zero compute cost over committed traces, by `eval/ap_vs_fp.py`:
+>
+> ```
+> reduction        AP       ΔAP    gate@r0.80    FP/333   FP/hour
+> max          0.8349         —        0.9733        83      92.3
+> last_window  0.8905   +0.0556        0.8226        80      89.0
+> max_x_last   0.8904   +0.0555        0.8818        80      89.0
+> last4_mean   0.8732   +0.0383        0.6750        86      95.6   <- WORSE
+>
+> best AP gain buys      +3.3 FP/hour  = 3.62% of the gap
+> required               92.2 FP/hour  = a 923x reduction
+> ```
+>
+> **The largest AP gain this project has ever measured — the +0.0556 that took thirteen sessions
+> to test and kill — buys 3.3 FP/hour.** Inside noise at 83±9 clips. A +0.0383 AP gain makes
+> FP/hour *actively worse*. **R4/R2/R3 have stated ceilings of +0.005–0.03 AP, less than half of
+> this probe, so they cannot close the gap either.**
+>
+> `last_window` is used as an **UPPER-BOUND PROBE, not a promotion**. R1 is still dead (D53),
+> `adapters.py:129` is still `np.nanmax`, and the module writes no score anywhere.
+>
+> 🔴 **The caveat must travel with the result:** measured on Nexar's **negative clips**, drawn
+> from a collision dataset and plausibly enriched for hard, alarming-looking footage. **This is
+> NOT a production gap.** comma2k19 settles that — which is exactly why Step 2 runs first.
+>
+> The self-check ties the module to four committed numbers independently: AP 0.8349, 83 FP,
+> 92.3 FP/hour, and gate 0.9733 reached through `gate_at_recall` without being typed.
+>
+> ---
+>
+> ### 2. ✅ THE COLAB NOTEBOOK EXISTS — `scripts/colab_comma2k19.ipynb` (19 cells, 20 HALTs)
+>
+> §13 of the session-14 handoff called for exactly this. Four gates, and the ordering is
+> **enforced mechanically, not by discipline**:
+>
+> | Gate | Checks | On failure |
+> |---|---|---|
+> | **A** | checkpoint sha256 `6b1ba915…7042aa`, 3,979,436,545 bytes | HALT |
+> | **B** | all 29 staged files byte-identical to the repo | HALT |
+> | **C** | MPS↔T4 equivalence (D57): median \|Δ\| < 0.002 AND ≤1 of 100 crossing 0.9733 | HALT |
+> | **D** | frame rate derived from `frame_times`, read back **through cv2** | HALT |
+>
+> Gate C writes `EQUIVALENCE_PASSED.json`; §5 and §6 open with
+> `assert os.path.exists(SENTINEL)`. **Verified by inspection: the only cells invoking the scorer
+> are the gate itself and the two guarded ones.** D57 cannot be skipped.
+>
+> `scripts/make_colab_bundle.py` — `git clone` is **unusable** (16 unpushed commits mean
+> `origin/main` lacks `score_external.py`, `fp_rate.py` and `verify_manifest.py` entirely), so the
+> code travels as a **65 KiB bundle with per-file SHA-256**, which is what GATE B checks. Analysis
+> modules are deliberately excluded: **Colab makes traces, the Mac makes numbers.**
+>
+> ---
+>
+> ### 3. 🔴 THREE FACTUAL ERRORS IN *THIS FILE*, FOUND BY EXECUTION (ALL CONFIRMED)
+>
+> None was caught by reading; each was caught by running the thing or checking a primary source.
+> **`progress.md` was NOT edited to fix them during the session (read-only rule) — they are
+> corrected in the notebook's code and comments, and recorded here now.**
+>
+> **(a) The comma2k19 pose directory.** §13 and §17-S14 say `global_pose/frame_times`.
+> **The real directory is `global_pos/`** — §21.11 had it right. Verified against
+> comma2k19's own README. This sat exactly at the frame-rate seam, where a wrong path means no
+> rate can be derived at all.
+>
+> **(b) The checkpoint's HF location, wrong twice.** §21.11 item 10 records
+> `getnexar/BADAS-Open` and calls it an *"ungated Apache-2.0 mirror"*. Both wrong:
+> `getnexar` is the **GitHub** org — on Hugging Face it is **`nexar-ai/BADAS-Open`** — and it is
+> **GATED** (*"You need to agree to share your contact information"*). **This repo's own
+> `.gitignore` says "gated HF download" and was right; `progress.md` contradicted it and lost.**
+> The two errors masked each other because HF returns `401` for both a missing repo and a gated
+> one. Licence re-confirmed Apache 2.0, **free for research and commercial use** — only *access*
+> is restricted, so no commercial claim is threatened.
+>
+> **(c) My own Gate D was wrong in the first draft.** It compared against the rate *passed to
+> ffmpeg*. But `vendor/badas-open/badas/utils/video.py::load_full_video_frames` does:
+> ```
+> video_duration     = CAP_PROP_FRAME_COUNT / CAP_PROP_FPS   <- cv2 reads the CONTAINER
+> target_frame_count = round(video_duration * 8.0)           <- becomes len(scores)
+> ```
+> and `eval/fp_rate.py` computes `duration_s = len(scores)/8.0`. **So whatever cv2 reads out of
+> the container IS the FP/hour denominator.** A wrong rate corrupts the FP count *and* the hours
+> denominator together, silently. Gate D now reads back through cv2, and the pilot adds an
+> end-to-end check that each trace's implied duration matches the container to within one 8 Hz
+> quantum (0.13 s).
+>
+> ---
+>
+> ### 4. ⚠️ THE PIN DESIGN WAS WRONG AND WAS REPLACED (decision D61)
+>
+> I first made §1 HALT unless Colab's `torch`/`transformers`/`numpy` matched the Mac's. Running it
+> on a real T4 falsified that: Colab reports **torch 2.11.0+cu128, transformers 5.16.1,
+> numpy 2.1.3, Python 3.13.15, CUDA 12.8, Tesla T4** against the Mac's 2.14.0 / 5.17.0 / 2.4.6 /
+> 3.11.16. Three reasons the pin was wrong — **only the first is obvious**:
+> 1. Colab **preloads** those modules, so `pip` cannot change the running kernel. The check was a
+>    restart loop, not a gate.
+> 2. Replacing Colab's torch is a ~2.5 GB download that may not match the CUDA 12.8 driver, and
+>    the Mac's versions may have no Python 3.13 wheels.
+> 3. **It answers the wrong question.** D57 asks whether a number produced *here* is comparable to
+>    the committed 92.3. If the gate passes on Colab's own stack, comparability is demonstrated
+>    **empirically, on the stack the comma2k19 numbers will actually be produced on** — a stronger
+>    result than forcing versions to match.
+>
+> **D57's declared bar is UNCHANGED.** The pins were session 15's own addition, not part of D57.
+>
+> What replaces them is a real diagnostic: a **PIXEL FINGERPRINT** computed before any GPU work —
+> `sha256(load_full_video_frames("01044", (224,224), 8.0))`, which is pure cv2 decode + resize +
+> colour convert with **no GPU, no torch, no transformers**. The Mac's value is embedded:
+> ```
+> clip 01044   shape (81, 224, 224, 3) uint8
+> bd6126c391b2301d170e40128d04338587a38697a7a494c63943d4182a23f24a
+> ```
+> **Matches** → frames reaching the model are byte-identical, so any score difference is model/GPU
+> numerics. **Differs** → the decode path differs before the model runs and the GPU is exonerated.
+> A Gate C failure now names its own cause, for the price of one clip.
+>
+> ---
+>
+> ### 5. ✅ TRACKS B AND C STARTED AFTER FOURTEEN SESSIONS AT ZERO
+>
+> **Track C** — `docs/fleet_outreach.md` + `docs/fleet_replies.csv`. The two documents disagreed
+> and it is **named, not silently resolved**: `NEW_PLAN.md` §9 says 10 messages with the same 3
+> questions; `README.md` §41's gate says 30 calls with 1 opener and *"do not pitch"*; §43 mentions
+> a 10-question script. **Resolved by the user as a FUNNEL** — §9's messages are the week-1 opener,
+> README's 30 calls are the completion gate — so **neither document needed changing**. Four
+> templates, the call opener verbatim, target profile from §26, and §9's kill condition with a
+> real date: **<3 substantive replies by 2026-10-02 formally closes Track C.**
+>
+> **Track B** — `docs/uk_hn500_plan.md`. The reframing that removes the budget dependency:
+> **UK-HN-500 is a definition + a harness + clips, and only the clips cost money.** The harness
+> already exists (`eval/fp_rate.py`). So two of three parts finish for £0 and the project stops
+> being blocked on ~£500. Costs are **flagged, not invented** — README's £80–150 dashcam figure is
+> marked not-re-verified for 2026, and the lawyer review is deliberately left uncosted.
+> User's chosen routes: **harness first, ZOD as a free European proxy, paid driver when funds
+> allow.** Driving schools recorded as an option, not pursued.
+>
+> 🔴 **Two warnings recorded in that file:** UK-HN-500 must **NOT** be sourced from YouTube
+> (README §23/§45 make that provenance a diligence liability, and it is what killed the original
+> model — reproducing it in the intended moat would repeat the project's original mistake); and
+> **ZOD's CC BY-SA share-alike is viral**, so the licence a published derivative must carry needs
+> confirming in writing first.
+>
+> ---
+>
+> ### 6. 🟡 WHAT WAS HAPPENING WHEN THE SESSION ENDED
+>
+> **The user reported "google colab is running".** §1 was executing after the checkpoint fix. Its
+> outcome is **UNKNOWN to this file** — the next session must ask or read the Colab output.
+>
+> Confirmed from the actual §1 output earlier in the session:
+> - **GATE B PASSED** — 29 files byte-identical after the bundle reached Drive ✅
+> - Drive mount, bundle staging and the Nexar path all work
+> - `MyDrive/nexar/test-public` is correct — it is the notebook's **first** candidate
+> - GATE A had **not** passed at last observation; the checkpoint fix was delivered right at the end
+>
+> **Nothing has been scored. No comma2k19 data has been downloaded. No FP/hour number exists.**
+>
+> **Read order for a brand-new Claude: this block → §21.12 → §13 (exact next action) → §12 (what
+> NOT to redo) → §11 D59–D63 → §15.15 → §17-S15 → then the SESSION 14 block below for context.**
 
 > # ▶▶▶▶▶▶▶ SESSION 14 (2026-09-18) — READ THIS FIRST
 >
@@ -2705,6 +2887,46 @@ Do not reverse these without new evidence.
   partitions. **User approved the extraction.** This commits the project to nothing about R9,
   which remains unapproved and on a separate track.
 
+### Decisions made in SESSION 15 (D59–D63)
+
+- **D59 — R4/R2/R3 are NOT started, on measured evidence rather than on a hunch.**
+  **Why:** `eval/ap_vs_fp.py` shows the largest AP gain this project has ever measured (+0.0556)
+  buys **3.3 FP/hour — 3.62% of the gap**, inside noise at 83±9 clips, and that a +0.0383 AP gain
+  makes FP/hour *worse*. R4/R2/R3's stated ceilings are +0.005–0.03 AP, **less than half the
+  probe**, so they cannot close a 923× gap. **Evidence:** the committed table and its 7/7
+  self-check. **Reversal condition:** if comma2k19's real FP/hour lands near target, "binding
+  metric" changes meaning and this must be re-judged. **The measurement is on Nexar's
+  hard-negative clips and is NOT a production gap.**
+- **D60 — `NEW_PLAN.md` §10 is NOT amended yet. Report the measurement, do not edit the plan.**
+  **Why:** the user was asked and said "pick the best one you think will be for our product", so
+  this is Claude's call, explained: §10's ordering now rests on a falsified premise (R1) *and* on
+  an assumption measured to be wrong (AP→FP/hour). But amending it **before comma2k19's real
+  number exists** would be editing a plan on partial evidence — the exact failure mode this
+  project keeps catching in itself. The evidence is committed either way, so nothing is lost, and
+  the eventual amendment will be better founded and possibly different in content.
+  **Status: still open, deliberately.**
+- **D61 — The Colab library stack is RECORDED, not pinned. D57's bar is unchanged.**
+  **Why:** falsified by running it — Colab preloads torch/transformers/numpy so `pip` cannot
+  change the running kernel; replacing torch is a ~2.5 GB download that may not match CUDA 12.8
+  and may have no py3.13 wheels; and it answers the wrong question, since a pass on Colab's own
+  stack demonstrates comparability **on the stack the numbers will be produced on**. The pins were
+  session 15's own addition, **not part of D57**, so relaxing them moves no decision of record.
+  **Replaced by** the pixel fingerprint (`bd6126c391b2301d…` for clip 01044), which separates a
+  decode-path difference from a GPU one for the price of one clip.
+- **D62 — The checkpoint may come from Drive OR Hugging Face; GATE A's digest arbitrates.**
+  **Why:** §21.11 item 10's `getnexar/BADAS-Open` is the **GitHub** org, not the HF one
+  (`nexar-ai/BADAS-Open`), and that repo is **gated**, not ungated — this repo's `.gitignore` was
+  right and `progress.md` was wrong. HF returns 401 for both "missing" and "gated", so the two
+  errors masked each other. **The source is interchangeable; the bytes are not.** Licence
+  re-confirmed Apache 2.0, commercial use permitted — only *access* is restricted.
+- **D63 — Track C is a FUNNEL: `NEW_PLAN.md` §9's 10 messages feed `README.md` §41's 30-call
+  gate.** **Why:** §9 (10 messages, 3 questions), README §41 (30 calls, 1 opener, "do not pitch")
+  and README §43 (10-question script) specify different things. **User chose the funnel reading**,
+  under which §9 is the week-1 opener and §41 is the completion gate — so **neither planning
+  document needed changing**. The conflict was named, not silently resolved.
+
+---
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
 Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
 gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
@@ -2713,6 +2935,42 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 15 — do NOT redo these:**
+
+- **🔴 Do not start R4, R2 or R3.** Measured (D59): AP gains do not move FP/hour. Re-open only if
+  comma2k19's real number changes what "binding metric" means — and say so explicitly if you do.
+- **🔴 Do not promote `last_window` because `eval/ap_vs_fp.py` mentions it.** It is an
+  **upper-bound probe**, not a candidate. R1 died at gate 3a (D53). `adapters.py:129` stays
+  `np.nanmax`.
+- **Do not quote the 923× figure as a production gap.** It is measured on Nexar's hard-negative
+  clips from a collision dataset. comma2k19 settles the real number.
+- **Do not rebuild `scripts/colab_comma2k19.ipynb`, `eval/ap_vs_fp.py`, or
+  `scripts/make_colab_bundle.py`.** All three are committed and self-checked.
+- **Do not rebuild `runs/colab_bundle.tar.gz`** unless `eval/adapters.py`,
+  `scripts/score_external.py`, `vendor/badas-open/**` or `runs/baselines/badas-open/scores.jsonl`
+  changes. Verified current at session end (§21.12 item 9).
+- **🔴 Do not pin the Colab library stack** (D61). It cannot work — Colab preloads the modules —
+  and it answers the wrong question. Use the pixel fingerprint for diagnosis.
+- **🔴 Do not use `getnexar/BADAS-Open` as a Hugging Face repo id.** That is the GitHub org. HF is
+  `nexar-ai/BADAS-Open` and it is **gated** (D62).
+- **Do not derive comma2k19's frame rate from `global_pose/`.** The real directory is
+  **`global_pos/`**. §13 and §17-S14 of this file were wrong; §21.11 was right.
+- **Do not check the remuxed frame rate with ffprobe.** `load_full_video_frames` reads
+  `CAP_PROP_FPS`/`CAP_PROP_FRAME_COUNT` **through cv2**, and that reading becomes `len(scores)`
+  and therefore `fp_rate`'s hours denominator. Check through cv2 or the check proves nothing.
+- **🔴 Do not "fix" a slow pilot by transcoding to 8 fps.** It is lossy, and the Nexar baseline
+  was scored from natively-encoded video, so it would break the comparability GATE C protects.
+  Needs its own mini-equivalence test **and** the user's approval (§21.12 item 7).
+- **Do not skip or weaken GATE C.** It is D57 and the notebook enforces it with a sentinel.
+  A FAIL means HALT and report, not work around.
+- **Do not re-verify comma2k19's licence, source, chunk layout or IMU/CAN presence.** Done against
+  primary sources (§21.12 item 6).
+- **Do not re-search for a discrepancy between `runs/baselines/` and `runs/baselines2/`.** They
+  are byte-identical over all 667 scores.
+- **Do not send the fleet messages yourself.** The user sends them; Claude prepares material only.
+- **🔴 Do not source UK-HN-500 from YouTube.** README §23/§45 make that provenance a diligence
+  liability and it is what killed the original model.
 
 **Added after SESSION 14 — do NOT redo these:**
 
@@ -3050,9 +3308,60 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION · **rewritten 2026-09-18, end of SESSION 14**
+## 13. EXACT NEXT ACTION · **rewritten 2026-09-19, end of SESSION 15**
 
 ### ══ THE ONE EXACT NEXT ACTION ══
+
+### **Ask the user what `scripts/colab_comma2k19.ipynb` §1 and §2 printed on Colab, then act on
+### GATE C's verdict. Do NOT rebuild anything — the notebook, the bundle and the analysis all
+### exist and are committed.**
+
+**Why this and nothing else:** a Colab run was live when session 15 ended. §1's GATE A/B and §2's
+GATE C are the only things standing between the project and a real FP/hour number, and **their
+output is not recorded anywhere in this repository**. Everything downstream is already built.
+
+**Step 0 — establish what actually happened.** Ask the user for §1's and §2's output. Do not guess
+and do not re-run anything locally to "check" — the run is on Colab, not here.
+
+**Step 1 — if §1 has not passed yet**, read the printed HALT message; every one of them states
+both the cause and the fix. The two live possibilities at session end were:
+- **GATE A** (checkpoint). The fix is in the message: either upload the Mac's
+  `models/badas/weights/badas_open.pth` (3.98 GB) to `MyDrive/crash_detection_colab/`, or sign in
+  at `huggingface.co/nexar-ai/BADAS-Open`, accept the conditions, and add a **read** token as a
+  Colab secret named `HF_TOKEN`. **The user was advised to prefer the token route** (~5 min vs a
+  4 GB upload). Either way GATE A's digest arbitrates.
+- **GATE B** already **PASSED** — do not re-investigate it.
+
+**Step 2 — when GATE C reports, read all four numbers together**, not just the verdict:
+`median |Δ|` · `max |Δ|` · `crossings` · **the pixel-fingerprint line**.
+- **PASS** (median |Δ| < 0.002 AND ≤1 crossing) → comparability is established **on Colab's own
+  stack**, which is the stack the numbers will be produced on. The §1 version difference is then
+  **moot**, and the notebook says so. Proceed to §3.
+- **FAIL** → 🔴 **HALT. Do not work around it.** Use the pixel fingerprint to name the cause:
+  *matches* `bd6126c391b2301d…` → the decode path is byte-identical so the difference is model/GPU
+  numerics; *differs* → the decode path differs before the model runs and the GPU is exonerated.
+  **The contingency (a full 667-clip Colab sweep to re-derive the threshold, ~7 h) REQUIRES the
+  user's sign-off and the notebook deliberately does not start it.**
+
+**Step 3 — only after GATE C passes**, run §3 → §3b → §4 → §5 in order. §5 is the 20-segment
+pilot. **Report its measured s/segment against the 72 s bar and STOP for approval** before §6
+(`APPROVED_AFTER_PILOT = False` is a hard stop in the code). See §21.12 item 7: the pilot is the
+likely failure point, and the tempting lossy fix is forbidden without its own test and approval.
+
+**Step 4 — the number is produced LOCALLY, never in the notebook:**
+```
+~/envs/badas/bin/python scripts/verify_manifest.py --dir runs/comma2k19/frames
+~/envs/badas/bin/python -m eval.fp_rate --frames-dir runs/comma2k19/frames --label comma2k19
+```
+**B headline, A beside it, both with denominators. NEVER pooled with ZOD** (§8.2 — highway-only
+is a FLOOR, not a general rate).
+
+**Before any commit:** re-run the five regression guards. **Do not push** — 16 commits are pending
+and the user has deferred across seven sessions; ask.
+
+---
+
+### ══ SESSION 14's next action (SUPERSEDED — the notebook has since been BUILT) ══
 
 ### **Confirm the Nexar upload to Drive has finished, then BUILD `scripts/colab_comma2k19.ipynb`
 ### — the Colab notebook that acquires comma2k19 and scores it. Do NOT score anything until its
@@ -3785,7 +4094,36 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S14. NEXT 3–5 ACTIONS · **written end of SESSION 14. Supersedes §14-S13b.**
+## 14-S15. NEXT 3–5 ACTIONS · **written end of SESSION 15. Supersedes §14-S14.**
+
+1. **Get §1/§2's Colab output from the user and act on GATE C.** Everything else is built.
+   Read all four numbers (median |Δ|, max |Δ|, crossings, pixel fingerprint), not just the
+   verdict. FAIL → HALT and diagnose with the fingerprint; the ~7 h re-derivation contingency
+   **needs sign-off**. → **Model: opus · Effort: high** — this decides whether any Colab number is
+   comparable to the committed 92.3. Nothing downstream is believable until it passes.
+2. **Run §3 → §3b → §4** (acquire chunk 1, R9 partition by route seed 0, frame-rate gate).
+   Confirm `processed_log/` really carries IMU/CAN against the bytes — the primary source says it
+   does, which means R9's kill condition will not fire. → **Model: sonnet · Effort: medium**;
+   return to opus if GATE D trips.
+3. **Run §5, the 20-segment pilot. Report measured s/segment against the 72 s bar and STOP.**
+   `APPROVED_AFTER_PILOT = False` is a hard stop. Expect this to be the tight one (§21.12 item 7).
+   → **Model: sonnet · Effort: medium.**
+4. **After approval, run §6 (3 chunks ≈ 10 h), bring traces back, and produce the number LOCALLY**
+   with `eval/fp_rate.py`. B headline, A beside, denominators always, **never pooled with ZOD**.
+   → **Model: sonnet · Effort: medium**; **opus · high** to interpret the final number, because
+   it decides whether the product thesis survives.
+5. **Then, and only then, revisit `NEW_PLAN.md` §10 (D60).** With a real independent FP/hour in
+   hand, decide with the user whether to amend the plan to record that R1 is dead and that the
+   sequence re-orders around FP/hour. → **Model: opus · Effort: high.**
+
+**In parallel, blocked on the user, not on compute:** send the 10 Track C messages
+(`docs/fleet_outreach.md`) and log replies in `docs/fleet_replies.csv`. **Kill condition:
+<3 substantive replies by 2026-10-02 formally closes Track C.** ZOD access is still awaited;
+update `docs/zod_access_request.md` in writing when it lands (§22/§23).
+
+---
+
+## 14-S14. NEXT 3–5 ACTIONS · **written end of SESSION 14. SUPERSEDED by §14-S15.**
 
 1. **Confirm the Nexar Drive upload finished, then build `scripts/colab_comma2k19.ipynb`.**
    Sections, each independently re-runnable: (§1) environment + three identity gates — mount
@@ -3932,7 +4270,72 @@ it would be wasted work.
 
 ---
 
-## 15.14 PLAN POSITION — SESSION 14 (current)
+## 15.15 PLAN POSITION — SESSION 15 (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged this
+  session** — no discovery altered the roadmap.
+- **What the README says should happen:** three concurrent tracks from week 1 (§41) — **A**
+  model/measurement, **B** UK hard-negative benchmark, **C** 30 fleet calls. The product is the
+  **structured incident record** (§27), not detection. §31 makes **FP/hour the metric that decides
+  whether a fleet keeps the product**, target **< 0.1/hour**.
+- **Completed:** Track A's measurement path and §27's MVP rung. **New this session: Tracks B and C
+  are no longer at zero** — §34's UK-HN-500 has a costed plan (`docs/uk_hn500_plan.md`) and §41's
+  Track C has an executable protocol with a dated kill condition (`docs/fleet_outreach.md`).
+- **Remains:** the rest of §27's record (blocked on a physical channel that must not be faked,
+  §44). Track B needs footage; Track C needs the user to send the messages.
+- 🔴 **New evidence bearing on §31:** AP and FP/hour are measured to be decoupled at the operating
+  point. This **supports** §31's insistence that FP/hour, not AP, is the decider — it does not
+  contradict the README.
+
+### `NEW_PLAN.md` POSITION (detailed plan)
+
+- **Current task:** **Step 2 — an honest FP/hour denominator** from comma2k19 and ZOD (§8.2), the
+  Week-4 "negatives and consolidation" slot in §7.4.
+- **What it says should happen:** R1 → R4 → R2 → R3 → fuse → calibrate (§10); paired bootstrap
+  everywhere (§1); negatives at 1 Hz with a **pilot first** (§7.2); comma2k19 and ZOD reported
+  **separately, never pooled** (§8.2).
+- **Completed:** gates 1 ✅, 2 ✅, 3a ✅ (R1 FAILED it); §3.2 mechanism ✅; calibration Tiers 1–3 ✅;
+  operating point ✅; CPU/MPS ✅; MVP CLI ✅; FP/hour convention ✅; **and now the acquisition
+  notebook with its four gates ✅.**
+- **Remains:** run the gates on Colab, acquire comma2k19, pilot, full run, produce FP/hour.
+  Gate 3b (DAD) is **moot for promotion**. R4/R2/R3 are **deprioritised on measured evidence**
+  (D59), not merely by preference.
+
+### ALIGNMENT
+
+**No conflict between the documents. The tension flagged in §15.14 is now supported by a
+measurement rather than an argument — and the plan is still deliberately NOT edited.**
+
+§10's "decisive answer" (R1 → R4 → R2 → R3) stakes ~65% of expected gain on R1. **R1 is dead**,
+and session 15 measured that the remaining three **cannot move FP/hour**, which README §31 says
+decides the product. So §10's ordering now rests on a falsified premise *and* a falsified
+assumption.
+
+**`NEW_PLAN.md` was still NOT edited (D60).** Amending it before comma2k19's real number exists
+would be editing a plan on partial evidence — the failure mode this project keeps catching in
+itself. The evidence is committed regardless.
+
+🔴 **OPEN QUESTION FOR THE USER, now carried for a third session:** should §10 be amended to
+record that R1 is dead and that the sequence re-orders around FP/hour? Session 14 recommended yes;
+session 15 recommends **waiting for comma2k19's number first**, then amending once, correctly.
+**Do not make this edit unilaterally.**
+
+**One document disagreement RESOLVED without an edit (D63):** Track C's spec differs across
+`NEW_PLAN.md` §9 (10 messages, 3 questions), `README.md` §41 (30 calls, 1 opener) and §43
+(10-question script). The user chose the **funnel** reading — §9 is the week-1 opener, §41 is the
+completion gate — so the documents **nest rather than conflict** and neither needed changing.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (progress drift, not plan
+changes):
+1. Header reads "Status: PROPOSAL — nothing implemented" — false.
+2. §3.4 quotes beta ECE 0.0498; the committed script gives 0.0503.
+3. The gate-3 block says "~30 GB free"; measured this session is **27 GB**.
+
+---
+
+## 15.14 PLAN POSITION — SESSION 14 (history, superseded by §15.15 above)
 
 ### `README.md` POSITION (master plan)
 
@@ -4457,6 +4860,76 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.12 SESSION 15 FINDINGS — added 2026-09-19. Read after the top banner.
+
+**1. AP→FP/HOUR TRANSFER MEASURED (CONFIRMED).** Full table in the top banner. Re-runnable in
+seconds over committed traces:
+```
+~/envs/badas/bin/python -m eval.ap_vs_fp
+~/envs/badas/bin/python -m eval.ap_vs_fp --self-check     # 7/7 PASS
+```
+The decoupling verdict uses a **declared threshold** (`MATERIAL_SHARE = 0.10`), set in the source
+before the numbers were read, exactly as `gate3_mechanism.py` declares its bars. The best
+available AP gain closes **3.62%** of the gap against a 10% materiality bar.
+
+**2. `runs/baselines/` AND `runs/baselines2/` ARE BYTE-IDENTICAL (CONFIRMED).** All 667 scores,
+`max |Δ| = 0.0`. D57 names `runs/baselines/badas-open/scores.jsonl` as GATE C's reference and
+§17-S14 calls `runs/baselines2/.../frames/` "THE ASSET"; **the ambiguity is harmless.**
+`baselines2` additionally holds the 667 `.npz` traces; `baselines` holds `metrics.json`.
+
+**3. THE rng(0) SAMPLE IS REPRODUCIBLE (CONFIRMED).** `sorted(neg_ids)` →
+`np.random.default_rng(0).choice(..., 100, replace=False)` gives the same 100 ids on repeat calls.
+First five: `01044, 01056, 01059, 01065, 01083`. GATE C stages these into their own directory
+because **`score_external.py --limit` takes the FIRST N sorted clips, not a random sample** — a
+trap that would have silently scored a different, easier subset.
+
+**4. THE NEXAR NEGATIVE COUNT "334 vs 333" IS NOT A DISCREPANCY (CONFIRMED).**
+`data/nexar/test-public/negative/` holds **333 mp4 + `metadata.csv`**. The notebook asserts 333.
+
+**5. VENDORED DEPS ARE UNPINNED LOWER BOUNDS (CONFIRMED).**
+`vendor/badas-open/requirements.txt` says `torch>=2.0.0`, `transformers>=4.40.0`,
+`numpy>=1.24.0`. **Nothing upstream constrains the stack**, which is why the equivalence gate
+needed a diagnostic rather than a pin (D61).
+
+**6. comma2k19 VERIFIED FROM PRIMARY SOURCES (CONFIRMED, 2026-09-18).**
+```
+licence   MIT -- confirmed twice (repo LICENSE + HF metadata). Commercial use permitted.
+source    HF dataset commaai/comma2k19, raw_data/Chunk_1.zip .. Chunk_10.zip
+size      8.73-9.9 GB per chunk, 94.6 GB total
+content   10 chunks x ~200 one-minute segments = ~3.33 h each; 3 chunks ~ 10 h
+segment   preview.png, raw_log.bz2, video.hevc, processed_log/, global_pos/
+times     global_pos/frame_times, boot time in SECONDS
+logs      processed_log/ = IMU (accel, gyro, magnetic) + CAN (car_speed, steering_angle,
+          wheel_speeds, radar) + GNSS
+```
+**That last line settles an open question:** `NEW_PLAN.md` §13 lists *"downloaded release ships no
+IMU/CAN"* as an R9 kill condition, and on the primary source **it will not fire**. Still to be
+confirmed against the actual bytes, which §3b does. Archives are **ZIP**, so members list from the
+central directory without extracting — a wrong archive fails in seconds, not after a 10 GB unpack.
+
+**7. THE PILOT IS THE LIKELY FAILURE POINT (HYPOTHESIS, NOT MEASURED).**
+`load_full_video_frames` calls `cap.set(CAP_PROP_POS_FRAMES, i)` for **every** sampled frame —
+~480 random seeks into a ~1200-frame HEVC per segment. **Decode, not the GPU, is the probable
+bottleneck**, and the estimate straddles the 72 s/segment bar (= `NEW_PLAN.md` §13's ">12 h for
+10 h of footage", since 10 h = 600 one-minute segments).
+🔴 **The obvious fix is NOT available silently:** transcoding to 8 fps at remux time would remove
+the seeks but is **lossy**, and the Nexar baseline was scored from natively-encoded video — it
+would break the comparability GATE C exists to protect. It needs its own mini-equivalence test
+**and the user's approval**. Recorded in the notebook's §5 markdown.
+
+**8. COLAB ENVIRONMENT, OBSERVED (CONFIRMED).**
+`torch 2.11.0+cu128 · transformers 5.16.1 · numpy 2.1.3 · Python 3.13.15 · CUDA 12.8 · Tesla T4`.
+Free-tier T4. Recorded into the sentinel as provenance.
+
+**9. THE COMMITTED BUNDLE IS CURRENT (CONFIRMED).** `runs/colab_bundle.tar.gz` (66,453 bytes,
+gitignored) post-dates every file it carries — `eval/adapters.py`, `scripts/score_external.py`,
+`vendor/badas-open/**`, `runs/baselines/badas-open/scores.jsonl` — none of which changed after it
+was built. **Do not rebuild it unless one of those changes.**
+
+**10. NOTHING WAS SCORED. NO comma2k19 DATA WAS DOWNLOADED. NOTHING WAS PUSHED.**
 
 ---
 
@@ -5873,6 +6346,31 @@ document is known to be wrong.
 
 ## 16. README MODIFICATION STATUS
 
+### SESSION 15 (2026-09-18 → 2026-09-19) — **NEITHER PLANNING DOCUMENT WAS MODIFIED**
+
+**`README.md` — CHANGED: NO.** Nothing this session altered the roadmap, the phases, the product
+definition or the priorities. The AP→FP/hour measurement **reinforces** README §31's choice of
+FP/hour as the decider rather than challenging it, and Tracks B and C moving off zero is the
+README's own §41 sequencing finally being executed, not a change to it.
+
+**`NEW_PLAN.md` — CHANGED: NO.** Three things could have justified an edit and each was
+deliberately left alone:
+1. **§10's ordering** rests on a falsified premise (R1 dead) and a falsified assumption
+   (AP→FP/hour). **Deferred by D60** — amend once, after comma2k19's real number exists, rather
+   than twice on partial evidence. **User has not ruled; do not edit unilaterally.**
+2. **§13's R9 kill condition** ("release ships no IMU/CAN") is now known from the primary source
+   not to fire. That is *evidence about* the plan, not a change *to* it — the condition stays
+   written as it is, and §3b confirms it against the bytes.
+3. **Track C's spec** differs across §9 / README §41 / README §43. Resolved as a **funnel** (D63),
+   under which the documents nest — so no edit was needed.
+
+**Three factual errors were found in `progress.md` itself** (`global_pos` vs `global_pose`; the
+checkpoint's HF org; "ungated" vs gated). **`progress.md` was NOT edited during the session** —
+it is read-only until this handoff — and the corrections live in the notebook's code plus §21.12
+and the top banner. This is the correct handling: the planning documents were never the problem.
+
+---
+
 ### SESSION 14 (2026-09-18) — **NEITHER PLANNING DOCUMENT WAS MODIFIED**
 
 **`README.md` — NOT CHANGED.** Nothing discovered this session alters the roadmap, the phases,
@@ -6183,7 +6681,142 @@ not in `README.md`.**
 
 ---
 
-## 17-S14. FINAL HANDOFF CHECK · **SESSION 14, 2026-09-18. Supersedes §17-S13b.**
+## 17-S15. FINAL HANDOFF CHECK · **SESSION 15, 2026-09-19. Supersedes §17-S14.**
+
+### TECHNICAL STATE — what actually works right now
+
+```
+data/nexar/test-public/{positive,negative}/*.mp4      667 clips (334 pos / 333 neg), 2.7 GB
+        │
+        ▼  eval/adapters.py :: BadasOpen.score()        <- line 129 = np.nanmax (UNCHANGED)
+   vendor/badas-open  →  V-JEPA2 ViT-L, 16-frame window @ 8 fps
+        │
+        ├─→ per-frame trace ─→ runs/baselines2/badas-open/frames/*.npz   ← THE ASSET (667)
+        │
+        ├─→ eval/benchmark.py     AP 0.8349 · AUC 0.8498 · FP/hour · ECE
+        ├─→ eval/timing.py        gate 0.9733 @ recall 0.80 · t_start/t_peak/t_end
+        ├─→ eval/calibration.py   Tier 1 beta map, ECE 0.33 → 0.0809 deployable
+        ├─→ eval/fp_rate.py       FP/hour on continuous footage (A + B conventions)
+        ├─→ eval/ap_vs_fp.py NEW  does an AP gain buy FP/hour? (answer: no)
+        └─→ scripts/detect.py     video → README §27 JSON incident record
+                                   │
+   scripts/make_colab_bundle.py NEW ┘ 65 KiB checksummed payload → Colab
+   scripts/colab_comma2k19.ipynb NEW  4 gates, 20 HALTs → traces come back → eval/fp_rate.py
+```
+
+**Works and is verified:** everything above. All five regression guards reproduce exactly;
+`ap_vs_fp` 7/7; `make_colab_bundle` 6/6; `detect.py` 8/8; `fp_rate` 6/6.
+**Does not exist:** any comma2k19 or ZOD data; any FP/hour number on independent footage; ffmpeg
+locally (cv2 only — all video work happens on Colab).
+**Known limitations:** 92.3 FP/hour against a <0.1 target; 0.899 h denominator with a 1.1/hour
+resolution floor, so the target is **arithmetically unmeasurable** on the current corpus; timing
+fields unvalidated because Nexar's `time_of_event` is corrupt for all 334 positives.
+
+### FILE / REPOSITORY CHANGES (session 15)
+
+| Path | Change |
+|---|---|
+| `eval/ap_vs_fp.py` | **NEW, 200 ln.** Measures whether an AP gain moves FP/hour at the derived operating point. Declares `MATERIAL_SHARE = 0.10` before reading numbers. 7 self-checks; independently reproduces AP 0.8349, 83 FP, 92.3 FP/hour and gate 0.9733. Imports only — modifies nothing. |
+| `scripts/colab_comma2k19.ipynb` | **NEW, 19 cells / 9 code / 20 HALTs.** Acquires and scores comma2k19. Gates A (checkpoint digest), B (code identity), C (MPS↔T4 equivalence, D57, sentinel-enforced), D (frame rate via cv2). |
+| `scripts/make_colab_bundle.py` | **NEW, 158 ln.** Builds the 65 KiB checksummed payload that carries the repo's real scoring code to Colab. Excludes analysis modules by design. 6 self-checks. |
+| `docs/fleet_outreach.md` | **NEW.** Track C: 4 templates, 3 questions, call opener, target profile, kill condition dated 2026-10-02. |
+| `docs/fleet_replies.csv` | **NEW.** Header only. The kill condition is counted off this file. |
+| `docs/uk_hn500_plan.md` | **NEW.** Track B at minimum cost, with unverified figures flagged as such. |
+| `.gitignore` | `runs/colab_bundle.tar.gz` ignored — derived, rebuildable. |
+| `eval/{adapters,benchmark,timing,calibration}.py`, `README.md`, `NEW_PLAN.md`, `runs/**` | **UNTOUCHED.** |
+
+### GIT STATE at end of SESSION 15
+
+```
+branch     main (no branch switching)
+HEAD       8d9e42d  "Fix the checkpoint source: progress.md names the wrong org AND
+                     calls a gated repo ungated"
+ahead      16 commits ahead of origin/main   🔴 NOT PUSHED — user deferred, ask first
+tree       M progress.md (this handoff)
+this session's commits, oldest first:
+  30a523e  Measure what an AP gain actually buys in FP/hour. It buys almost nothing.
+  03e0b2c  Step 2b: the comma2k19 Colab notebook, with four gates that HALT
+  35b0641  Start Tracks B and C, which have been at zero for fourteen sessions
+  d087146  Verify comma2k19 from primary sources, and correct progress.md's wrong path
+  76f6ffa  Stop forcing the library stack; diagnose with a pixel fingerprint instead
+  8d9e42d  Fix the checkpoint source: wrong org AND gated
+```
+**Do not overwrite:** `runs/gate3a/` (R1's death certificate), `runs/baselines2/badas-open/frames/`
+(the 667 traces every analysis depends on), `eval/adapters.py:129`.
+
+### REGRESSION GUARDS — re-run this session, reproduce EXACTLY (CONFIRMED)
+
+```
+benchmark.py        T3 AUC 0.5339  AP 0.5218  TP/FP/FN/TN 332/325/2/8
+                    FP/hour 361.4 over 0.90 h   p@r0.80 0.5253   ECE 0.4880
+reduction_study     max 0.8349 · last_window 0.8905 +0.0556 [+0.0263, +0.0876] excludes zero
+timing --self-check          7/7 PASS (gate 0.70/0.80/0.95 → 0.9830/0.9733/0.8098, FP 60/83/194)
+heldout_half --self-check    null median ΔAP +0.0025, halves disjoint and stratified
+gate3_mechanism --self-check PASS (UNINTERPRETABLE rail fires correctly on IQR 0.080s)
+```
+
+### DATASET / LICENSING STATE — session 15 additions
+
+- **comma2k19 — MIT, confirmed twice** (repo `LICENSE` + HF metadata). Commercial use permitted,
+  no access request needed. HF dataset `commaai/comma2k19`, `raw_data/Chunk_1..10.zip`, 94.6 GB.
+  **NOT DOWNLOADED.**
+- **BADAS-Open checkpoint — Apache 2.0, free for research AND commercial use, but the HF repo is
+  GATED.** Correct id is **`nexar-ai/BADAS-Open`** (`getnexar` is the GitHub org). Requires
+  accepting conditions + a read token, **or** copying the Mac's verified 3,979,436,545-byte file
+  from Drive. sha256 `6b1ba915…7042aa`. Gitignored.
+- **ZOD — CC BY-SA 4.0, commercial permitted, access request SENT, no reply yet.** 🔴 **Share-alike
+  is viral** — confirm in writing what licence a published derivative benchmark must carry before
+  building on it. Checklist in `docs/zod_access_request.md`.
+- **DADA-2000** — unchanged: no licence posted, **internal falsification only (D43)**.
+
+### BLOCKERS (precise)
+
+1. **GATE C's result is unknown.** A Colab run was live at session end. Nothing downstream can
+   proceed until it reports. → ask the user for the output.
+2. **GATE A may still be unsatisfied** — needs either the 3.98 GB checkpoint in Drive or an
+   `HF_TOKEN` Colab secret after accepting `nexar-ai/BADAS-Open`'s conditions.
+3. **ZOD is not granted.** Blocks the ZOD half only; comma2k19 proceeds without it.
+4. **Track B needs footage**, which needs money the user does not currently have. **Not blocking
+   the technical plan** — that was the point of `docs/uk_hn500_plan.md`.
+
+### UNKNOWN / NEEDS VERIFICATION
+
+- **UNKNOWN: did GATE A and GATE C pass?** The single most important open question.
+- **UNKNOWN: does a T4 reproduce MPS scores?** That is what GATE C answers.
+- **NEEDS VERIFICATION: comma2k19's actual bytes** — layout, and whether `processed_log/` really
+  carries IMU/CAN. Primary source says yes; §3b checks.
+- **HYPOTHESIS, not measured: pilot throughput.** Decode seeks may push past the 72 s/segment bar
+  (§21.12 item 7).
+- **UNKNOWN / user decision pending:** the `NEW_PLAN.md` §10 amendment (D60) and the R1 re-test
+  (D54). Neither ruled on.
+
+### SESSION END STATE — what was happening when this session stopped
+
+**A Google Colab run was IN PROGRESS.** The user said "google colab is running" after receiving
+the checkpoint fix. **Its outcome is not recorded anywhere in this repository** — the next session
+must ask.
+
+Confirmed earlier in the session from real §1 output: **GATE B PASSED** (29 files byte-identical),
+Drive mount and bundle staging work, and `MyDrive/nexar/test-public` is correct. GATE A had not
+yet passed at last observation.
+
+**Nothing was scored. No comma2k19 data was downloaded. Nothing was pushed. The working tree was
+clean apart from this handoff.**
+
+### MODEL / EFFORT HANDOFF
+
+**Recommended model: opus · Effort: high** for the first task.
+**Why:** interpreting GATE C is the decision that determines whether *any* Colab number is
+comparable to the committed 92.3. A marginal or failing result needs the pixel-fingerprint
+diagnosis read correctly, and the wrong call there silently invalidates the entire Step 2 result.
+**Switch before next task: YES if currently on a cheaper model.**
+**Drop to sonnet · medium** for §3–§6 (acquisition, pilot, full run) once the gates pass — those
+are mechanical. **Return to opus · high** to interpret the final FP/hour number, because it
+decides whether the product thesis survives.
+
+---
+
+## 17-S14. FINAL HANDOFF CHECK · **SESSION 14, 2026-09-18. SUPERSEDED by §17-S15.**
 
 ### TECHNICAL STATE — what actually works right now
 
