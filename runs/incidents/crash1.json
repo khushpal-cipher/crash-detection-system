@@ -1,0 +1,38 @@
+{
+  "schema": "incident-record/0.1",
+  "event_id": "crash1",
+  "source": "videos/crash1.mov",
+  "detector": "badas-open(stride=1,fps=8.0,img=224) nanmax",
+  "t_start": 3.75,
+  "t_peak": 4.375,
+  "t_end": 5.75,
+  "clip_duration_s": 7.0,
+  "confidence": {
+    "score": 0.9966,
+    "calibrated": 0.8411,
+    "reduction": "nanmax"
+  },
+  "evidence": {
+    "source_sha256": "890e57052f52a2aa51a78a1c53de1048f53fbf45938c77d9c432c2f778dd2ece",
+    "window_start_s": 0.0,
+    "window_end_s": 7.0,
+    "window_duration_s": 7.0,
+    "clip_extracted": false
+  },
+  "human_review_status": "pending",
+  "timing_validated": false,
+  "policy": {
+    "gate": {
+      "target_recall": 0.8,
+      "threshold": 0.973328,
+      "delivers_recall": 0.8024,
+      "delivers_precision": 0.7635,
+      "fitted_on": "nexar/test-public n=667 (nanmax)"
+    },
+    "calibration": {
+      "method": "beta",
+      "tier": 1,
+      "fitted_on": "nexar/test-public stratified calibration half, n=333, seed=0"
+    }
+  }
+}
