@@ -1,0 +1,41 @@
+traces 220   annotation rows 220   matched 220
+unmatched traces: 0   unmatched annotations: 0
+
+==============================================================================
+THE ANNOTATION'S OWN VARIANCE — read this before any correlation below
+==============================================================================
+  Time-of-collision   median 5.50 s   IQR 4.57 s   range 0.90–32.40 s
+  interpretability floor 1.00 s   -> ENOUGH variance to track
+  (for scale: DAD 0.16 s = a constant; DADA-2000 4.63 s = real variance)
+
+==============================================================================
+DOES THE PEAK TRACK THE ANNOTATION, BEYOND WHAT CLIP LENGTH ALONE EXPLAINS?
+==============================================================================
+  The clip-end null = every clip peaks at its last representable index. If long
+  clips also have late collisions, that null ALREADY correlates with the
+  annotation. Only the difference is evidence.
+
+  pearson   measured +0.698   clip-end null +0.828   Δ -0.131  95% CI [-0.342, +0.075]  INCLUDES ZERO
+  spearman  measured +0.729   clip-end null +0.694   Δ +0.035  95% CI [-0.063, +0.134]  INCLUDES ZERO
+
+==============================================================================
+WHERE IN THE CLIP DOES THE PEAK ACTUALLY SIT?
+==============================================================================
+  measured normalised peak   median 0.566   IQR [0.425, 0.726]
+  Nexar positives (n=667)    median 0.975   <- what truncation produces
+  in the final 10% of clip   7.7%  (Nexar positives: 73.7%)
+
+==============================================================================
+BY EVENT TYPE — near-collisions kept separate, never pooled
+==============================================================================
+  Collision        n= 220   normalised peak median 0.566   annotation IQR 4.57 s
+
+==============================================================================
+GATE 3a VERDICT: FAIL
+==============================================================================
+  · tracking: Spearman r_measured +0.729 vs clip-end null +0.694, delta +0.035 CI [-0.063, +0.134] -> does NOT separate from the null
+  · position: median normalised peak 0.566 vs Nexar's 0.975, bar 0.900 -> materially before the clip end
+
+  🔴 R1 DIES. The peak does not track the collision — the score drifts with
+     watch-time. Nexar's +0.0556 AP is a benchmark artifact, not a finding.
+     Keep np.nanmax. Record the kill; do not rescue it with a weaker test.
