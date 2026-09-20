@@ -32,3 +32,10 @@ data/dada2000/
 
 # Colab staging bundle - derived, rebuild with scripts/make_colab_bundle.py
 runs/colab_bundle.tar.gz
+
+# Decoded-frame reference for the GATE C decode diagnostic (8 MiB, derived) -
+# rebuild in seconds with scripts/export_pixel_reference.py
+runs/pixel_ref/
+
+# Kaggle probe staging folder (14 MB, derived) - rebuild with scripts/make_kaggle_probe.py
+runs/kaggle_probe/
