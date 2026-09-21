@@ -78,6 +78,8 @@ def main():
     ap.add_argument("--device", default="mps")
     ap.add_argument("--stride", type=int, default=1,
                     help="1 = dense. Gate 3a REQUIRES dense (D41); do not raise it there.")
+    ap.add_argument("--skip-predictor", action="store_true",
+                    help="drop V-JEPA2's unused future-prediction pathway (~25%% of model\n                         cost). Verified score-identical on MPS (max |delta| 0.000e+00);\n                         re-verify on any new accelerator before relying on it.")
     ap.add_argument("--self-check", action="store_true")
     a = ap.parse_args()
 
@@ -102,7 +104,10 @@ def main():
         print("nothing to do")
         return
 
-    model = BadasOpen(device=a.device, stride=a.stride, save_frames_dir=frames_dir).load()
+    model = BadasOpen(device=a.device, stride=a.stride, save_frames_dir=frames_dir,
+                      skip_predictor=a.skip_predictor).load()
+    if a.skip_predictor:
+        print("  skip_predictor=True -- the predictor pathway is NOT computed.")
     log = open(log_path, "a")
     t0 = time.time()
     for n, name in enumerate(todo, 1):
