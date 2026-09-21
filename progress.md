@@ -1,15 +1,266 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-19, end of session 15**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-21, end of session 17**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
 > **🔴 R1 IS DEAD (session 14) AND DETECTION TUNING IS NOW MEASURED TO BE THE WRONG LEVER
 > (session 15).** The project is executing **Step 2 — a real FP/hour denominator** on Google
-> Colab. **A Colab run was IN PROGRESS when session 15 ended.** See the SESSION 15 block
-> immediately below.
+> **Colab (D72)**, on a **Tesla T4**. Nothing is running. Both decode changes are APPLIED
+> and COMMITTED (D70/D71). See the SESSION 17 block immediately below.
 
-> # ⚠️⚠️ ENVIRONMENT CORRECTION — 2026-09-19, AFTER the session-16 handoff was written
+> # ▶▶▶▶▶▶▶▶▶▶ SESSION 17 (2026-09-20 → 2026-09-21) — READ THIS FIRST
+>
+> ### What this session did, in one line
+>
+> **Settled the platform question with real measurements, found that session 16's Colab
+> arithmetic was WRONG in two places, measured Colab's own decode speedup at 21.07x, and
+> APPLIED AND COMMITTED both code changes on the user's explicit go-ahead.**
+>
+> | | |
+> |---|---|
+> | Commits | **2**: `b4499f8` (session 16's uncommitted work) and `6a705b3` (the two changes) |
+> | HEAD | `6a705b3`, **19 commits ahead of `origin/main`**. 🔴 **NOT PUSHED** (nine sessions) |
+> | Working tree | **CLEAN** |
+> | `eval/adapters.py:129` | still `np.nanmax`. **Unchanged, verified.** |
+> | `vendor/` | 🔴 **MODIFIED AND COMMITTED** — the decode path changed. See item 5. |
+> | Five regression guards | re-run twice, **all reproduce EXACTLY** |
+>
+> ---
+>
+> ### 1. 🔴 THE PLATFORM IS **COLAB**. The Mac lost on a quiet machine (CONFIRMED)
+>
+> `scripts/mac_viability_check.py 3` was re-run twice on a **verified-quiet** machine
+> (`pgrep` returned QUIET both times). Session 16's numbers were taken under CPU contention
+> and were expected to improve by ~30%. **They improved by 4.6%.**
+>
+> ```
+> run 1   A seeking 108.5   B sequential 132.7   C seq+skip 103.6   s/clip
+> run 2   A seeking 109.6   B sequential 125.0   C seq+skip 102.5   s/clip
+>   ALL configurations, BOTH runs: max |delta| vs committed = 0.000e+00  IDENTICAL
+>   C = 1.698 s/window -> 60 s segment 99.8 s = 1.39x the 72 s bar -> 16.6 h per 10 h  OVER
+> ```
+> **D68 stands and is now measured on a quiet machine. The Mac is 38% over the kill
+> condition with every optimisation applied.** Do not re-open this.
+>
+> ⚠️ **B came out SLOWER than A in both runs**, which is backwards for a decode speedup.
+> On the Mac decode is only ~6 s of a ~108 s clip, so the decoder cannot move the number
+> by 24 s. **This is run-to-run noise of roughly ±20–25% at n=3**, not a regression. It
+> does not threaten the verdict: every configuration lands at 1.70–2.18 s/window against a
+> 1.2 s/window bar.
+>
+> ---
+>
+> ### 2. 🔴 GATE C RAN AGAIN ON COLAB AND FAILED AGAIN — AND THE GPU IS A T4 (CONFIRMED)
+>
+> The user's live run finished. Verbatim:
+> ```
+> compared        100 clips
+> median |delta|  0.004384   (bar < 0.002)   ❌
+> max |delta|     0.109316
+> crossings       0          (bar <= 1)      ✅
+> stack           {"torch":"2.11.0+cu128","transformers":"5.16.1","numpy":"2.1.3"}
+> gpu             Tesla T4  cuda 12.8
+> pixel fp        DIFFERS from the Mac
+> MEASURED 91.5 s/clip over 100 clips   (153.0 min)
+> ```
+> **The GPU is a Tesla T4**, so the hardware assumption behind every projection holds.
+> **The failure is confirmation, not news (D64, D65).** Not retried, bar not relaxed.
+>
+> ---
+>
+> ### 3. 🔴 TWO OF SESSION 16's COLAB FIGURES WERE WRONG (CONFIRMED by §2b)
+>
+> §2b's diagnostic measured decode **on the Colab machine itself** for the first time:
+> ```
+>   61 frames  0.4142 s/frame        Colab seeking decode
+>   81 frames  0.5861 s/frame
+>   85 frames  0.7001 s/frame
+>  510 frames  0.7204 s/frame        (1.03x of the 85-frame rate -- stable with LENGTH)
+> ```
+> **(a) Kaggle's decode rate does NOT transfer to Colab.** Kaggle measured 0.2557–0.2760
+> s/frame seeking. **Colab is 2.1–2.8x SLOWER at decode.** Session 16's §12 already warned
+> not to assume they were equal; this confirms it with numbers.
+>
+> **(b) `per_window = 1.209 s` was WRONG. The real figure is 0.758 s/window.** Session 16
+> solved it from GATE C's total by subtracting an assumed decode cost that was far too
+> small. Recomputed from this run's own 91.5 s/clip and 0.5861 s/frame over 77.1 frames:
+> ```
+>   decode  45.2 s  (49% of a Nexar clip)     model  46.3 s / 61.1 windows = 0.758 s/window
+>   -> the T4 is 2.19x faster per window than the Mac's MPS, not 1.47x
+> ```
+> **The two errors do NOT cancel.** The model is cheaper than believed; decode is far more
+> expensive. Because decode dominates a 480-frame segment, the net projection got worse:
+> ```
+>   §2b's projection, no fixes: decode 346 s + model 47 s = 393 s/segment
+>                               = 5.5x the 72 s bar = 65 h per 10 h of footage   FAIL
+>   (session 16 had projected 32.1 h from Kaggle's rate -- understated ~2x)
+> ```
+> ⚠️ §2b's own printout used the stale constant `GATEC_S_PER_CLIP = 94.7` from the
+> PREVIOUS Colab run and therefore printed **0.810 s/window**. Using this run's measured
+> 91.5 gives **0.758**. Either is far below 1.209; the projections below use 0.758.
+>
+> ⚠️ §2b's three decode probes were chosen by **file SIZE** (small / median / large), so
+> its "grows with length" reading is more likely **bitrate**, not length. The 510-frame
+> probe shows per-frame cost is flat with length (1.03x).
+>
+> **Q1 re-confirmed the difference is cosmetic:** max 3 grey levels, mean 0.7318, 64.52% of
+> pixels differing, 0/81 frames identical, **aligned at offset 0** — same footage.
+>
+> ---
+>
+> ### 4. ✅ COLAB'S OWN SEQUENTIAL DECODE RATE, MEASURED AT LAST — **21.07x** (CONFIRMED)
+>
+> This was §12's open gap ("Colab's sequential rate has NEVER been measured"). It is now
+> closed. `scripts/decode_experiments.py --clip 01044.mp4` on the user's Colab:
+> ```
+> seeking (vendored) : 42.66 s   0.5267 s/frame
+> sequential (new)   :  2.02 s   0.0250 s/frame        SPEEDUP 21.07x
+> both fingerprints  : d43cf8ef...  BYTE-IDENTICAL on this machine
+> raw (pre-resize)   : bdcf9c64...  == KAGGLE's raw fingerprint, != the Mac's
+> ```
+> **The break-even was 8.9x with `skip_predictor` / 12.3x without. 21.07x clears both.**
+> The raw fingerprint matching Kaggle's **confirms D65 for a third time**: Colab runs
+> cv2 5.0.0, Kaggle ran 4.13.0 AND 5.0.0, all three Linux values identical.
+>
+> 🔴 **IGNORE `decode_experiments.py`'s EXPERIMENT 1 ADVICE.** When the raw fingerprints
+> differ it prints *"pinning OpenCV has a real chance of fixing it."* **That text predates
+> the D65 experiment and is WRONG.** The pin was tested on Kaggle under two versions and
+> produced identical bytes. Do not act on it.
+>
+> **Projection with Colab's OWN measured numbers** (0.0250 s/frame, 0.758 s/window):
+> ```
+>   sequential only              decode 12.0 + model 44.0 =  56.0 s/seg  0.78x bar   9.3 h  OK
+>   sequential + skip_predictor  decode 12.0 + model 33.0 =  45.0 s/seg  0.63x bar   7.5 h  OK
+>   Nexar 667 threshold re-derivation, both fixes: ~36.6 s/clip -> 6.8 h
+>   TOTAL Colab budget ~= 14.3 h   (session 16 estimated ~20 h)
+> ```
+>
+> ---
+>
+> ### 5. ✅ BOTH CODE CHANGES ARE **APPLIED AND COMMITTED** (`6a705b3`) — user approved
+>
+> The user gave an explicit go-ahead ("yes for the changes", then "yes do the changes").
+> **D66 and D67's hold is discharged. `vendor/` is no longer pristine.**
+>
+> **(a) `vendor/badas-open/badas/utils/video.py::load_full_video_frames`** — the per-frame
+> `cap.set(CAP_PROP_POS_FRAMES, k)` loop is replaced by a frame PLAN (identical arithmetic,
+> including the early break at `total_frames`) plus one sequential `cap.read()` pass with an
+> inner loop that reproduces a repeated index rather than dropping it. Marked in-file as a
+> VENDORED-UPSTREAM CHANGE with its full evidence trail.
+>
+> **(b) `scripts/score_external.py`** — gains `--skip-predictor`, **defaulting to False**,
+> passed through to `BadasOpen(..., skip_predictor=...)`, and it prints a line when active.
+>
+> 🔴 **`eval/adapters.py` was NOT touched.** It is a regression guard and its
+> `skip_predictor=False` default stays faithful to the shipped path.
+>
+> ---
+>
+> ### 6. ✅ THE APPLIED CHANGES WERE PROVEN, NOT ASSUMED (CONFIRMED)
+>
+> ```
+> decode_experiments.py --validate-dir data/nexar/test-public/negative
+>   333/333 clips, 25,898 frames, 28 distinct lengths (59-91)   ALL BYTE-IDENTICAL
+> mac_viability_check.py 3   (post-patch)
+>   A 0.000e+00   B 0.000e+00   C 0.000e+00   vs runs/baselines/badas-open/scores.jsonl
+>   01044 0.9179524779 · 01056 0.4771927893 · 01059 0.0893020481
+> five regression guards   T3 AUC 0.5339 / AP 0.5218 / 332-325-2-8 · max 0.8349,
+>   last_window 0.8905 +0.0556 [+0.0263,+0.0876] · timing 7/7, gate 0.9733 -> 83 FP ·
+>   heldout null +0.0025 · gate3_mechanism PASS
+> ```
+> ⚠️ **After the patch, `--validate-dir` no longer compares seeking vs sequential** — both
+> sides are now the same algorithm, which is why it reports 0.99x. **What it still proves,
+> and the reason it was run, is that the transcription into `vendor/` matches
+> `decode_experiments.load_sequential` byte for byte** — the only genuinely new risk. The
+> seeking-vs-sequential identity was established in session 16 and must not be re-run.
+>
+> 🔴 **`skip_predictor` IS STILL UNVERIFIED ON CUDA.** Every `0.000e+00` above is MPS.
+> **Verify it on the T4 before any comma2k19 scoring uses it (D71).**
+>
+> ---
+>
+> ### 7. ✅ `runs/colab_bundle.tar.gz` REBUILT — 🔴 AND PROBABLY NOT UPLOADED YET
+>
+> ```
+> 67,416 bytes   sha256 84dee33c0027cbab5b9181118a31ca06add043470c8ebc4c08d25dfa9e46d5de
+> ```
+> It now carries the PATCHED `score_external.py` and `vendor/badas-open/**`. **The copy in
+> `MyDrive/crash_detection_colab/` is the OLD one unless the user replaced it.** GATE B
+> compares the staged files against per-file SHA-256, so a stale bundle fails loudly rather
+> than silently — but it wastes a Colab session. **ASK before running §1.**
+>
+> Also rebuilt: `runs/kaggle_probe/` (it was **STALE** — 14,057 bytes against the repo's
+> 21,190, missing `validate_dir` entirely). The user uploaded it to Drive as a nested folder
+> `crash_detection_colab/kaggle_probe/`, which is why the first Colab path failed.
+>
+> ---
+>
+> ### 8. 🔴 A NEW USER DIRECTIVE ARRIVED, AND IT CONFLICTS WITH ITSELF — UNRESOLVED
+>
+> The user issued a **"SEPTEMBER 30 PROTOTYPE"** directive (pasted twice, verbatim, in the
+> transcript). Headline: a hard deadline of **2026-09-30** to build a demo convincing enough
+> to put in front of a fleet manager. It specifies **two polished screens** (an incident
+> experience and a manager dashboard), a lightweight incident store, seeded fleet data, and
+> a click-by-click demo flow.
+>
+> 🔴 **THE USER THEN OVERRODE ITS CENTRAL SCOPE, IN THEIR OWN WORDS:**
+> > *"i dont want any frontend or backend or storage like previous my train model i had
+> > commend to run the model on a video live so i didnt need a frontend or backend or
+> > storage to show we will show them like that only so i dont want ui to showcase them"*
+>
+> **So §2, §3, §4 and §11 of the directive (the two screens, the storage layer, the UI/UX
+> priorities) are CANCELLED BY THE USER. The demo is the existing command-line tool run
+> live on a video.** This was not resolved during the session and **must be confirmed with
+> the user before any prototype work starts** — do not silently pick either reading.
+>
+> **What already exists for that CLI demo** (do not rebuild):
+> `scripts/detect.py` (372 lines, 8 self-checks) turns a video into a README §27 JSON
+> incident record; `runs/incidents/` already holds `crash1.json`, `crash2.json`,
+> `safe.json`, `summary.jsonl` and a `frames/` directory; `videos/` holds `crash1.mov`,
+> `crash2.mov`, `safe.mp4`.
+>
+> 🔴 **THE DEMO'S OWN LANDMINE:** `safe.mp4` is 30 s of ordinary driving and scores
+> **0.9758 against the 0.9733 gate** — it produces a false incident record. A live demo on
+> a normal clip can cry wolf in front of the customer. **Score every demo video and know
+> its number before the demo.** This is §21.11 item 6 and it is correct behaviour, not a bug.
+>
+> ---
+>
+> ### 9. FOUR DOCUMENTATION ERRORS FOUND IN *THIS FILE* (all now corrected here)
+>
+> 1. The ENVIRONMENT CORRECTION says **"Check which GPU this account actually gets. §2b
+>    prints it."** §2b does **not** — it runs with no GPU at all and prints only
+>    cv2/numpy/ffmpeg. §1 prints the GPU and GATE C echoes it via `PROVENANCE['gpu']`.
+> 2. §13-S16 says `mac_viability_check.py` *"never produced output"*; §17-S16 says it
+>    completed. **§17-S16 is right** — an earlier launch died, a later one finished.
+> 3. §12's "Colab's sequential rate has NEVER been measured" is **now closed** (item 4).
+> 4. §12/§13's Mac-vs-cloud fork is **now decided**: Colab (item 1).
+>
+> **Disk on the Mac is 19 GB free**, not the 27 GB §15.16 records and not the 21 GB measured
+> yesterday. It is shrinking. This killed the "run comma2k19 locally" option independently
+> of speed — one chunk needs ~19 GB peak (zip + extracted).
+>
+> ---
+>
+> ### 10. WHAT WAS **NOT** DONE
+>
+> No comma2k19 data was downloaded. Nothing was scored for comma2k19. `skip_predictor` was
+> not verified on CUDA. The bundle was not confirmed uploaded. **No prototype/demo work was
+> started.** `README.md` and `NEW_PLAN.md` were **NOT** modified. Nothing was pushed.
+>
+> **Read order for a brand-new Claude: this block → §21.14 → §13 (exact next action) →
+> §12 (what NOT to redo) → §11 D70–D74 → §15.17 → §17-S17 → then the SESSION 16 block.**
+
+> # ⚠️ ENVIRONMENT CORRECTION — 2026-09-19 (HISTORY — superseded by SESSION 17 above)
+>
+> 🔴 **STALE: this block says a Colab run is LIVE. It has since FINISHED** — GATE C
+> failed, the GPU is a **Tesla T4**, and §2b ran. See SESSION 17 items 2–4. Its platform
+> statement (Colab, not Kaggle) and its measurement-provenance rules STILL STAND. Its
+> claim that §2b prints the GPU is WRONG (SESSION 17 item 9). Its "get Colab's sequential
+> rate" instruction is DONE: 21.07x (item 4).
+>
+> Original text follows.
 >
 > ### The execution environment changed. Read this BEFORE the SESSION 16 block below.
 >
@@ -3240,6 +3491,46 @@ Do not reverse these without new evidence.
 
 ---
 
+### Decisions made in SESSION 17 (D70–D74)
+
+- **D70 — The sequential decoder is APPLIED and COMMITTED.** **Why:** the user gave an
+  explicit go-ahead ("yes for the changes"), and Colab's own measurement made it
+  load-bearing rather than optional — without it comma2k19 projects to **65 h per 10 h**,
+  with it **9.3 h**. **Evidence:** 21.07x on Colab with byte-identical fingerprints;
+  333/333 Nexar negatives byte-identical post-patch (25,898 frames); three clips
+  end-to-end at `max |delta| = 0.000e+00` against the committed scores. **This supersedes
+  D66's hold.** `vendor/` is no longer pristine, and the in-file comment records why.
+- **D71 — `--skip-predictor` is ADDED to `scripts/score_external.py` but DEFAULTS TO FALSE,
+  and is still UNVERIFIED ON CUDA.** **Why added:** sequential decode alone reaches 9.3 h
+  against a 12 h bar — real but thin margin; `skip_predictor` takes it to 7.5 h.
+  **Why default False:** every identity check is on MPS. **Evidence:** `mac_viability_check`
+  config C, `0.000e+00`. **Required before use: re-run the same 3-clip check on the T4.**
+  `eval/adapters.py` keeps `skip_predictor=False` because it is a regression guard.
+- **D72 — THE PLATFORM IS COLAB. The Mac question is CLOSED.** **Why:** on a verified-quiet
+  machine the Mac's best configuration is **16.6 h per 10 h against a 12 h kill condition**
+  — 38% over — while the T4 projects to 7.5 h. **Evidence:** two quiet runs, §21.14 item 1.
+  Secondary and independent: Mac disk is down to **19 GB free**, against ~19 GB peak needed
+  for one comma2k19 chunk. **Consequence:** GATE C can never pass there (D65), so the
+  pre-declared contingency — re-derive the threshold on Colab over all 667 Nexar clips
+  (~6.8 h) — is the route, and it was chosen over the 334-positives-only variant so that a
+  Colab-native Nexar FP/hour sits beside comma2k19's. **Do not re-open the Mac option.**
+- **D73 — Session 16's `per_window = 1.209 s` is RETIRED in favour of 0.758 s/window, and
+  Kaggle's decode rates are declared NON-TRANSFERABLE to Colab.** **Why:** 1.209 was solved
+  by subtracting an assumed decode cost measured on a different machine. **Evidence:**
+  §21.14 items 4–6. **Consequence:** any projection quoting 1.209, or quoting Kaggle's
+  0.2557/0.0117 s/frame as if they were Colab's, is wrong and must be recomputed.
+  **Kaggle's numbers remain correctly labelled as Kaggle's — provenance is NOT rewritten.**
+- **D74 — The SEPTEMBER 30 PROTOTYPE directive is RECORDED but its scope is NOT settled,
+  and no prototype work was started.** **Why:** the directive asks for two polished screens,
+  an incident store and seeded fleet data; the user then stated plainly that they want no
+  frontend, no backend, no storage and no UI, and will demo the CLI live on a video. Those
+  cannot both be executed. **Evidence:** both statements are in the session transcript and
+  are quoted verbatim in the top banner item 8. **Required: the next session must ask the
+  user which scope binds before spending any time on it.** Recorded so the conflict is not
+  silently resolved in either direction.
+
+---
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
 Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
 gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
@@ -3248,6 +3539,44 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 17 — do NOT redo these:**
+
+- **🔴 Do not re-open the Mac-vs-cloud question.** Measured twice on a verified-quiet
+  machine: best Mac config **16.6 h per 10 h** against a 12 h kill condition (D72). Disk is
+  also down to 19 GB. **The platform is Colab.**
+- **🔴 Do not re-apply, re-validate or revert the sequential decoder.** It is APPLIED and
+  COMMITTED at `6a705b3` (D70), and proven 333/333 byte-identical plus `0.000e+00`
+  end-to-end. `vendor/badas-open/badas/utils/video.py` is *supposed* to differ from
+  upstream now; the in-file comment explains why.
+- **🔴 Do not treat `decode_experiments.py --validate-dir` as a seeking-vs-sequential test
+  any more.** Post-patch both sides are the same algorithm (hence its 0.99x line). It now
+  guards the TRANSCRIPTION only. The original identity result is session 16's and must not
+  be re-run.
+- **🔴 Do not act on `decode_experiments.py`'s EXPERIMENT 1 advice** that "pinning OpenCV
+  has a real chance of fixing it". That string predates D65 and is WRONG; the pin was
+  tested on Kaggle under two versions and gave identical bytes.
+- **Do not quote `per_window = 1.209 s`.** It is **0.758 s/window** on the T4 (D73).
+- **Do not quote Kaggle's decode rates (0.2557 / 0.0117 s/frame) as Colab's.** Colab is
+  2.1–2.8x slower at seeking decode; its own measured rates are 0.5267 seeking and
+  **0.0250 sequential** (D73). Equally: **do not relabel Kaggle's numbers as Colab's** —
+  provenance stays as measured.
+- **Do not re-measure Colab's sequential decode rate.** Done: **21.07x**, byte-identical
+  (§21.14 item 7). §12's old "never been measured" note is closed.
+- **Do not assume `skip_predictor` is safe on the T4.** Still MPS-only (D71). Verify first.
+- **Do not re-run GATE C.** It failed a second time on Colab exactly as D65 predicted. The
+  GPU is a **Tesla T4**; that question is answered.
+- **Do not rebuild `runs/kaggle_probe/` or `runs/colab_bundle.tar.gz` speculatively.** Both
+  were rebuilt this session; the bundle's sha256 is `84dee33c…`. Rebuild the bundle only if
+  `eval/adapters.py`, `scripts/score_external.py`, `vendor/badas-open/**` or
+  `runs/baselines/badas-open/scores.jsonl` changes again.
+- **Do not start the SEPTEMBER 30 prototype work without settling its scope with the user
+  first** (D74). The directive and the user's own words disagree about whether a UI exists.
+- **Do not rebuild `scripts/detect.py` or `runs/incidents/`.** The CLI demo substrate
+  already exists and is self-checked.
+- **Do not demo on a video whose score you have not checked.** `safe.mp4` scores 0.9758
+  against a 0.9733 gate and fires a false incident.
+
 
 **Added after the ENVIRONMENT CORRECTION (Colab, not Kaggle) — do NOT do these:**
 
@@ -3663,7 +3992,64 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION · **rewritten 2026-09-19, end of SESSION 16**
+## 13. EXACT NEXT ACTION · **rewritten 2026-09-21, end of SESSION 17**
+
+### ══ THE ONE EXACT NEXT ACTION ══
+
+### **Ask the user TWO questions before running anything: (a) was the rebuilt
+### `runs/colab_bundle.tar.gz` (sha256 `84dee33c…`) uploaded to
+### `MyDrive/crash_detection_colab/`, replacing the old one, and what did notebook §1
+### print; and (b) which SEPTEMBER 30 scope binds — the directive's two screens, or the
+### user's own "no UI, demo the CLI live" statement (D74).**
+
+**Why this and not code.** Both are blocking and neither is answerable from the repository.
+The bundle now carries the PATCHED `vendor/` and `score_external.py`; if the stale copy is
+still in Drive, GATE B fails on per-file SHA-256 — loudly, not silently, but it wastes a
+Colab session. And D74's scope conflict decides whether the next nine days go into a demo
+or into comma2k19; guessing either way risks the deadline.
+
+**Then, and only then, in this order:**
+
+**Step 1 — verify `skip_predictor` on the T4 (D71). ~5 minutes of GPU.** It is the only
+applied change never tested on CUDA. Score the same 3 Nexar clips on Colab with and
+without it and compare against `runs/baselines/badas-open/scores.jsonl`:
+```
+01044 0.9179524779 · 01056 0.4771927893 · 01059 0.0893020481
+```
+**Anything other than `max |delta| = 0.000e+00` means do NOT use `--skip-predictor`** — fall
+back to sequential-decode-only, which still projects to 9.3 h per 10 h and clears the bar.
+
+**Step 2 — notebook §3 → §3b → §4.** Acquire comma2k19 chunk 1 (~9 GB), assign R9's
+three-way partition by ROUTE with seed 0 **before any score exists** (D58), then GATE D:
+derive the frame rate per segment from `global_pos/frame_times` — **`global_pos/`, not
+`global_pose/`** — and read it back **through cv2**, because cv2's reading becomes
+`len(scores)` and therefore `fp_rate`'s hours denominator.
+
+**Step 3 — notebook §5, the 20-segment pilot. Report measured s/segment against the 72 s
+bar and STOP.** `APPROVED_AFTER_PILOT = False` is a hard stop. **This is the real gate, not
+the projection.** comma2k19 is raw HEVC with no container; the 45 s/segment figure is
+extrapolated from Nexar H.264 and may not hold.
+
+**Step 4 — after approval, §6 (3 chunks ≈ 10 h), then §7 to bring traces home.**
+
+**Step 5 — compute the number LOCALLY** with
+`~/envs/badas/bin/python -m eval.fp_rate --frames-dir runs/comma2k19/frames --label comma2k19`.
+Convention B headline, A beside it, denominators always, **never pooled with ZOD**.
+
+**Budget, from Colab's own measurements:** ~7.5 h for comma2k19 + ~6.8 h to re-derive the
+Nexar threshold on the T4 (667 clips — chosen over 334 positives so a Colab-native Nexar
+FP/hour sits beside comma2k19's) ≈ **14.3 h**.
+
+🔴 **Do not push.** 19 commits are pending across nine sessions; the user decides when.
+
+🔴 **Track C's kill condition is 11 days away: fewer than 3 substantive replies by
+2026-10-02 formally closes it.** `docs/fleet_outreach.md` holds 10 drafted messages and
+`docs/fleet_replies.csv` is still header-only. The user sends them; Claude prepares only.
+
+---
+
+## 13-S16. SESSION 16's next action (SUPERSEDED — the platform is decided and BOTH changes are APPLIED)
+
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 
@@ -4511,7 +4897,41 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S16. NEXT 3–5 ACTIONS · **written end of SESSION 16. Supersedes §14-S15.**
+## 14-S17. NEXT 3–5 ACTIONS · **written end of SESSION 17. Supersedes §14-S16.**
+
+1. **Settle the two blocking questions with the user** (bundle uploaded? which September 30
+   scope?), then **verify `skip_predictor` on the T4** (3 clips, ~5 min, D71).
+   → **Model: opus · Effort: high** — the scope answer decides how nine days are spent, and
+   a wrong read on the CUDA check silently corrupts every comma2k19 score.
+2. **Run notebook §3 → §3b → §4** (acquire chunk 1, R9 partition by route seed 0 before any
+   score, GATE D frame rate through cv2 from `global_pos/`). Confirm `processed_log/`
+   really carries IMU/CAN against the bytes. → **Model: sonnet · Effort: medium**; return
+   to opus if GATE D trips.
+3. **Run §5, the 20-segment pilot. Report s/segment against the 72 s bar and STOP.**
+   `APPROVED_AFTER_PILOT = False`. Expect this to be the tight one — comma2k19 is raw HEVC
+   and the projection comes from H.264. → **Model: sonnet · Effort: medium.**
+4. **After approval: §6 (3 chunks ≈ 10 h) → §7 → re-derive the Nexar threshold on the T4
+   (667 clips, ~6.8 h) → compute FP/hour LOCALLY** with `eval/fp_rate.py`.
+   → **Model: sonnet · Effort: medium**; **opus · high** to interpret the final number.
+5. **Then revisit `NEW_PLAN.md` §10 with the user (D60), now carried for a fifth session.**
+   Two items belong in that single amendment: §10's ladder rests on R1 (dead, D53) and on
+   AP→FP/hour transfer (falsified, D59); and §8.2's 10 h target cannot demonstrate §31's
+   < 0.1 FP/hour (D69). → **Model: opus · Effort: high.**
+
+**In parallel, blocked on the user, not on compute:** the 10 Track C messages
+(`docs/fleet_outreach.md`) are still unsent and `docs/fleet_replies.csv` is header-only
+after seventeen sessions. **Kill condition: <3 substantive replies by 2026-10-02.** ZOD
+access still awaited; its CC BY-SA share-alike must be confirmed in writing before any
+derivative work.
+
+**Carried and unresolved (D74):** the SEPTEMBER 30 prototype directive vs the user's "no UI"
+statement. Nine days. If the CLI reading wins, most of the directive is already satisfied by
+`scripts/detect.py` and `runs/incidents/`, and the remaining work is rehearsal — including
+scoring every demo video in advance, because `safe.mp4` fires a false incident at 0.9758.
+
+---
+
+## 14-S16. NEXT 3–5 ACTIONS · **written end of SESSION 16. SUPERSEDED by §14-S17.**
 
 1. **Re-run `scripts/mac_viability_check.py 3` on a quiet machine (§13).** Correctness is
    already proven; read the **s/clip for C** and project it. → **Model: opus · Effort: high**
@@ -4712,7 +5132,63 @@ it would be wasted work.
 
 ---
 
-## 15.16 PLAN POSITION — SESSION 16 (current)
+## 15.17 PLAN POSITION — SESSION 17 (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged
+  this session** — nothing discovered altered the roadmap.
+- **What it says should happen:** three concurrent tracks (§41) — A model/measurement,
+  B UK hard-negative benchmark, C 30 fleet calls. The product is the **structured incident
+  record** (§27). §31 makes **FP/hour the decider**, target **< 0.1/hour**.
+- **Completed:** Track A's measurement path, §27's MVP rung (`scripts/detect.py`), and now
+  a decode path fast enough to measure an honest denominator.
+- **Remains:** the FP/hour denominator itself. Track B needs footage; Track C needs the user
+  to send the messages — **both still at zero deliverables after seventeen sessions.**
+- 🟡 **Carried (D69):** §31's < 0.1 FP/hour needs **~30 h** of clean footage to demonstrate.
+  §8.2's 10 h plan is a measurement target only.
+- 🔴 **NEW TENSION (D74):** the user's SEPTEMBER 30 directive targets README §27's
+  *Prototype V1* rung (weeks 5–8: "batch service + minimal review UI") on a nine-day clock,
+  and then cancels the UI. **This is a product-scope question for the user, not a README
+  change.** README was NOT edited.
+
+### `NEW_PLAN.md` POSITION (detailed plan)
+
+- **Current task:** **Step 2 — an honest FP/hour denominator** from comma2k19 (§8.2), the
+  Week-4 slot in §7.4.
+- **Completed:** gates 1 ✅, 2 ✅, 3a ✅ (R1 FAILED); calibration Tiers 1–3 ✅; operating
+  point ✅; CPU/MPS ✅; MVP CLI ✅; FP/hour convention ✅; the acquisition notebook ✅;
+  GATE C executed and failed ✅ (twice, understood); **and now the platform chosen and the
+  decode fix applied and proven.**
+- **Remains:** verify `skip_predictor` on CUDA, acquire comma2k19, pilot, full run, produce
+  FP/hour. R4/R2/R3 remain deprioritised on measured evidence (D59).
+- 🟢 **§13's comma2k19 kill condition is now CLEARED on projection, not on measurement:**
+  "> 12 h for 10 h of footage" — projected **7.5 h** with both fixes, **9.3 h** with decode
+  alone. **The §5 pilot is what actually decides it**; comma2k19 is raw HEVC and the
+  projection comes from H.264 clips.
+
+### ALIGNMENT
+
+**No conflict between the two planning documents.** Both still point at the same step.
+
+**Three tensions, none resolved silently:**
+1. §10's ladder (R1 → R4 → R2 → R3) still rests on a falsified premise (R1 dead, D53) and a
+   falsified assumption (AP→FP/hour, D59). **Still deliberately NOT amended (D60)** —
+   waiting for comma2k19's real number, then amend once. **Fifth session carried.**
+2. §8.2's 10 h target cannot demonstrate §31's < 0.1 FP/hour (D69). Fold into the same
+   single amendment.
+3. **NEW:** the SEPTEMBER 30 directive is a user-level scope decision that sits *outside*
+   both planning documents and currently contradicts itself (D74). **Neither document was
+   edited for it.** Resolve with the user first; only then consider whether either plan
+   genuinely changes.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (progress drift):
+header says "Status: PROPOSAL — nothing implemented" (false); §3.4 quotes beta ECE 0.0498 vs
+the committed 0.0503; the gate-3 block says "~30 GB free" vs **19 GB** measured now.
+
+---
+
+## 15.16 PLAN POSITION — SESSION 16 (history, superseded by §15.17 above)
 
 ### `README.md` POSITION (master plan)
 
@@ -5350,6 +5826,104 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.14 SESSION 17 FINDINGS — added 2026-09-21. Read after the top banner.
+
+**1. THE MAC LOST ON A QUIET MACHINE (CONFIRMED).** Two runs of `mac_viability_check.py 3`,
+`pgrep` QUIET both times. A 108.5 / 109.6 · B 132.7 / 125.0 · C 103.6 / 102.5 s/clip. Every
+configuration in both runs: `max |delta| = 0.000e+00` against
+`runs/baselines/badas-open/scores.jsonl`. Best config C = **1.698 s/window → 99.8 s/segment
+= 1.39x the 72 s bar = 16.6 h per 10 h of footage**, against a 12 h kill condition.
+Session 16's contended numbers improved by **4.6%**, not the ~30% it hoped for.
+
+**2. THE B > A ANOMALY IS NOISE, NOT A REGRESSION (CONFIRMED by magnitude).** Sequential
+decode saves ~6 s of a ~108 s Mac clip (0.0938 → 0.0040 s/frame × 77 frames). B measured
+24 s SLOWER than A. The decoder cannot move the number that far, so the spread is
+**run-to-run variance of roughly ±20–25% at n=3**. Do not read it as the decoder being slow
+on the Mac; the 333-clip decode-only measurement says 23.59x.
+
+**3. GATE C FAILED AGAIN ON COLAB; GPU CONFIRMED AS TESLA T4 (CONFIRMED).**
+median |Δ| 0.004384 (bar 0.002) · max 0.109316 · crossings 0 (bar ≤1) · pixel fp DIFFERS ·
+`Tesla T4, cuda 12.8` · `torch 2.11.0+cu128, transformers 5.16.1, numpy 2.1.3,
+python 3.13.15` · **91.5 s/clip over 100 clips, 153.0 min**. Expected (D64/D65). Not retried.
+
+**4. 🔴 KAGGLE'S DECODE RATE DOES NOT TRANSFER TO COLAB (CONFIRMED).** Colab seeking decode
+measured on its own machine: 0.4142 (61 fr) / 0.5861 (81 fr) / 0.7001 (85 fr) / **0.7204
+(510 fr)** s/frame. Kaggle measured **0.2557–0.2760**. **Colab is 2.1–2.8x slower at decode.**
+The 510-frame probe shows per-frame cost flat with length (1.03x); the apparent growth
+across the three short probes tracks **file size/bitrate**, since they were selected by size.
+
+**5. 🔴 `per_window = 1.209 s` WAS WRONG. IT IS 0.758 s/window (CONFIRMED).** Session 16
+solved it from GATE C's total using too small a decode term. Recomputed from this run:
+`decode 0.5861 × 77.1 = 45.2 s (49% of a clip)`, `model 91.5 − 45.2 = 46.3 s over 61.1
+windows = 0.758 s/window`. **The T4 is 2.19x faster per window than the Mac's MPS**, not
+1.47x. §2b itself printed 0.810 because its `GATEC_S_PER_CLIP` constant is the previous
+run's 94.7; both are far below 1.209.
+
+**6. 🔴 THE TWO ERRORS DO NOT CANCEL — THE UNFIXED PROJECTION DOUBLED (CONFIRMED).**
+§2b projected a 60 s segment at **393 s = 5.5x the bar = 65 h per 10 h**, against session
+16's Kaggle-derived 32.1 h. Decode is **88% of a 480-frame segment**, so the cheaper model
+cannot offset the more expensive decode.
+
+**7. ✅ COLAB'S SEQUENTIAL DECODE RATE MEASURED: 21.07x (CONFIRMED).** `decode_experiments.py
+--clip 01044.mp4` on the user's Colab: seeking 42.66 s / **0.5267 s/frame**; sequential
+2.02 s / **0.0250 s/frame**; both resized fingerprints `d43cf8ef…` **byte-identical**.
+Break-even was **8.9x** with `skip_predictor`, **12.3x** without. **Both cleared.**
+
+**8. D65 CONFIRMED A THIRD TIME (CONFIRMED).** Colab's RAW pre-resize fingerprint is
+`bdcf9c64…`, character-identical to Kaggle's, under a different OpenCV version (Colab 5.0.0
+vs Kaggle 4.13.0 and 5.0.0). Three Linux stacks, one value; the Mac's `81c70e41…` stands
+alone. 🔴 **`decode_experiments.py`'s EXPERIMENT 1 prints "pinning OpenCV has a real chance
+of fixing it" when raw differs. That text predates D65 and is WRONG. Do not act on it.**
+
+**9. ✅ BOTH CHANGES APPLIED AND COMMITTED — `6a705b3` (user-approved, D70/D71).**
+`vendor/badas-open/badas/utils/video.py::load_full_video_frames` now builds a frame PLAN
+(identical arithmetic, same early break) and reads sequentially with an inner loop that
+reproduces a repeated index. `scripts/score_external.py` gains `--skip-predictor`
+(default **False**). **`eval/adapters.py` untouched — it is a regression guard.**
+
+**10. ✅ THE PATCH WAS PROVEN END-TO-END (CONFIRMED).** `--validate-dir` over the 333 Nexar
+negatives: **333/333 byte-identical, 25,898 frames, 28 distinct lengths (59–91)**.
+`mac_viability_check.py 3` post-patch: **A, B and C all `0.000e+00`** vs committed scores.
+Five regression guards exact. ⚠️ **Post-patch, `--validate-dir` compares the patched loader
+against `load_sequential` — i.e. it guards the TRANSCRIPTION, not the original
+seeking-vs-sequential identity (which is session 16's result and must not be re-run). Its
+0.99x speedup line is the expected consequence, not a failure.**
+
+**11. 🔴 `skip_predictor` REMAINS UNVERIFIED ON CUDA (BLOCKED on a Colab run).** Every
+`0.000e+00` is MPS. D67/D71 require re-verification on the T4 before it is relied on.
+
+**12. THE PROJECTION THAT NOW GOVERNS (CONFIRMED inputs, DERIVED output).** Using Colab's
+own 0.0250 s/frame and 0.758 s/window:
+```
+  sequential only              12.0 + 44.0 =  56.0 s/seg  0.78x bar   9.3 h per 10 h  OK
+  sequential + skip_predictor  12.0 + 33.0 =  45.0 s/seg  0.63x bar   7.5 h per 10 h  OK
+  Nexar 667 re-derivation with both fixes  ~36.6 s/clip            ->  6.8 h
+  total Colab budget ~14.3 h
+```
+🔴 **These are PROJECTIONS from Nexar H.264 clips. comma2k19 is a raw HEVC elementary
+stream with no container — decode cost and cv2's frame-count reading may both differ. The
+§5 pilot is the real gate; GATE D exists for the container problem.**
+
+**13. `runs/colab_bundle.tar.gz` REBUILT (67,416 bytes, sha256 `84dee33c0027cbab5b9181118a
+31ca06add043470c8ebc4c08d25dfa9e46d5de`).** It carries the patched code. **NOT confirmed
+uploaded to Drive.** `runs/kaggle_probe/` was found STALE (14,057 vs 21,190 bytes, missing
+`validate_dir`) and was rebuilt before the user uploaded it.
+
+**14. A WEEKLY PROGRESS DOCUMENT WAS PRODUCED** at the user's request, as a Claude Docs
+artifact: `https://claude.ai/code/artifact/3b58e44f-bfd6-4600-bf7a-764bf6a37ea4`. It is a
+narrative report for an external reader; it is not a project artefact and nothing depends
+on it.
+
+**15. 🔴 A NEW "SEPTEMBER 30 PROTOTYPE" DIRECTIVE ARRIVED AND IS INTERNALLY CONFLICTED.**
+See the top banner item 8. The directive asks for two polished screens + storage; the user
+then said in plain words that they want **no frontend, no backend, no storage, no UI** and
+will demo the existing CLI on a live video. **UNRESOLVED — confirm with the user.**
+
+**16. NO comma2k19 DATA WAS DOWNLOADED. NOTHING WAS SCORED. NO PROTOTYPE WORK WAS STARTED.
+NOTHING WAS PUSHED. NEITHER PLANNING DOCUMENT WAS MODIFIED.**
 
 ---
 
@@ -7277,7 +7851,50 @@ not in `README.md`.**
 
 ---
 
-## 17-S16. FINAL HANDOFF CHECK · **SESSION 16, 2026-09-19. Supersedes §17-S15.**
+## 17-S17. FINAL HANDOFF CHECK · **SESSION 17, 2026-09-21. Supersedes §17-S16.**
+
+**Technical state, verified against the repository at handoff, not remembered:**
+- `git log --oneline -1` → `6a705b3`, **19 commits ahead of `origin/main`**, **NOT pushed**.
+- `git status --short` → **EMPTY. The working tree is CLEAN.**
+- Two commits this session:
+  - `b4499f8` — session 16's five scripts + `.gitignore` + notebook + its `progress.md`
+    handoff, which had been entirely uncommitted.
+  - `6a705b3` — **the two approved changes**: `vendor/badas-open/badas/utils/video.py`
+    (+39/−7 across both files) and `scripts/score_external.py`.
+- 🔴 `git status --short vendor` is **NO LONGER EMPTY-BY-DESIGN** — `vendor/` was
+  deliberately modified and committed (D70). Earlier handoffs treat a clean `vendor/` as an
+  invariant; **that invariant is retired**, and the file carries an in-line explanation.
+- `eval/adapters.py:129` → still `np.nanmax`. R1 was **not** promoted.
+- Five regression guards re-run **twice** this session, **all exact**: T3 AUC 0.5339 /
+  AP 0.5218 / 332-325-2-8 · max 0.8349, last_window 0.8905 +0.0556 CI [+0.0263, +0.0876] ·
+  timing 7/7, gate 0.9733 → 83 FP · heldout null ΔAP +0.0025 · gate3_mechanism PASS.
+- Four self-checks pass: `decode_experiments` 8/8, `kaggle_decode_probe` 8/8,
+  `export_pixel_reference` 6/6, `eval.ap_vs_fp` 7/7.
+- Decode guard: `decode_experiments.py --validate-dir data/nexar/test-public/negative` →
+  **333/333 byte-identical, 25,898 frames**.
+- Derived and gitignored: `runs/colab_bundle.tar.gz` (67,416 B, sha256 `84dee33c…`,
+  **rebuilt, carries the patched code**), `runs/kaggle_probe/` (rebuilt, was stale),
+  `runs/pixel_ref/`.
+- Mac disk: **19 GB free** and shrinking.
+
+**What was happening when the session stopped:** nothing was running. The last project
+action was rebuilding `runs/colab_bundle.tar.gz`. The user was asked to upload it to Drive
+and run notebook §1, confirmed §1 was the right cell, and then issued the SEPTEMBER 30
+directive followed by this handoff prompt. **Whether the upload or §1 happened is UNKNOWN —
+ask.** No comma2k19 data exists locally or on Colab. No prototype work was started.
+
+**Two things are genuinely blocking and neither is answerable from the repository:**
+1. Was the rebuilt bundle uploaded, and what did §1 print?
+2. Which September 30 scope binds (D74)?
+
+**Model/effort for the next session:** **opus · high** to settle D74's scope and read the
+T4 `skip_predictor` verification (a wrong read there silently corrupts every comma2k19
+score), then **sonnet · medium** for acquisition, pilot and the full run, then **opus ·
+high** again to interpret the final FP/hour number and to revisit `NEW_PLAN.md` §10 (D60).
+
+---
+
+## 17-S16. FINAL HANDOFF CHECK · **SESSION 16, 2026-09-19. SUPERSEDED by §17-S17.**
 
 **Technical state, verified against the repository at handoff, not remembered:**
 - `git log --oneline -1` → `7f46896`, **17 commits ahead of `origin/main`**, **NOT pushed**.
