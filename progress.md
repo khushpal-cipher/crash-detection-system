@@ -1,7 +1,7 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-21, end of session 17**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-22, end of session 17 (continuation)**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
 > **🔴 R1 IS DEAD (session 14) AND DETECTION TUNING IS NOW MEASURED TO BE THE WRONG LEVER
@@ -9,7 +9,149 @@ execution plan and must be read alongside `README.md`.
 > **Colab (D72)**, on a **Tesla T4**. Nothing is running. Both decode changes are APPLIED
 > and COMMITTED (D70/D71). See the SESSION 17 block immediately below.
 
-> # ▶▶▶▶▶▶▶▶▶▶ SESSION 17 (2026-09-20 → 2026-09-21) — READ THIS FIRST
+> # ▶▶▶▶▶▶▶▶▶▶▶ SESSION 17 CONTINUATION (2026-09-21 → 2026-09-22) — READ THIS FIRST
+>
+> ### What the continuation did, in one line
+>
+> **The user RESOLVED D74 (CLI demo, no UI), a nine-day demo plan was written and committed,
+> Colab §1 was run and PASSED all gates on a Tesla T4, and I found that GATE B CANNOT detect
+> a stale bundle — a correction to what I myself wrote earlier in this same file.**
+>
+> | | |
+> |---|---|
+> | Commits since the §17 handoff | **1**: `16c8a29` (`docs/sept30_demo.md`) |
+> | HEAD | `16c8a29`, **21 commits ahead of `origin/main`**. 🔴 **NOT PUSHED** |
+> | Working tree | **CLEAN** |
+> | `scripts/demo.py` | ❌ **DOES NOT EXIST.** It is the whole of Track 1. |
+> | Colab | **§1 PASSED.** Staged, gated, T4, 333 negatives present. Nothing scored. |
+>
+> ---
+>
+> ### 1. ✅ D74 IS RESOLVED BY THE USER: **CLI DEMO, NO UI** (D75)
+>
+> `progress.md` §11 records D74 as unresolved. **It is now settled.** The user's words:
+> > *"i dont want any frontend or backend or storage … i had commend to run the model on a
+> > video live so i didnt need a frontend or backend or storage to show we will show them
+> > like that only so i dont want ui to showcase them"*
+>
+> and, on the shape of the demo:
+> > *"me running a command in terminal the video open with model checking the video"*
+>
+> **`docs/sept30_demo.md` was written and committed (`16c8a29`) and is AUTHORITATIVE on the
+> September 30 scope.** Where §11's D74 says the question is open, it is stale — read the
+> demo plan instead. The directive's two-screen / storage / UI scope is **DEAD**.
+>
+> ---
+>
+> ### 2. 🔴 GATE B CANNOT DETECT A STALE BUNDLE — I WAS WRONG (D77, CONFIRMED)
+>
+> §13 and §17-S17 of this file, written earlier **this same session**, both say a stale
+> bundle "fails loudly" at GATE B. **That is FALSE.**
+>
+> `scripts/make_colab_bundle.py:81` writes `BUNDLE_MANIFEST.json` **INSIDE the tarball**.
+> GATE B therefore compares the bundle against **its own** manifest. An old bundle ships an
+> old, internally-consistent manifest and passes exactly as cleanly as a new one.
+> ```
+> GATE B catches : a corrupted or truncated upload      ✅
+> GATE B catches : a STALE bundle                        ❌  it cannot
+> ```
+> 🔴 **CONSEQUENCE: the user's "GATE B PASS — 29 files byte-identical" does NOT prove the
+> PATCHED code is on Colab.** If the old bundle is staged, comma2k19 runs with the seeking
+> decoder and takes **65 h instead of 7.5 h**.
+>
+> **The real check, one line on Colab, two seconds:**
+> ```python
+> !grep -c "VENDORED-UPSTREAM CHANGE (2026-09-21)" /content/repo/vendor/badas-open/badas/utils/video.py
+> ```
+> `1` → patched bundle is live. `0` → stale; re-upload `runs/colab_bundle.tar.gz`.
+> **Verified locally: the marker IS present in the committed bundle (count 1).**
+>
+> ---
+>
+> ### 3. ✅ COLAB §1 RAN AND PASSED EVERY GATE (CONFIRMED, verbatim)
+>
+> ```
+> staged bundle -> /content/repo
+> GATE B  PASS -- 29 files byte-identical to the repo
+> stack here : {"torch":"2.11.0+cu128","transformers":"5.16.1","numpy":"2.1.3"}
+> stack (Mac): {"torch":"2.14.0","transformers":"5.17.0","numpy":"2.4.6"}
+>   python 3.13.15   cuda 12.8   gpu Tesla T4
+>   NOTE: stack differs from the Mac's -- RECORDED, not fatal
+> GATE A  PASS -- checkpoint byte-identical (3,979,436,545 bytes)
+> nexar negatives: 333 mp4 at /content/drive/MyDrive/nexar/test-public
+> ```
+> The checkpoint arrived via the **Hugging Face route** (3.98 GB reconstruct + download at
+> ~160 MB/s), not the Drive copy — so the gated-repo access is working with a token.
+> **Nothing was scored. No comma2k19 data was touched.** Colab is staged and ready at §2.
+>
+> ---
+>
+> ### 4. 🔴 TRACK PRIORITY IS INVERTED: THE DEMO COMES FIRST (D76)
+>
+> The user disclosed a **limited Claude subscription budget**. That is a new, first-class
+> constraint and it changes the ordering I had recommended all session:
+> ```
+>                        Claude cost        what it yields
+>  1. the demo           ~2-3 sessions      something a human can be shown
+>  2. comma2k19          ~2 sessions + 14 h a number only we will read
+>  3. the IMU idea       ~3 sessions        possibly a real product   (needs 2 first)
+> ```
+> **comma2k19 is scientifically the right next step and commercially the wrong one on an
+> 8-day clock with a limited budget.** The false-alarm rate is already known to be bad;
+> measuring exactly how bad changes what we KNOW, not what we BUILD. It should run on Colab
+> in the background, where it costs the user's attention rather than Claude sessions.
+>
+> 🔴 **Track 1 (demo) wins any hour the two tracks both want. Ask before assuming otherwise.**
+>
+> ---
+>
+> ### 5. THE PRODUCT CONVERSATION — recorded as HYPOTHESIS, not adopted (D78)
+>
+> The user asked directly whether this is worth building. The honest position put to them,
+> and recorded here so it is not lost or mistaken for a plan:
+>
+> **What is weak:** "we detect crashes better" is a commodity claim — BADAS-Open is
+> Apache-2.0 and free; the system fires 92.3 FP/hour against a 0.1 target with no proven
+> fix; Lytx, Samsara, Nauto and Netradyne already ship this.
+>
+> **The alternative framing, UNTESTED:** every dashcam already has a G-sensor that saves a
+> clip on impact, and it is notoriously trigger-happy — potholes, speed bumps, kerbs, door
+> slams. Invert the pipeline: let the **IMU trigger** (high recall, poor precision) and let
+> the **video model filter** those saved clips rather than watch continuously. Three things
+> would change: the 92.3 FP/hour figure stops applying, because it is a rate per hour of
+> CONTINUOUS driving and the model would run only on rare triggers; the expensive model runs
+> seconds per hour, which is what makes README §32's two-stage edge design feasible; and
+> there is a concrete customer complaint to sell against.
+>
+> 🔴 **This is REASONING, not a measurement, and it is NOT in either planning document.**
+> It is the inverse of `NEW_PLAN.md` R9 (which has IMU suppressing video false positives).
+> comma2k19 ships synchronised IMU and CAN, so it is testable — **which gives the comma2k19
+> download a second reason to exist.** Do not treat it as adopted. Do not build it.
+>
+> ---
+>
+> ### 6. TRACK C: THE USER DECLINED, CITING TIME (recorded, not argued)
+>
+> The user was offered the outreach twice more and declined: *"i dont have time to find them
+> and send them msg"*. **Stop pushing it.** The kill condition is unchanged and still stands:
+> **fewer than 3 substantive replies by 2026-10-02 formally closes Track C.**
+> `docs/fleet_outreach.md` holds 10 drafted messages; `docs/fleet_replies.csv` is header-only.
+> The honest reframe offered, and worth repeating once at the right moment: a demo in hand
+> makes outreach easier than a cold message with nothing attached.
+>
+> ---
+>
+> ### 7. WHAT WAS **NOT** DONE IN THE CONTINUATION
+>
+> `scripts/demo.py` was **not started** — the user ended the session before it began. No
+> comma2k19 data downloaded. Nothing scored. `skip_predictor` still unverified on CUDA. The
+> bundle-freshness check not yet run. `README.md` and `NEW_PLAN.md` **NOT** modified.
+> Nothing pushed.
+>
+> **Read order for a brand-new Claude: this block → the SESSION 17 block below → §21.15 →
+> §21.14 → §13 (exact next action) → §12 → §11 D70–D78 → docs/sept30_demo.md in full.**
+
+> # ▶▶▶▶▶▶▶▶▶▶ SESSION 17 (2026-09-20 → 2026-09-21) — read AFTER the continuation block above
 >
 > ### What this session did, in one line
 >
@@ -3531,6 +3673,39 @@ Do not reverse these without new evidence.
 
 ---
 
+### Decisions made in SESSION 17 CONTINUATION (D75–D78)
+
+- **D75 — D74 IS RESOLVED: the September 30 demo is a CLI command, with NO UI.** **Why:** the
+  user stated it plainly and twice, overriding their own pasted directive's two-screen scope.
+  **Evidence:** both statements are quoted verbatim in the continuation banner item 1.
+  **Consequence:** `docs/sept30_demo.md` (committed `16c8a29`) is **authoritative on September
+  30 scope**; §11's D74 entry is stale where it says the question is open. **No frontend, no
+  backend, no storage, no database, no dashboard, no server.** A request for any of those
+  belongs in that file's §G deferred list.
+- **D76 — TRACK PRIORITY INVERTED: the demo outranks the comma2k19 measurement.** **Why:** the
+  user disclosed a limited Claude subscription budget, which makes Claude sessions a scarce
+  resource rather than a free one. **Evidence:** demo ≈2–3 sessions and yields something a
+  human can be shown; comma2k19 ≈2 sessions plus 14 h of Colab and yields a number only we
+  read. The false-alarm rate is already known to be bad — measuring precisely how bad changes
+  what we know, not what we build. **Consequence:** comma2k19 runs in the background on Colab.
+  **Track 1 wins any contested hour.** This reverses the ordering recommended earlier in the
+  same session, on new information, and is recorded as a reversal rather than quietly applied.
+- **D77 — GATE B's "catches a stale bundle" claim is WRONG and is RETRACTED.** **Why:**
+  `BUNDLE_MANIFEST.json` ships inside the tarball, so GATE B validates a bundle against its
+  own manifest. **Evidence:** `scripts/make_colab_bundle.py:81` and its self-check at 144–146.
+  **Consequence:** §13 and §17-S17 of this file are wrong on this point; the freshness test is
+  a one-line grep for the patch marker, and skipping it risks a 65 h run instead of 7.5 h.
+- **D78 — The IMU-first framing is recorded as a HYPOTHESIS and deliberately NOT adopted.**
+  **What:** let the G-sensor trigger and the video model *filter* the saved clips, instead of
+  the video model watching continuously. **Why recorded:** it would make the 92.3 FP/hour
+  figure inapplicable (that rate is per hour of continuous driving), make README §32's
+  two-stage edge design feasible, and give a concrete customer complaint to sell against.
+  **Why not adopted:** it is reasoning, not measurement, and it inverts `NEW_PLAN.md` R9.
+  **Evidence needed:** comma2k19 ships synchronised IMU and CAN, so it is testable there.
+  **Do not build it, and do not amend either planning document for it, without the user.**
+
+---
+
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
 Those are **proposals** pending the user's explicit acceptance. **Exception, session 10:** R1's
 gate-3 design was explicitly signed off and IS a decision of record (D39) — the rest of R1–R9 is not.
@@ -3539,6 +3714,30 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after the SESSION 17 CONTINUATION — do NOT redo these:**
+
+- **🔴 Do not build a UI, dashboard, web page, database, API or server.** Resolved by the
+  user (D75). `docs/sept30_demo.md` §G lists everything deferred — point at it and move on.
+- **🔴 Do not trust GATE B to catch a stale Colab bundle (D77).** It validates the bundle
+  against its own embedded manifest. Use the one-line marker grep instead.
+- **Do not re-run Colab §1.** It PASSED: GATE A, GATE B, Tesla T4, 333 negatives staged.
+- **Do not ask the user again whether the September 30 scope includes screens.** Answered.
+- **Do not resurrect `code/crash_detection_enhanced.py` for the demo viewer.** It drives the
+  retired chance-level model and cannot import (`ultralytics` absent). Take the idea only.
+- **Do not "fix" `safe.mp4` firing at 0.9758.** Correct behaviour at 92.3 FP/hour; it is a
+  presentation decision (`docs/sept30_demo.md` §E), not a bug.
+- **Do not design `scripts/demo.py` to score during playback.** ~1.7 s/window makes it
+  impossible; two passes is the honest design (`docs/sept30_demo.md` §D).
+- **Do not let `scripts/demo.py` touch `eval/`.** Four of the five regression guards live
+  there. It is glue: import unchanged, derive the gate at runtime, never type a threshold.
+- **Do not keep pushing Track C outreach.** The user declined twice, citing time. The kill
+  condition (2026-10-02) stands and is recorded; raise it once if the demo lands early.
+- **Do not build or plan the IMU-first framing (D78).** Hypothesis only, untested, and it
+  inverts NEW_PLAN R9. Do not amend a planning document for it.
+- **Do not prioritise comma2k19 over the demo without asking (D76).** Claude sessions are a
+  scarce resource now.
+
 
 **Added after SESSION 17 — do NOT redo these:**
 
@@ -3992,7 +4191,85 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION · **rewritten 2026-09-21, end of SESSION 17**
+## 13. EXACT NEXT ACTION · **rewritten 2026-09-22, end of SESSION 17 CONTINUATION**
+
+### ══ THE ONE EXACT NEXT ACTION ══
+
+### **TRACK 1, DAY 1 — measure `scripts/detect.py` end to end on all three demo videos and
+### write the numbers into `docs/sept30_demo.md` §E.**
+
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i ~/envs/badas/bin/python scripts/detect.py \
+    videos/crash1.mov videos/crash2.mov videos/safe.mp4
+```
+
+**Read `docs/sept30_demo.md` in full first.** It is a demo-prep plan, not a planning document
+— **filling in its own §E measurement table IS its intended use**, unlike `README.md` and
+`NEW_PLAN.md`, which stay untouched.
+
+**Report per video:** wall-clock seconds, the score, and whether it clears the 0.9733 gate.
+Known: `crash1.mov` **0.9966** (fires, true positive) · `safe.mp4` **0.9758** (fires, and it
+is a FALSE ALARM on 30 s of ordinary driving) · `crash2.mov` **never measured**.
+
+**Why this before any code.** The demo's entire design turns on one number — how long scoring
+takes. At the Mac's measured ~1.7 s/window, `safe.mp4` is roughly six minutes, which is
+unwatchable, and that is why §D specifies two passes (score with visible progress, then
+replay with the score overlaid) rather than scoring during playback. This measurement decides
+whether `--stride 8` or `skip_predictor` are needed to make pass 1 bearable.
+**Do not design `scripts/demo.py` before these numbers exist.**
+
+**Then, days 2–5 per `docs/sept30_demo.md` §H:** build `scripts/demo.py` — pass 1 (score with
+progress), pass 2 (playback with overlay and alert region), a plain-English terminal summary,
+a `--self-check`, then re-run the five regression guards.
+
+🔴 **`scripts/demo.py` is GLUE ONLY.** It imports `eval/adapters.py`, `eval/timing.py` and
+`eval/calibration.py` **unchanged**, exactly as `scripts/detect.py` does. No model, no metric,
+no typed threshold — the gate is DERIVED at runtime (B5 / §12).
+
+### ══ TRACK 2 — comma2k19, ONLY WHEN THE USER SAYS THERE IS TIME (D76) ══
+
+**FIRST, two seconds, before anything else on Colab:**
+```python
+!grep -c "VENDORED-UPSTREAM CHANGE (2026-09-21)" /content/repo/vendor/badas-open/badas/utils/video.py
+```
+`1` → the patched decoder is live. `0` → **STALE bundle; re-upload `runs/colab_bundle.tar.gz`
+(67,416 bytes, sha256 `84dee33c…`) to `MyDrive/crash_detection_colab/`.**
+🔴 **GATE B will NOT catch this for you (D77).** Missing it costs 65 h instead of 7.5 h.
+
+Colab §1 has already PASSED — do not re-run it. Then:
+
+1. **Verify `skip_predictor` on the T4 (D71).** ~5 min of GPU, the only applied change never
+   tested on CUDA. Score 3 Nexar clips with and without it against
+   `runs/baselines/badas-open/scores.jsonl`:
+   `01044 0.9179524779 · 01056 0.4771927893 · 01059 0.0893020481`.
+   Anything other than `max |delta| = 0.000e+00` → **do NOT use `--skip-predictor`**; fall
+   back to sequential-decode-only, which still projects to 9.3 h per 10 h and clears the bar.
+2. **Notebook §3 → §3b → §4.** Chunk 1 (~9 GB); R9's three-way partition by ROUTE, seed 0,
+   **before any score exists** (D58); GATE D — frame rate per segment from
+   `global_pos/frame_times` (**`global_pos/`, NOT `global_pose/`**), read back **through cv2**,
+   because cv2's reading becomes `len(scores)` and therefore `fp_rate`'s hours denominator.
+3. **Notebook §5, the 20-segment pilot. Report s/segment against the 72 s bar and STOP.**
+   `APPROVED_AFTER_PILOT = False` is a hard stop. **This is the real gate, not the
+   projection** — comma2k19 is raw HEVC with no container; 45 s/segment is extrapolated
+   from Nexar H.264.
+4. **After approval:** §6 (3 chunks ≈ 10 h) → §7 → re-derive the Nexar threshold on the T4
+   over all **667** clips (~6.8 h; 667 not 334-positives-only, so a Colab-native Nexar
+   FP/hour sits beside comma2k19's).
+5. **Compute the number LOCALLY:**
+   `~/envs/badas/bin/python -m eval.fp_rate --frames-dir runs/comma2k19/frames --label comma2k19`
+   Convention B headline, A beside it, denominators always, **never pooled with ZOD**.
+
+Total Colab budget from Colab's own measurements: **~14.3 h**.
+
+🔴 **Do not push.** 21 commits pending across nine sessions; the user decides when.
+🔴 **Track C:** the user declined the outreach, citing time. Kill condition still
+**2026-10-02**. Raise it once if the demo lands early; do not nag.
+
+---
+
+## 13-S17a. SESSION 17's first next action (SUPERSEDED — Colab §1 has since PASSED, and D76 put the demo first)
+
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 
@@ -4897,7 +5174,37 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S17. NEXT 3–5 ACTIONS · **written end of SESSION 17. Supersedes §14-S16.**
+## 14-S17b. NEXT 3–5 ACTIONS · **written end of SESSION 17 CONTINUATION. Supersedes §14-S17.**
+
+1. **Read `docs/sept30_demo.md` in full, then measure `scripts/detect.py` on the three demo
+   videos and fill in its §E table.** → **Model: sonnet · Effort: medium** — it is a
+   measurement, not a judgement, and the numbers interpret themselves against the 72 s and
+   0.9733 bars.
+2. **Build `scripts/demo.py`** — pass 1 scores with visible progress, pass 2 replays with the
+   score overlaid and the alert region marked, then a plain-English summary and a
+   `--self-check`. Re-run the five regression guards afterwards. → **Model: sonnet · Effort:
+   medium** — glue over already-validated code, not research.
+3. **Rehearse the demo end to end, twice, timed. Decide what to do about `safe.mp4`** (leave
+   it out, or show it deliberately as the honest-limitation close). Write the two rehearsed
+   answers: *"how often does it false-alarm?"* and *"whose data is this?"*
+   → **Model: opus · Effort: medium** — this is judgement about what a customer hears.
+4. **Track 2, only when the user says there is time:** run the one-line bundle-freshness
+   check, verify `skip_predictor` on the T4, then §3 → §3b → §4 → §5 pilot → **STOP**.
+   → **Model: sonnet · Effort: medium**; **opus · high** if GATE D trips or the pilot is
+   marginal against the 72 s bar.
+5. **After comma2k19's number exists: revisit `NEW_PLAN.md` §10 with the user (D60)** — now
+   carried for a fifth session. Two items belong in that one amendment: §10's ladder rests on
+   R1 (dead, D53) and on AP→FP/hour transfer (falsified, D59); and §8.2's 10 h target cannot
+   demonstrate §31's < 0.1 FP/hour (D69). **A third may join them: D78's IMU-first framing,
+   if comma2k19's IMU data supports it.** → **Model: opus · Effort: high.**
+
+**Deadlines, both real:** the demo is due **2026-09-30** (8 days). Track C's kill condition
+fires **2026-10-02** — the user has declined the outreach citing time, and that is recorded,
+not argued.
+
+---
+
+## 14-S17. NEXT 3–5 ACTIONS · **written end of SESSION 17. SUPERSEDED by §14-S17b.**
 
 1. **Settle the two blocking questions with the user** (bundle uploaded? which September 30
    scope?), then **verify `skip_predictor` on the T4** (3 clips, ~5 min, D71).
@@ -5132,7 +5439,62 @@ it would be wasted work.
 
 ---
 
-## 15.17 PLAN POSITION — SESSION 17 (current)
+## 15.18 PLAN POSITION — SESSION 17 CONTINUATION (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged** —
+  nothing this session altered the roadmap.
+- **What it says should happen:** three concurrent tracks (§41). The product is the
+  **structured incident record** (§27). §31 makes **FP/hour the decider**, target < 0.1/hour.
+  §32 describes the eventual two-stage dashcam architecture (IMU trigger → video model).
+- **Completed:** Track A's measurement path; §27's MVP rung (`scripts/detect.py`); a decode
+  path fast enough to measure an honest denominator.
+- **Remains:** the FP/hour denominator. Track B needs footage. **Track C: the user has now
+  declined the outreach citing time** — recorded, kill condition 2026-10-02 unchanged.
+- 🟡 **Carried (D69):** §31's < 0.1 FP/hour needs ~30 h of clean footage to demonstrate.
+- 🟢 **D74 RESOLVED (D75):** the September 30 work targets README §27's *MVP* rung, **not**
+  *Prototype V1* — no review UI, no batch service. `docs/sept30_demo.md` holds that scope.
+  **README was NOT edited**; the demo plan is a separate, subordinate document.
+- 🟡 **D78 touches §32 and §28 but changes neither.** The IMU-first framing is consistent with
+  §32's two-stage design and §28's "IMU is the single best false-positive discriminator". It
+  is a hypothesis about *product ordering*, not a new architecture. **Nothing was edited.**
+
+### `NEW_PLAN.md` POSITION (detailed/research plan)
+
+- **Current task:** **Step 2 — an honest FP/hour denominator** from comma2k19 (§8.2).
+- **Completed:** gates 1 ✅, 2 ✅, 3a ✅ (R1 FAILED); calibration Tiers 1–3 ✅; operating
+  point ✅; CPU/MPS ✅; MVP CLI ✅; FP/hour convention ✅; acquisition notebook ✅; GATE C run
+  and failed ✅ (twice, understood); platform chosen ✅; decode fix applied and proven ✅;
+  **Colab §1 staged and gated ✅.**
+- **Remains:** bundle-freshness check, `skip_predictor` on CUDA, acquire, pilot, full run,
+  produce FP/hour.
+- 🔴 **NEW_PLAN IS NOT THE ACTIVE TRACK RIGHT NOW (D76).** The demo is. NEW_PLAN's Step 2 is
+  paused-in-background, not abandoned, and the pause is a resourcing decision driven by a
+  limited Claude budget — **not** evidence against the plan.
+
+### ALIGNMENT
+
+**No conflict between the two planning documents.** Both still point at the same step.
+
+**Four tensions, none resolved silently:**
+1. §10's ladder rests on a falsified premise (R1 dead, D53) and a falsified assumption
+   (AP→FP/hour, D59). **Still deliberately NOT amended (D60)** — fifth session carried.
+2. §8.2's 10 h target cannot demonstrate §31's < 0.1 FP/hour (D69). Same amendment.
+3. **D78's IMU-first framing is the INVERSE of NEW_PLAN R9** (R9 has IMU suppressing video
+   false positives; D78 has video filtering IMU triggers). **Hypothesis only. Not adopted,
+   not amended.** It may join the single §10 amendment if comma2k19's IMU data supports it.
+4. **`docs/sept30_demo.md` is a THIRD document and is subordinate to both.** It governs only
+   the September 30 demo scope. It does not override README or NEW_PLAN on anything else, and
+   its existence is not a plan change.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (progress drift):
+header says "Status: PROPOSAL — nothing implemented" (false); §3.4 quotes beta ECE 0.0498 vs
+the committed 0.0503; the gate-3 block says "~30 GB free" vs **19 GB** measured.
+
+---
+
+## 15.17 PLAN POSITION — SESSION 17 (history, superseded by §15.18 above)
 
 ### `README.md` POSITION (master plan)
 
@@ -5826,6 +6188,79 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.15 SESSION 17 CONTINUATION FINDINGS — added 2026-09-22. Read after the top banner.
+
+**1. 🔴 GATE B IS SELF-REFERENTIAL AND CANNOT DETECT A STALE BUNDLE (CONFIRMED, D77).**
+`scripts/make_colab_bundle.py:81` writes `BUNDLE_MANIFEST.json` as a `TarInfo` **inside** the
+tarball, and `make_colab_bundle`'s own self-check (line 144–146) asserts the tar contains
+exactly the manifested files plus that manifest. So GATE B checks a bundle against its own
+manifest: it catches a corrupted or truncated upload, and it does **not** catch an old one.
+**§13 and §17-S17, written earlier in this same session, both claim it "fails loudly" on a
+stale bundle. Both are WRONG and are retracted here.** The actual test:
+```python
+!grep -c "VENDORED-UPSTREAM CHANGE (2026-09-21)" /content/repo/vendor/badas-open/badas/utils/video.py
+```
+1 = patched, 0 = stale. Locally verified the marker is present in `runs/colab_bundle.tar.gz`.
+**Cost of missing this: comma2k19 takes 65 h instead of 7.5 h.**
+
+**2. ✅ COLAB §1 PASSED ALL GATES (CONFIRMED, verbatim output in the top banner).**
+GATE B 29 files · GATE A checkpoint byte-identical at **3,979,436,545 bytes** · **Tesla T4,
+cuda 12.8** · `torch 2.11.0+cu128 / transformers 5.16.1 / numpy 2.1.3 / python 3.13.15` ·
+**333 Nexar negatives** found at `/content/drive/MyDrive/nexar/test-public`. The checkpoint
+came down the **Hugging Face route**, so gated access with `HF_TOKEN` is working (D62's
+`nexar-ai/BADAS-Open` id is correct). **Nothing was scored.**
+
+**3. THE STACK DRIFT IS RECORDED, NOT FATAL (CONFIRMED, by design — D61).** Colab's versions
+differ from the Mac's on all three pinned libraries. §1 prints and records this rather than
+halting, because GATE C answers comparability empirically. Unchanged from session 15.
+
+**4. ✅ `docs/sept30_demo.md` EXISTS AND IS AUTHORITATIVE ON SCOPE (committed `16c8a29`).**
+191 lines. Sections: objective · the exact demo · what exists vs what must be built · the
+timing problem · demo footage and scores · definition of done · deferred list · nine-day
+schedule · priority. **D74 is resolved inside it: no UI, no backend, no storage.**
+
+**5. 🔴 `scripts/demo.py` DOES NOT EXIST (CONFIRMED by `ls`).** It is the only new code Track 1
+needs, and it is glue over `eval/{adapters,timing,calibration}.py` — no model, no metric, no
+typed threshold. **Do not resurrect `code/crash_detection_enhanced.py`**: its `cv2.imshow`
+loop at line 654 drives the retired chance-level model (AUC 0.5339) and cannot import
+(`ultralytics` is not installed).
+
+**6. 🔴 THE DEMO'S BINDING CONSTRAINT IS SCORING SPEED (CONFIRMED arithmetic, unmeasured
+end-to-end).** At the Mac's measured **~1.7 s/window**:
+```
+crash1.mov    7 s ->  ~40 windows -> ~70 s to score
+safe.mp4     30 s -> ~224 windows -> ~6 MINUTES to score
+```
+**The video cannot play at normal speed while being scored.** `docs/sept30_demo.md` §D
+therefore specifies TWO PASSES: score with visible progress, then replay with the score
+overlaid. Levers if pass 1 drags: `--stride 8` (~8x faster, score changes slightly and must
+be shown on screen) and `skip_predictor` (~25% cheaper, MPS-verified). **Measure this on day
+1 — every figure here is arithmetic, not a measurement of a script that does not yet exist.**
+
+**7. DEMO FOOTAGE AND ITS SCORES (two CONFIRMED, one UNKNOWN).**
+`videos/crash1.mov` 7.0 s → **0.9966**, fires, true positive ✅ ·
+`videos/safe.mp4` 30 s → **0.9758**, **fires, and it is a FALSE ALARM** 🔴 ·
+`videos/crash2.mov` → **never measured**. 🔴 `safe.mp4` clearing the 0.9733 gate by 0.0025 is
+92.3 FP/hour made concrete on one file. It is correct behaviour, **must not be "fixed" for
+the demo**, and `docs/sept30_demo.md` §E forces a presentation decision about it.
+
+**8. TRACK PRIORITY INVERTED ON A NEW CONSTRAINT (D76).** The user disclosed a limited Claude
+subscription budget. Demo (≈2–3 sessions) now outranks comma2k19 (≈2 sessions + 14 h of
+Colab). comma2k19 runs in the background where it costs attention, not sessions.
+
+**9. THE IMU-FIRST PRODUCT FRAMING — HYPOTHESIS ONLY (D78).** Recorded in the top banner
+item 5. It inverts `NEW_PLAN.md` R9. **Not measured, not adopted, not in any planning
+document.** comma2k19's IMU/CAN makes it testable, which is a second reason the download
+matters.
+
+**10. TRACK C DECLINED BY THE USER, CITING TIME (recorded, not argued).** Kill condition
+unchanged: <3 substantive replies by **2026-10-02**. Do not keep pushing it.
+
+**11. NO comma2k19 DATA DOWNLOADED. NOTHING SCORED. `scripts/demo.py` NOT STARTED. NEITHER
+PLANNING DOCUMENT MODIFIED. NOTHING PUSHED.**
 
 ---
 
@@ -7851,7 +8286,49 @@ not in `README.md`.**
 
 ---
 
-## 17-S17. FINAL HANDOFF CHECK · **SESSION 17, 2026-09-21. Supersedes §17-S16.**
+## 17-S17b. FINAL HANDOFF CHECK · **SESSION 17 CONTINUATION, 2026-09-22. Supersedes §17-S17.**
+
+**Technical state, verified against the repository at handoff, not remembered:**
+- `git log --oneline -1` → `16c8a29`, **21 commits ahead of `origin/main`**, **NOT pushed**.
+- `git status --short` → **EMPTY. Working tree CLEAN.**
+- Three commits across the whole of session 17: `b4499f8` (session 16's uncommitted work),
+  `6a705b3` (the two decode changes), `0f5ede8` (the §17 handoff), `16c8a29`
+  (`docs/sept30_demo.md`) — four in total.
+- `ls scripts/demo.py` → **No such file.** It is the entirety of Track 1's new code.
+- `eval/adapters.py:129` → still `np.nanmax`. R1 not promoted.
+- 🔴 `vendor/` is **deliberately modified and committed** (D70). The old "vendor/ must be
+  clean" invariant is **retired**; the file carries an in-line explanation.
+- `docs/sept30_demo.md` → 191 lines, committed, **authoritative on September 30 scope**.
+- Colab → **§1 PASSED** (GATE A + GATE B, Tesla T4, 333 negatives). Nothing scored. No
+  comma2k19 data anywhere.
+
+**🔴 THREE CORRECTIONS TO EARLIER TEXT IN THIS SAME FILE:**
+1. **§13-S17a and §17-S17 say GATE B catches a stale bundle. WRONG (D77).** The manifest is
+   inside the tarball. Use the one-line marker grep.
+2. **§11's D74 says the September 30 scope is unresolved. It is RESOLVED (D75)** — CLI, no UI.
+3. **§13-S17a and §14-S17 put comma2k19 first. REVERSED (D76)** — the demo comes first, on a
+   limited Claude budget.
+
+**What was happening when the session stopped:** nothing was running. The last actions were
+committing `docs/sept30_demo.md` and reading the user's Colab §1 output. The user then ended
+the session explicitly (*"dont act now this session is about to end"*). **`scripts/demo.py`
+was never started.** No work is half-finished; Track 1 has not begun.
+
+**Two things genuinely unknown, neither answerable from the repository:**
+1. Whether the **patched** bundle is the one staged on Colab (one-line grep answers it).
+2. Whether `skip_predictor` is score-identical on CUDA (D71 — MPS-only so far).
+
+**Model/effort for the next session:** **sonnet · medium** for Track 1 day 1 (measuring
+`detect.py`) and for building `scripts/demo.py` — it is glue over validated code, not
+research. **opus · medium** for the demo rehearsal and the two customer answers, which are
+judgement about what a fleet manager hears. **opus · high** only for the T4 `skip_predictor`
+read (a wrong call there silently corrupts every comma2k19 score), for interpreting the final
+FP/hour number, and for the eventual `NEW_PLAN.md` §10 amendment. **Given the user's limited
+Claude budget, do not spend opus on the demo build.**
+
+---
+
+## 17-S17. FINAL HANDOFF CHECK · **SESSION 17, 2026-09-21. SUPERSEDED by §17-S17b.**
 
 **Technical state, verified against the repository at handoff, not remembered:**
 - `git log --oneline -1` → `6a705b3`, **19 commits ahead of `origin/main`**, **NOT pushed**.
