@@ -40,6 +40,7 @@ absent the demo degrades to an elapsed-time line rather than failing.
 """
 
 import argparse
+import json
 import os
 import sys
 import time
@@ -52,7 +53,7 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from eval.timing import incident, load_traces_abs  # noqa: E402
-from detect import policy  # noqa: E402  -- reuse, do not re-derive the gate
+from detect import build_record, policy  # noqa: E402  -- reuse, never re-derive
 
 # Anthropic brand palette, as BGR because that is what cv2 speaks.
 DARK = (19, 20, 20)        # #141413
@@ -121,7 +122,7 @@ def _bar(done, total, width=28):
 
 
 def score_with_progress(video, device, stride, frames_dir, quiet=False):
-    """PASS 1. Returns (clip_score, elapsed_s, windows_counted).
+    """PASS 1. Returns (clip_score, elapsed_s, windows_counted, detector_name).
 
     The model is constructed and loaded here rather than by the caller so that the ~14 s
     load is inside the progress display and does not look like a hang.
@@ -161,7 +162,7 @@ def score_with_progress(video, device, stride, frames_dir, quiet=False):
     counted = counter.count if counter else 0
     print(f"\r  scored {counted} windows in {elapsed:.1f}s"
           f" ({elapsed / max(counted, 1):.2f}s per window){' ' * 30}")
-    return score, elapsed, counted
+    return score, elapsed, counted, f"{model.name} nanmax"
 
 
 def _load_quietly(adapter, quiet):
@@ -320,10 +321,45 @@ def replay(video, trace, offset, gate, inc, duration, title="crash detection"):
 
 
 # ---------------------------------------------------------------------------------------
+# The incident record -- the actual product
+# ---------------------------------------------------------------------------------------
+
+def write_record(clip_id, video, trace, fps, offset, pol, detector, stride, out_dir):
+    """Write the README §27 incident record. THIS is the product; detection is a commodity.
+
+    `detect.py::build_record` is imported UNCHANGED and does all of the work -- schema,
+    evidence window, source hash, calibrated confidence, policy provenance. This wrapper
+    only decides where the file lands and refuses to let a strided run pass itself off as
+    a clean one.
+
+    Returns the path, or None when the clip did not clear the gate. Writing nothing below
+    the gate is the product behaviour, not a failure: a system that files a report on every
+    video has triaged nothing.
+
+    It lands in runs/demo/ (gitignored), NEVER runs/incidents/, which holds detect.py's
+    committed records -- a demo must not overwrite the evidence trail.
+    """
+    rec = build_record(clip_id, video, trace, fps, offset, pol, detector)
+    if rec is None:
+        return None
+    if stride != 1:
+        rec["demo_note"] = (
+            f"PRODUCED AT --stride {stride}. Scoring was subsampled to "
+            f"{TARGET_FPS / stride:.2f} Hz instead of {TARGET_FPS:.0f} Hz, which biases the "
+            f"score DOWNWARD and does not reproduce the committed stride-1 numbers. "
+            f"NOT a reportable record.")
+    os.makedirs(out_dir, exist_ok=True)
+    dest = os.path.join(out_dir, f"{clip_id}.json")
+    with open(dest, "w") as f:
+        json.dump(rec, f, indent=2)
+    return dest
+
+
+# ---------------------------------------------------------------------------------------
 # The plain-English summary
 # ---------------------------------------------------------------------------------------
 
-def summarise(name, duration, score, gate, inc, calibrated, elapsed):
+def summarise(name, duration, score, gate, inc, calibrated, elapsed, record_path=None):
     """What a fleet manager reads. No ids, no jargon, no field names."""
     out = []
     a = out.append
@@ -334,6 +370,9 @@ def summarise(name, duration, score, gate, inc, calibrated, elapsed):
         a("")
         a(f"  The highest concern the model reached was {score:.4f}, and it raises an")
         a(f"  alert at {gate:.4f}. Nothing in this footage crossed that line.")
+        a("")
+        a("  So no record was written -- which is the point. A system that files a")
+        a("  report on every video has not triaged anything.")
         a("=" * 72)
         return "\n".join(out)
 
@@ -348,8 +387,13 @@ def summarise(name, duration, score, gate, inc, calibrated, elapsed):
     a(f"  Calibrated against real outcomes, that works out to roughly {calibrated:.0%}")
     a("  confidence this is a genuine collision.")
     a("")
-    a(f"  It watched {duration:.1f} seconds of video in {elapsed:.0f} seconds and produced")
-    a("  a structured record that could be sent to an insurer.")
+    a(f"  It watched {duration:.1f} seconds of video in {elapsed:.0f} seconds and wrote")
+    if record_path:
+        a("  a structured incident record -- the thing you would send to an insurer:")
+        a("")
+        a(f"      {record_path}")
+    else:
+        a("  its findings to the screen only; no record file was produced.")
     a("=" * 72)
     return "\n".join(out)
 
@@ -386,7 +430,8 @@ def run(video, device="mps", stride=1, play=True, quiet=True):
 
     frames_dir = os.path.join(ROOT, "runs", "demo", "frames")
     os.makedirs(frames_dir, exist_ok=True)
-    score, elapsed, _ = score_with_progress(video, device, stride, frames_dir, quiet=quiet)
+    score, elapsed, _, detector = score_with_progress(video, device, stride, frames_dir,
+                                                      quiet=quiet)
     if score is None:
         raise SystemExit("  clip is too short to score even one window.")
 
@@ -398,14 +443,24 @@ def run(video, device="mps", stride=1, play=True, quiet=True):
     verdict = "INCIDENT" if inc is not None else "nothing above the line"
     print(f"\n  score {score:.4f}  ->  {verdict}")
 
+    # Written BEFORE pass 2: the record is the product, and pressing q to skip the
+    # playback must never be the reason it does not exist.
+    record_path = write_record(clip_id, video, trace, fps8, offset, pol, detector, stride,
+                               os.path.join(ROOT, "runs", "demo", "incidents"))
+    if record_path:
+        rel = os.path.relpath(record_path, ROOT)
+        print(f"  wrote the incident record  ->  {rel}")
+        print(f"  open it with               ->  cat {rel}")
+
     if play:
         print(f"\n  PASS 2 of 2 -- replaying at normal speed with the score on screen.")
         print("  (press q to skip)\n")
         replay(video, trace, offset, gate, inc, duration, title=f"crash detection - {name}")
 
-    print(summarise(name, duration, score, gate, inc, calibrated, elapsed))
+    print(summarise(name, duration, score, gate, inc, calibrated, elapsed,
+                    record_path=os.path.relpath(record_path, ROOT) if record_path else None))
     print()
-    return {"score": score, "incident": inc, "elapsed": elapsed}
+    return {"score": score, "incident": inc, "elapsed": elapsed, "record": record_path}
 
 
 # ---------------------------------------------------------------------------------------
@@ -472,11 +527,42 @@ def _self_check():
     assert estimate_windows(7.38, 1) > 0 and estimate_windows(0.1, 1) == 1
     print("ok  window estimate is positive even for a clip shorter than one window")
 
-    # the summary must read as English and must not leak field names at the audience
-    s = summarise("crash1.mov", 7.38, 0.9968, gate, inc, 0.84, 57.3)
+    # THE RECORD IS THE PRODUCT (README §27). It must actually reach disk, it must carry
+    # the score, it must be absent below the gate, and a strided run must say so IN THE FILE.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        fake = os.path.join(td, "selfcheck.mp4")
+        with open(fake, "wb") as f:
+            f.write(b"not a real video -- only hashed, never decoded")
+        out = os.path.join(td, "incidents")
+        rp = write_record("selfcheck", fake, loud, TARGET_FPS, offset, pol, "d nanmax", 1,
+                          out)
+        assert rp and os.path.exists(rp), "the incident record never reached disk"
+        rec = json.load(open(rp))
+        assert rec["event_id"] == "selfcheck"
+        assert rec["confidence"]["score"] == round(float(np.max(loud)), 4)
+        assert rec["evidence"]["source_sha256"], "the evidence hash is empty"
+        assert "demo_note" not in rec, "a stride-1 run must not be flagged as strided"
+        rp8 = write_record("selfcheck", fake, loud, TARGET_FPS, offset, pol, "d nanmax", 8,
+                           out)
+        assert "--stride 8" in json.load(open(rp8))["demo_note"], \
+            "a strided record must carry its own warning, not rely on the screen"
+        assert write_record("q", fake, quiet, TARGET_FPS, offset, pol, "d nanmax", 1,
+                            out) is None, "a sub-gate clip must produce no record at all"
+    print("ok  incident record written, carries the score, absent below the gate, "
+          "strided runs self-label")
+
+    # the summary must read as English, must not leak field names, and must not claim a
+    # record it did not write -- the bug this check exists to prevent
+    s = summarise("crash1.mov", 7.38, 0.9968, gate, inc, 0.84, 57.3,
+                  record_path="runs/demo/incidents/crash1.json")
     assert "INCIDENT DETECTED" in s and "t_peak" not in s and "nanmax" not in s
-    assert "No incident found" in summarise("safe.mp4", 30.0, 0.5, gate, None, 0.1, 350.0)
-    print("ok  summary is plain English in both directions, no field names")
+    assert "runs/demo/incidents/crash1.json" in s, "summary must name the record it wrote"
+    ns = summarise("safe.mp4", 30.0, 0.5, gate, None, 0.1, 350.0)
+    assert "No incident found" in ns and ".json" not in ns, \
+        "a clip below the gate must not claim a record on screen"
+    print("ok  summary is plain English in both directions, and claims no record it "
+          "did not write")
 
     print("PASS")
 

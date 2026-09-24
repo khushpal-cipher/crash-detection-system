@@ -33,6 +33,14 @@ a page, a dashboard or a stored record belongs in §G, not here.
    alert region marked.
 4. The terminal prints a plain-English incident summary and writes the JSON record.
 
+> 🟢 **Step 4's second half was FALSE until 2026-09-24 (session 19) and is now TRUE.**
+> `demo.py` printed *"produced a structured record that could be sent to an insurer"* while
+> writing no record at all — only `detect.py` wrote one. Since README §27 makes the
+> structured incident record **the product**, the one line naming the product was the one
+> line with nothing behind it. **Fixed:** `demo.py` now imports `detect.py::build_record`
+> unchanged and writes `runs/demo/incidents/<clip>.json` before pass 2, printing the path
+> and a `cat` command. See §E.
+
 **What the fleet manager should take away:** *"It watched the footage, it found the moment,
 and it produced a record I could send to my insurer."*
 
@@ -53,17 +61,20 @@ That sentence is not a weakness. It is the reason the rest of the demo is believ
 | `eval/calibration.py` — usable probability | ✅ ECE 0.33 → ~0.05 |
 | `scripts/detect.py` — video → JSON incident record | ✅ 372 lines, 8 self-checks |
 | `runs/incidents/` — three records already produced | ✅ crash1, crash2, safe |
-| **`scripts/demo.py` — the live viewer** | ❌ **DOES NOT EXIST. This is the only new code.** |
+| **`scripts/demo.py` — the live viewer** | ✅ **BUILT `7c96495`, 10/10 self-checks.** Verified end to end on all three videos, and writes the §27 record (§E). |
 
 🔴 `code/crash_detection_enhanced.py` has a `cv2.imshow` loop at line 654, but it drives the
 **retired** MobileNetV2+LSTM model (chance-level, AUC 0.5339) and cannot run — it imports
 `ultralytics`, which is not installed. **Do not resurrect it.** Take the playback idea, not
 the code.
 
-**`scripts/demo.py` is glue only.** It imports `eval/adapters.py`, `eval/timing.py` and
-`eval/calibration.py` unchanged, exactly as `scripts/detect.py` does. It adds no model, no
-metric and no threshold of its own. Four of the five regression guards live in `eval/`;
-nothing in this demo is worth risking them for.
+**`scripts/demo.py` is glue only, and it stayed that way.** It imports `eval/adapters.py`,
+`eval/timing.py` and `eval/calibration.py` unchanged, exactly as `scripts/detect.py` does. It
+adds no model, no metric and no threshold of its own. Four of the five regression guards live
+in `eval/`; nothing in this demo is worth risking them for. **Confirmed after the build:**
+`git status eval/ vendor/` is empty and all five guards reproduce exactly (re-run again
+2026-09-24, session 19 — T3 AUC 0.5339 / AP 0.5218, reduction max 0.8349 / +0.0556, timing
+7/7 with the gate at 0.9733, heldout null median ΔAP +0.0025, gate3 PASS).
 
 ---
 
@@ -132,6 +143,88 @@ files predate the project's dataset work.
 Total for all three: **449.4 s** of scoring, **463 s** wall clock including the ~14 s model
 load. All three cleared the gate; three incident records written. `detect.py` exited 0 with
 no traceback.
+
+### `scripts/demo.py` measured on all three — **2026-09-24 (session 19)**
+
+The table above is `detect.py`. This one is the demo itself, end to end, window count and all.
+
+| Command | Load | Pass 1 | s/window | Score | Fires? | Pass 2 | **Total** |
+|---|---|---|---|---|---|---|---|
+| `demo.py videos/crash1.mov` | ~14 s | 56.5 s / 44 w | 1.28 | **0.9968** | ✅ | 8.5 s | ~80 s |
+| `demo.py videos/crash2.mov` | 11.1 s | 39.9 s / 31 w | 1.29 | **0.9959** | ✅ | ~7 s | **59.3 s** |
+| `demo.py videos/safe.mp4 --stride 8` | 10.9 s | 38.3 s / 28 w | 1.37 | **0.9518** | 🔴 **NO** | 29.8 s | **81.0 s** |
+
+Both new runs exited **0**. **Zero tracebacks, zero warnings, zero `UNEXPECTED` lines** in
+either log (`grep -icE "traceback|error|warning|UNEXPECTED"` → 0 on both). The red stride
+banner printed as designed. `crash2.mov` reproduced its `detect.py` score **0.9959** exactly,
+so the glue still changes no result.
+
+🟡 **One cosmetic wrinkle, deliberately NOT fixed.** `demo.py`'s banner prints the container's
+own metadata, so `crash2.mov` displays as *"6.00s, 187 frames"* and the closing line says
+*"watched 6.0 seconds"* — but cv2 reads **177** frames, i.e. **5.75 s** (the D79 VFR problem,
+on screen). It is wrong by 0.25 s, nobody in the room can perceive it, and fixing it means
+editing `demo.py` eight days out. **Leave it.**
+
+### 🟢 THE DEMO NOW WRITES THE PRODUCT — fixed 2026-09-24 (session 19)
+
+**The bug:** `demo.py` claimed on screen to have produced a structured record and wrote
+none. A fleet manager asking *"show me that record"* would have had nothing to open, on the
+one line of the demo that names what README §27 says the product actually is.
+
+**The fix, which added no new logic.** `detect.py::build_record` already builds the §27
+record — schema, evidence window, source sha256, calibrated confidence, policy provenance.
+`demo.py` now imports it **unchanged**, exactly as it already imported `policy()`, and adds
+only a destination and one guard:
+
+- Written to **`runs/demo/incidents/<clip>.json`** (gitignored), **never** `runs/incidents/`,
+  which holds `detect.py`'s committed records. A demo must not overwrite the evidence trail.
+- Written **before pass 2**, so pressing `q` to skip the playback cannot lose it.
+- **Below the gate, no file is written at all**, and the summary says so out loud: *"no
+  record was written — which is the point. A system that files a report on every video has
+  not triaged anything."* That is a better demo line than the false one it replaces.
+- 🔴 **A `--stride`≠1 run stamps `demo_note` INTO the JSON**, saying the score was
+  subsampled, biased downward, and is not reportable. The warning travels with the file
+  instead of living only on the screen the file was detached from.
+
+**Verified:** `--self-check` is now **10/10** (the new check writes a record to a temp dir,
+asserts the score and evidence hash survive, asserts a sub-gate clip produces **no** file,
+and asserts a strided record carries its own warning). `scripts/detect.py` is **untouched**
+and still 8/8. `git status eval/ vendor/ runs/incidents/` is **empty**.
+
+### 🟢 IT RUNS WITH NO NETWORK — verified 2026-09-24 (session 19)
+
+`crash1.mov`, full two-pass run with `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+HF_DATASETS_OFFLINE=1`: **exit 0, score 0.9968** (reproducing the committed number exactly),
+model loaded in 7.6 s, 44 windows in 55.4 s, **73.4 s total**, record written.
+
+🟡 **Scope of that claim.** Those variables stop the model libraries reaching the network,
+which is the realistic failure. They are **not** the same as airplane mode. **Still worth one
+wifi-off run at rehearsal** — 80 seconds — to turn *"it runs locally"* into *"I have run it
+with the wifi off."* For a dashcam product, *"does this need the cloud?"* is close to certain
+to be asked.
+
+### 🔴 THE STRIDE-8 TRAP — found 2026-09-24, and it is a PRESENTATION hazard
+
+**At `--stride 8`, `safe.mp4` scores 0.9518 and does NOT fire.** At stride 1 it scores 0.9758
+and **does** fire. The stride flag turns the false alarm off.
+
+**Mechanism.** Stride 8 evaluates roughly one window per second instead of eight, so it scores
+a *subset* of the stride-1 window positions and simply steps over the peak. A max over fewer
+windows can only be **lower or equal**. Stride therefore biases every score **downward**, and
+it bites hardest exactly where the margin is thinnest — `safe.mp4` cleared the gate by 0.0025,
+the tightest margin of the three, so it is the clip that flips.
+
+🔴 **This creates a third option for §E's decision that is NOT acceptable: showing `safe.mp4`
+at stride 8 and letting the clean pass speak for itself.** It would be a 81-second, watchable,
+error-free segment in which the system correctly declines to alarm on ordinary driving — and
+the only reason it declines is that the scoring was subsampled. That is the same family of
+failure as a cached replay (§D, D82): a real command producing a result that the honest
+configuration does not produce. **If `safe.mp4` is shown, either show it at stride 1 (351 s)
+or state on screen and out loud that stride 8 lowered the score and that the honest run
+fires.**
+
+🟢 **The two crash clips are not at risk from this.** They score 0.9968 and 0.9959 against a
+0.9733 gate — margins of ~0.023, ten times `safe.mp4`'s. Both are demoed at stride 1 anyway.
 
 ### What the measurement settles
 
@@ -220,9 +313,13 @@ non-technical one. **What is not acceptable is being surprised by it live.**
 
 **Updated 2026-09-24 (session 18), after `scripts/demo.py` was built and committed (`7c96495`).**
 
-- [~] `scripts/demo.py` exists, runs end to end on all three videos, and has a `--self-check`
-      — **exists, 9/9 self-checks pass, verified end to end on `crash1.mov` only.**
-      🔴 **Not yet run on `crash2.mov` (~41 s) or `safe.mp4` (~6 min).** Next action.
+- [x] `scripts/demo.py` exists, runs end to end on all three videos, and has a `--self-check`
+      — **CLOSED 2026-09-24 (session 19). 10/10 self-checks pass. All three videos now run
+      end to end, exit 0, no traceback and no warning in any log.** `crash2.mov` 59.3 s total,
+      score **0.9959**, fires. `safe.mp4 --stride 8` 81.0 s total, score **0.9518**,
+      🔴 **does NOT fire — see §E's STRIDE-8 TRAP, which this run discovered.**
+      `safe.mp4` has still never been through `demo.py` at stride 1 (351 s); that is a
+      rehearsal choice, not an unverified code path.
 - [x] It imports `eval/` unchanged; the five regression guards still reproduce exactly
       — **`git status eval/ vendor/` empty; all five re-run after `demo.py` existed, all exact.**
 - [x] Pass 1 prints visible progress; pass 2 plays back at watchable speed
@@ -242,7 +339,16 @@ non-technical one. **What is not acceptable is being surprised by it live.**
       as unreadable specks.**
 - [ ] Rehearsed end to end at least twice, timed — **OPEN. Days 6 and 8.**
 - [ ] Two answers rehearsed: *"how often does it false-alarm?"* and *"whose data is this?"*
-      — **OPEN. Drafts do not exist yet.**
+      — **OPEN. Drafts do not exist yet.** A third is needed: *"does it run in the camera?"*
+      → README §32's two-stage IMU-wakes-video design, **which is NOT built. Say so plainly.**
+- [x] 🟢 **The demo writes the §27 incident record — the product itself** — **ADDED AND
+      CLOSED 2026-09-25 (session 19).** It did not, and it claimed on screen that it did.
+      Now writes `runs/demo/incidents/<clip>.json` via `detect.py::build_record` unchanged.
+      **Proof of correctness: the demo's `crash1.json` and `crash2.json` are BYTE-IDENTICAL
+      to `detect.py`'s committed `runs/incidents/` records** (`diff` clean on both).
+- [x] 🟢 **Runs with the model libraries cut off from the network** — `crash1.mov`,
+      `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1`, exit 0, score 0.9968,
+      73.4 s. 🟡 **Not the same as airplane mode — still do one wifi-off run at rehearsal.**
 
 ### What `demo.py` looks like when it runs
 
