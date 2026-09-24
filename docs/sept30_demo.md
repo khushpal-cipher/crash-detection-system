@@ -218,16 +218,57 @@ non-technical one. **What is not acceptable is being surprised by it live.**
 
 ## F. Definition of done — 2026-09-30
 
-- [ ] `scripts/demo.py` exists, runs end to end on all three videos, and has a `--self-check`
-- [ ] It imports `eval/` unchanged; the five regression guards still reproduce exactly
-- [ ] Pass 1 prints visible progress; pass 2 plays back at watchable speed
-- [ ] The alert threshold is **derived at runtime**, never typed (B5 / `progress.md` §12)
-- [ ] The terminal summary is readable by someone who has never seen the project
-- [ ] Every demo video's score is measured and recorded in this file
-- [ ] The `safe.mp4` decision is made and rehearsed
-- [ ] No traceback, no warning spam, no dead flags, nothing on screen that needs excusing
-- [ ] Rehearsed end to end at least twice, timed
+**Updated 2026-09-24 (session 18), after `scripts/demo.py` was built and committed (`7c96495`).**
+
+- [~] `scripts/demo.py` exists, runs end to end on all three videos, and has a `--self-check`
+      — **exists, 9/9 self-checks pass, verified end to end on `crash1.mov` only.**
+      🔴 **Not yet run on `crash2.mov` (~41 s) or `safe.mp4` (~6 min).** Next action.
+- [x] It imports `eval/` unchanged; the five regression guards still reproduce exactly
+      — **`git status eval/ vendor/` empty; all five re-run after `demo.py` existed, all exact.**
+- [x] Pass 1 prints visible progress; pass 2 plays back at watchable speed
+      — **44 windows counted live with an ETA; all 257 frames replay, 8.5 s against 7.37 s
+      of video (`waitKey` granularity, ~15% slow, smooth).**
+- [x] The alert threshold is **derived at runtime**, never typed (B5 / `progress.md` §12)
+      — **enforced by a `--self-check` that greps the executable body for threshold
+      literals and fails if one ever appears.**
+- [x] The terminal summary is readable by someone who has never seen the project
+      — **asserted in `--self-check`: no field names, no ids, both the incident and the
+      no-incident wording.**
+- [x] Every demo video's score is measured and recorded in this file — **§E, day 1.**
+- [ ] The `safe.mp4` decision is made and rehearsed — **OPEN. See §E. Decide at rehearsal.**
+- [x] No traceback, no warning spam, no dead flags, nothing on screen that needs excusing
+      — **the ~35-line transformers LOAD REPORT is suppressed by default; `--loud` restores
+      it. Overlay sizes scale with frame height, because at 3408x1910 fixed sizes rendered
+      as unreadable specks.**
+- [ ] Rehearsed end to end at least twice, timed — **OPEN. Days 6 and 8.**
 - [ ] Two answers rehearsed: *"how often does it false-alarm?"* and *"whose data is this?"*
+      — **OPEN. Drafts do not exist yet.**
+
+### What `demo.py` looks like when it runs
+
+```
+  crash1.mov  --  7.37s, 259 frames at 35.16 fps
+  model      BADAS-Open (V-JEPA2 ViT-L), Apache-2.0, run locally on mps
+  alert at   0.9733
+  which is   the threshold that delivers 80% recall on nexar/test-public n=667 (nanmax)
+             -- READ OFF THE DATA at startup, not typed into this file
+
+  PASS 1 of 2 -- scoring. ~43 windows to do.
+  window   44/~44 [############################]  55.2s elapsed, ~   0s left
+  scored 44 windows in 56.5s (1.28s per window)
+
+  score 0.9968  ->  INCIDENT
+  [pass 2 opens, replays 7.37s with the score and alert region on screen]
+
+  INCIDENT DETECTED in crash1.mov
+  Something happened around 4.9 seconds in.
+  The model was concerned from 3.8s to 6.1s -- about 2.4 seconds of footage.
+  ...
+```
+
+🔴 **`demo.py` has NO cached-replay path and must never grow one.** Pass 2 replays only
+what pass 1 just computed, in the same process. A mode that replays an earlier run's scores
+while implying it is live is the one failure this demo cannot survive being caught doing.
 
 ---
 
