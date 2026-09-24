@@ -1,2 +1,3 @@
+{"id": "crash1", "incident": true, "score": 0.9968, "calibrated": 0.8464, "record": "crash1.json"}
+{"id": "crash2", "incident": true, "score": 0.9959, "calibrated": 0.8215, "record": "crash2.json"}
 {"id": "safe", "incident": true, "score": 0.9758, "calibrated": 0.5717, "record": "safe.json"}
-{"id": "crash1", "incident": true, "score": 0.9966, "calibrated": 0.8411, "record": "crash1.json"}

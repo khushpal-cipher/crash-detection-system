@@ -72,6 +72,12 @@ nothing in this demo is worth risking them for.
 **BADAS cannot score video in real time on this Mac.** Measured: **~1.7 s per window** at
 stride 1, where a window advances one frame at 8 fps.
 
+> 🟢 **SUPERSEDED IN PART, 2026-09-24 — see §E for the real measurement.** The conclusion of
+> this section STANDS, but the input number was pessimistic: measured end to end it is
+> **1.33–1.58 s/window**, not 1.7. `crash1.mov` scores in **57 s** (not ~70 s) and
+> `safe.mp4` in **351 s** (~6 min, as predicted). **Two passes is still required, and the
+> P0 clip needs no speed lever.** The estimates below are kept as written for the record.
+
 ```
 crash1.mov   7 s of video  ->  ~40 windows  ->  ~70 s to score
 safe.mp4    30 s of video  -> ~224 windows  -> ~6 MINUTES to score
@@ -103,16 +109,92 @@ measurement of `demo.py`, which does not exist yet.
 
 ---
 
-## E. Demo footage and its known scores
+## E. Demo footage and its MEASURED scores
+
+**MEASURED 2026-09-24 (session 18), day 1.** Command, on MPS, machine under ordinary desktop
+load (`uptime` 2.06, Chrome + Claude running — deliberately *not* a quiet benchmark rig,
+because demo day will look like this):
+
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i ~/envs/badas/bin/python scripts/detect.py \
+    videos/crash1.mov videos/crash2.mov videos/safe.mp4
+```
 
 Three videos, all with usable rights. `data/nexar/LICENSE` permits use; the three local
 files predate the project's dataset work.
 
-| Video | Length | Score | Fires at 0.9733? |
-|---|---|---|---|
-| `videos/crash1.mov` | 7.0 s | **0.9966** | ✅ yes — a real detection |
-| `videos/crash2.mov` | — | measure it | — |
-| `videos/safe.mp4` | 30 s | **0.9758** | 🔴 **YES — and it is a FALSE ALARM** |
+| Video | Length | Windows | **Wall clock** | **s/window** | Score | Fires at 0.9733? |
+|---|---|---|---|---|---|---|
+| `videos/crash1.mov` | 7.38 s | 43 | **57.3 s** | 1.333 | **0.9968** | ✅ yes — a real detection |
+| `videos/crash2.mov` | 5.75 s | 30 | **40.9 s** | 1.363 | **0.9959** | ✅ yes — a real detection |
+| `videos/safe.mp4` | 29.75 s | 222 | **351.2 s** | 1.582 | **0.9758** | 🔴 **YES — and it is a FALSE ALARM** |
+
+Total for all three: **449.4 s** of scoring, **463 s** wall clock including the ~14 s model
+load. All three cleared the gate; three incident records written. `detect.py` exited 0 with
+no traceback.
+
+### What the measurement settles
+
+**1. The ~1.7 s/window planning figure was PESSIMISTIC. It is 1.33–1.58 s/window.**
+`s/window` rises with clip length (1.333 → 1.363 → 1.582) rather than staying flat — longer
+clips are slightly *dearer* per window, so do not extrapolate a short clip's rate to a long
+one. The first clip in a batch also absorbs MPS warm-up, which pushes its rate the other way;
+the two effects are small and partly cancel.
+
+**2. §D's arithmetic was right about the thing that matters.** `safe.mp4` really is ~6
+minutes (351 s measured against ~6 min predicted). **Scoring during playback remains
+impossible and the two-pass design stands.**
+
+**3. 🟢 The P0 demo clip needs NO speed lever.** §B demos `crash1.mov`: **57 s** of pass 1.
+That is a long pause but it is a watchable one with per-window progress on screen, and it is
+the honest cost of real computation. `--stride 8` and `skip_predictor` are **P2, not P0** —
+neither is needed to ship §B. Reach for them only if rehearsal says 57 s kills the room.
+
+**4. `safe.mp4` cannot be demoed live at stride 1.** 351 s is unwatchable. If the §E decision
+below is "show it", it needs `--stride 8` (~44 s projected) and the changed score must be on
+screen — or it must be shown as a pre-recorded terminal capture, clearly labelled as one.
+
+### 🔴 The scores MOVED, and `crash2` was already measured
+
+Two corrections to what `progress.md` §21.15 item 7 and the previous version of this table
+said:
+
+**(a) `crash2.mov` was NOT "never measured".** `runs/incidents/crash2.json` and
+`runs/incidents/frames/crash2.npz` are tracked and were committed at `90e8a58` ("Ship the
+MVP") carrying **0.9961**. The claim arose because `runs/incidents/summary.jsonl` holds only
+two rows (safe, crash1) — the last pre-session-18 run processed only those two, so crash2's
+record survived from an earlier run and the docs lost track of it.
+
+**(b) The two `.mov` scores CHANGED, because they are variable-frame-rate files with
+inaccurate metadata.**
+
+| Video | Codec | fps | Metadata claims | cv2 actually reads | Trace: was → now | Score: was → now |
+|---|---|---|---|---|---|---|
+| `crash1.mov` | h264 | 35.158 | 259 frames | **257** | 56 → 59 | 0.9966185 → **0.9968072** |
+| `crash2.mov` | h264 | 31.175 | 187 frames | **177** | 44 → 46 | 0.9960537 → **0.9958688** |
+| `safe.mp4` | h264 | 24.000 | 714 frames | 714 ✅ | 238 → 238 | 0.9758111 → **0.9758111** (identical) |
+
+**Cause:** the sequential-decode patch (`6a705b3`) changed frame extraction from seek-per-frame
+to straight-through reading. On a constant-frame-rate file with honest metadata the two agree
+exactly — `safe.mp4` is bit-identical. On a VFR file whose header overstates its own length,
+they land on different frames, so the 8 fps resample differs and the score shifts by ~2e-4.
+
+🔴 **This does NOT retract `6a705b3`'s 333/333 byte-identical proof.** That was run over the
+Nexar corpus, which is uniformly well-formed CFR H.264 — the `safe.mp4` category, which still
+reproduces exactly. The proof was sound; it simply never covered VFR input. **The correct
+scope for the claim is "byte-identical on constant-frame-rate H.264", and it should be
+qualified that way wherever it is quoted.**
+
+**Demo impact: NONE.** All three videos cleared the gate before and after. The deltas are
+~2e-4 against a gate margin of 0.0025 (`safe.mp4`, the tightest). **User decision, session 18:
+keep the files, record the new numbers.** Re-encoding to CFR would remove the ambiguity but
+is blocked — ffmpeg is not installed.
+
+🟡 **Consequence for comma2k19:** comma2k19 is raw HEVC with no container, a *third* decode
+category, neither CFR-mp4 nor VFR-mov. This is direct evidence that GATE D (frame rate read
+back **through cv2**) is load-bearing and must not be skipped.
+
+### The `safe.mp4` false alarm
 
 🔴 **`safe.mp4` is 30 seconds of ordinary driving and the system calls it a crash**, clearing
 the gate by 0.0025. This is correct behaviour for a system measured at 92.3 false alarms per
@@ -127,8 +209,10 @@ hour. It is not a bug and it must not be "fixed" for the demo.
 
 The second is stronger with a technical or safety-minded audience and weaker with a
 non-technical one. **What is not acceptable is being surprised by it live.**
+🔴 **If you show it, note §E item 4: at stride 1 it takes 351 s.**
 
-**Score every video you might open, and write the number down, before demo day.**
+**Score every video you might open, and write the number down, before demo day.** ✅ Done
+2026-09-24 for all three.
 
 ---
 
