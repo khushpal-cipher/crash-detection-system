@@ -39,3 +39,8 @@ runs/pixel_ref/
 
 # Kaggle probe staging folder (14 MB, derived) - rebuild with scripts/make_kaggle_probe.py
 runs/kaggle_probe/
+
+# scripts/demo.py scratch traces - regenerated on every demo run, never evidence.
+# The committed traces live in runs/incidents/frames/ (detect.py) and
+# runs/baselines/ (the Nexar sweep); these are throwaway.
+runs/demo/
