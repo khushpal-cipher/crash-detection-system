@@ -1,14 +1,138 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-24, end of session 18**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-25, end of session 19**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
 > **🔴 R1 IS DEAD (session 14) AND DETECTION TUNING IS NOW MEASURED TO BE THE WRONG LEVER
 > (session 15).** The project is executing **Step 2 — a real FP/hour denominator** on Google
 > **Colab (D72)**, on a **Tesla T4**. Nothing is running there. Both decode changes are
-> APPLIED and COMMITTED (D70/D71). 🟢 **TRACK 1's DEMO IS NOW BUILT AND WORKING** —
-> `scripts/demo.py` exists, runs, and is pushed. See the SESSION 18 block immediately below.
+> APPLIED and COMMITTED (D70/D71). 🟢 **TRACK 1's DEMO IS BUILT, VERIFIED ON ALL THREE
+> VIDEOS, AND NOW WRITES THE §27 INCIDENT RECORD — the product itself.** See the SESSION 19
+> block immediately below; the SESSION 18 block below that is still accurate except where
+> §17-S19 lists its retractions.
+
+> # ▶▶▶▶▶▶▶▶▶▶▶▶ SESSION 19 (2026-09-24 → 2026-09-25) — READ THIS FIRST
+>
+> ### What this session did, in one line
+>
+> **THE DEMO WAS VERIFIED ON THE TWO VIDEOS IT HAD NEVER RUN ON, WHICH SURFACED A
+> PRESENTATION TRAP (`--stride 8` silently switches the `safe.mp4` false alarm OFF), AND THEN
+> A REAL BUG WAS FOUND AND FIXED: `demo.py` claimed on screen to produce the structured
+> incident record — the thing README §27 calls THE PRODUCT — and wrote no record at all.**
+>
+> | | |
+> |---|---|
+> | Commits this session | **2**: `9b99f41` (the fix), plus this handoff |
+> | HEAD before | `88ed7d7` · HEAD after | see §8 / `git log` |
+> | Working tree | **CLEAN** at handoff |
+> | `scripts/demo.py` | 🟢 **595 lines** (was 509), **10/10 self-checks** (was 9/9) |
+> | Five regression guards | re-run **twice** this session, **all exact** |
+> | `eval/`, `vendor/`, `scripts/detect.py` | **UNTOUCHED** — `git status` empty on all three |
+> | `README.md` / `NEW_PLAN.md` | **NOT MODIFIED** |
+> | Colab / comma2k19 | **UNCHANGED from session 17.** Nothing run, nothing scored. |
+>
+> ---
+>
+> ### 1. 🔴 THE BUG: THE DEMO CLAIMED TO PRODUCE THE PRODUCT AND DID NOT (D83, FIXED)
+>
+> `demo.py`'s closing summary said *"produced a structured record that could be sent to an
+> insurer."* **It wrote no record.** Only `scripts/detect.py` wrote one. `docs/sept30_demo.md`
+> §B step 4 also claimed *"and writes the JSON record"* — **also false.**
+>
+> This matters more than an ordinary bug: **README §27 says the structured incident record IS
+> the product** and that detection is a commodity. So the single line of the demo that named
+> the product was the single line with nothing behind it. A fleet manager saying *"great,
+> show me that record"* would have found nothing to open.
+>
+> **The fix added NO new logic.** `detect.py::build_record` already builds the §27 record and
+> `demo.py` already imported `policy()` from that same module. It now imports `build_record`
+> **unchanged** and adds only a destination plus one guard:
+> - writes **`runs/demo/incidents/<clip>.json`** (gitignored), **never** `runs/incidents/`,
+>   which holds `detect.py`'s committed records — a demo must not overwrite the evidence trail
+> - writes **before pass 2**, so pressing `q` to skip playback cannot lose it
+> - **below the gate writes nothing**, and says so: *"no record was written — which is the
+>   point. A system that files a report on every video has not triaged anything."*
+> - 🔴 **a `--stride`≠1 run stamps `demo_note` INTO the JSON** — subsampled, biased
+>   downward, not reportable — so the warning travels with the file
+>
+> 🟢 **PROOF THE REUSE IS CORRECT: the demo's `crash1.json` and `crash2.json` are
+> BYTE-IDENTICAL to `detect.py`'s committed `runs/incidents/` records.** `diff` clean on both.
+>
+> ---
+>
+> ### 2. 🔴 THE STRIDE-8 TRAP — A PRESENTATION HAZARD, NOT A CODE BUG (D84, CONFIRMED)
+>
+> **At `--stride 8`, `safe.mp4` scores 0.9518 and does NOT fire. At stride 1 it scores 0.9758
+> and DOES fire.** The flag turns the false alarm off.
+>
+> **Mechanism:** stride 8 evaluates ~1 window/second instead of 8, so it scores a *subset* of
+> the stride-1 window positions and steps over the peak. A max over fewer windows can only be
+> **lower or equal**, so stride biases every score **downward**, hardest where the margin is
+> thinnest. `safe.mp4` cleared the gate by **0.0025**, the tightest of the three — it is
+> exactly the clip that flips.
+>
+> 🔴 **This creates a THIRD option for §E's open `safe.mp4` decision that is NOT
+> ACCEPTABLE: show it at stride 8 and let the clean pass speak for itself.** 81 s, watchable,
+> error-free, and the system "correctly" declines — solely because scoring was subsampled.
+> Same family as a cached replay (D82). **The real decision remains two-way: leave it out, or
+> show it at stride 1 (351 s) and own it.**
+>
+> 🟢 The two crash clips are not exposed: 0.9968 and 0.9959 against a 0.9733 gate are
+> margins ~10× `safe.mp4`'s, and both are demoed at stride 1 anyway. Measured directly:
+> `crash2.mov --stride 8` still scored **0.9959** and still fired.
+>
+> ---
+>
+> ### 3. 🟢 IT RUNS WITH THE MODEL LIBRARIES OFFLINE (D85, MEASURED)
+>
+> `crash1.mov`, full two-pass run, `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+> HF_DATASETS_OFFLINE=1`: **exit 0, score 0.9968** (reproducing the committed number exactly),
+> model loaded 7.6 s, 44 windows in 55.4 s, **73.4 s total**, record written.
+>
+> 🟡 **SCOPE OF THE CLAIM.** Those variables stop the HF libraries reaching the network,
+> which is the realistic failure. They are **NOT airplane mode.** **One wifi-off run at
+> rehearsal (80 s)** converts *"it runs locally"* into *"I have run it with the wifi off"* —
+> and *"does this need the cloud?"* is near-certain from a dashcam buyer.
+>
+> ---
+>
+> ### 4. ALL THREE VIDEOS NOW VERIFIED END TO END ON THE CURRENT `demo.py`
+>
+> ```
+>   crash1.mov              offline   55.4s / 44 w   0.9968   fires   record written   73.4s total
+>   crash2.mov                        39.7s / 31 w   0.9959   fires   record written   ~59s total
+>   crash2.mov --stride 8             ~39s  / 28 w   0.9959   fires   record + demo_note
+>   safe.mp4   --stride 8             39.1s / 28 w   0.9518   DOES NOT FIRE   no record written
+> ```
+> **Zero tracebacks, zero warnings, zero `UNEXPECTED` lines in any log.** The red stride
+> banner printed as designed. 🔴 **`safe.mp4` has still NEVER been run through `demo.py` at
+> stride 1** (351 s) — a rehearsal choice, not an unverified code path.
+>
+> ---
+>
+> ### 5. A PROCESS MISTAKE I MADE, DISCLOSED
+>
+> **I ticked `docs/sept30_demo.md` §F box 1, then changed `demo.py` underneath it.** For about
+> an hour that box claimed all three videos were verified against a binary that no longer
+> existed. Everything was re-run afterwards and the box is true again — but the tick was
+> briefly ahead of the evidence, which is precisely the failure this project exists to avoid.
+>
+> **Also corrected:** I twice said the deadline was "eight days out" on 2026-09-24. It was
+> six. **As of 2026-09-25 it is FIVE days.** §H's remaining days 6–9 still fit, with no slack.
+>
+> ---
+>
+> ### 6. WHAT WAS **NOT** DONE
+>
+> The three customer answers **not drafted**. **No rehearsal, at all.** The `safe.mp4`
+> presentation decision **not made**. The wifi-off run **not done**. **Nothing on Colab
+> touched** — bundle-freshness grep not run, `skip_predictor` still unverified on CUDA, no
+> comma2k19 data, nothing scored. `README.md` and `NEW_PLAN.md` **not modified**.
+>
+> **Read order for a brand-new Claude: this block → the SESSION 18 block below → §21.17 →
+> §21.16 → §13 (exact next action) → §12 → §11 D83–D85 → §15.20 → §17-S19 →
+> `docs/sept30_demo.md` in full.**
 
 > # ▶▶▶▶▶▶▶▶▶▶▶ SESSION 18 (2026-09-24) — READ THIS FIRST
 >
@@ -2938,6 +3062,20 @@ From `runs/falsification/RESULTS.md`, `T124_local_videos.json`, `T5_source_leaka
 
 ---
 
+## 7.19 FILES CHANGED IN SESSION 19 (verified against `git show --stat 9b99f41` and the tree)
+
+| Path | What changed | Why |
+|---|---|---|
+| `scripts/demo.py` | **509 → 595 lines** (+99/−13). Imports `build_record` from `detect.py`; new `write_record()`; `score_with_progress()` now returns the detector name as a 4th value; `summarise()` takes `record_path` and tells the truth in both directions; 2 new self-checks (**9/9 → 10/10**) | D83 — the demo claimed on screen to produce README §27's incident record and wrote none |
+| `docs/sept30_demo.md` | **316 → 413 lines.** §B step 4 annotated (it was false until now); §C's `demo.py` row corrected from ❌ DOES NOT EXIST to ✅ BUILT; §E gained a `demo.py` measurement table, the **STRIDE-8 TRAP** block and the offline result; §F box 1 closed and two new boxes added and closed | This is the one file the user designated for normal demo progress |
+| `progress.md` | This handoff | Session end |
+| `runs/demo/incidents/*.json` | **NEW, gitignored.** `crash1.json`, `crash2.json` | Demo output; byte-identical to `detect.py`'s committed records |
+
+**NOT changed, verified empty in `git status`:** `README.md`, `NEW_PLAN.md`, `eval/**`,
+`vendor/**`, `scripts/detect.py`, `runs/incidents/**`, `runs/baselines/**`, `.gitignore`.
+
+---
+
 ## 7. REPOSITORY CHANGES
 
 **As of end of session 2 (2026-09-12). This supersedes any "this session" labels below the line.**
@@ -3005,6 +3143,24 @@ add or commit until it finishes (§12).
 ---
 
 ## 8. GIT STATE
+
+> ### 🔴 CURRENT GIT STATE — SESSION 19, 2026-09-25. Everything below this box is HISTORY.
+>
+> - **Branch:** `main`. **Pushed. `main` is LEVEL with `origin/main`** (D81 — the old "do not
+>   push" hold is lifted and must not be repeated).
+> - **Commits this session: 2.**
+>   - **`9b99f41`** — *"The demo now writes the product it was claiming to produce"* (D83):
+>     `scripts/demo.py` + `docs/sept30_demo.md`.
+>   - the handoff commit carrying this `progress.md` update (HEAD).
+> - **Working tree: CLEAN** at handoff.
+> - **`git status --short eval/ vendor/ scripts/detect.py` → EMPTY.** None of them was
+>   touched. All five regression guards therefore still stand and were re-run twice anyway.
+> - **Session 18's HEAD was `88ed7d7`.** Session 19 started from there.
+> - 🔴 **Do not overwrite:** `runs/incidents/*.json` (tracked; `detect.py`'s committed
+>   records — the demo writes to gitignored `runs/demo/incidents/` instead, D83);
+>   `runs/baselines/badas-open/scores.jsonl`; `vendor/badas-open/badas/utils/video.py`
+>   (deliberately patched and committed, D70).
+> - `runs/demo/` is **gitignored** (`.gitignore:46`), so demo output never dirties the tree.
 
 **Verified at 2026-09-13 14:45 IST, not remembered.**
 
@@ -3874,6 +4030,37 @@ Do not reverse these without new evidence.
   and is the one thing this demo cannot survive being caught doing (`docs/sept30_demo.md` §D).
   **Note:** a headless *test* harness that stubs `cv2.imshow` to exercise the replay loop is
   fine and was used this session — that is a test, not a demo feature.
+- **D83 — `demo.py` WRITES the §27 incident record, by reusing `detect.py::build_record`
+  unchanged.** **What:** the demo now writes `runs/demo/incidents/<clip>.json`. **Why:** it
+  printed *"produced a structured record that could be sent to an insurer"* and wrote none;
+  README §27 makes that record **the product**, so the one line naming the product had
+  nothing behind it. **Why this is not a violation of "do not improve `demo.py`" (§12):** it
+  closed a false claim on screen, it added **no new logic** — `build_record` is imported
+  unchanged exactly as `policy()` already was — and the user explicitly authorised it
+  (*"fix the 1st bug with best possible solution and you have the full permission"*).
+  **Evidence:** the demo's `crash1.json`/`crash2.json` are **byte-identical** to
+  `detect.py`'s committed `runs/incidents/` records; `--self-check` 10/10; `detect.py`
+  untouched and 8/8; all five guards exact. **Consequences, all load-bearing:** it writes to
+  `runs/demo/` (gitignored) and **never** `runs/incidents/`; it writes **before** pass 2 so
+  `q` cannot lose it; **below the gate it writes nothing** and says so on screen; and a
+  `--stride`≠1 run stamps `demo_note` **into the JSON**.
+- **D84 — `--stride 8` must NEVER be used to make the `safe.mp4` false alarm disappear.**
+  **What:** at stride 8 `safe.mp4` scores **0.9518 and does not fire**; at stride 1 it scores
+  **0.9758 and fires**. **Mechanism:** stride 8 scores a subset of the stride-1 window
+  positions, so the max can only fall; the bias is **downward** and bites hardest at the
+  thinnest margin — `safe.mp4`'s 0.0025. **Why it is a decision and not just a finding:** it
+  manufactures a tempting third option for §E (show the clip at stride 8 and let the clean
+  pass speak) which is the same family as a cached replay (D82) and is **ruled out**. The
+  §E decision stays two-way: leave it out, or show it at stride 1 (351 s) and own it.
+  **Evidence:** `crash2.mov --stride 8` still scored 0.9959 and still fired, so the two crash
+  clips are unaffected.
+- **D85 — the offline claim is scoped to "the model libraries", not to airplane mode.**
+  **What:** `crash1.mov` ran end to end with `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+  HF_DATASETS_OFFLINE=1`, exit 0, score **0.9968**, 73.4 s. **Why the scope matters:** those
+  variables block the HF libraries' network access, which is the realistic failure mode, but
+  they are not the same as a disconnected machine. **Consequence:** until a wifi-off run
+  happens at rehearsal, the honest phrasing is *"it runs locally on this machine; I have
+  verified the model libraries need no network"* — **not** *"it works with no internet"*.
 
 ---
 
@@ -3885,6 +4072,35 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 19 — do NOT redo these:**
+
+- **🔴 Do not "fix" `demo.py` to stop writing the incident record, and do not move it to
+  `runs/incidents/` (D83).** It writes `runs/demo/incidents/<clip>.json`, which is
+  gitignored. `runs/incidents/` holds `detect.py`'s **committed** records and must not be
+  overwritten by a demo run.
+- **🔴 Do not use `--stride 8` on `safe.mp4` to make the false alarm go away (D84).** It
+  works — 0.9518, does not fire — and that is exactly why it is forbidden. Stride biases
+  scores downward by skipping the peak window.
+- **Do not re-run the two demo videos speculatively.** All three are verified on the current
+  `demo.py`: crash1 0.9968 / crash2 0.9959 / safe `--stride 8` 0.9518. Re-run only after
+  touching `demo.py`.
+- **Do not re-measure the offline behaviour with env vars (D85).** Done: exit 0, 0.9968,
+  73.4 s. The **only** offline work left is one real **wifi-off** run at rehearsal.
+- **Do not claim "it works with no internet" without the wifi-off run (D85).** The verified
+  claim is narrower: the model libraries need no network.
+- **Do not re-run the five regression guards speculatively.** Run **twice** in session 19,
+  all exact. Re-run only after touching `eval/`.
+- **Do not rebuild or re-verify the record-writing path.** `--self-check` is 10/10 and covers
+  it: writes to a temp dir, asserts the score and evidence hash survive, asserts a sub-gate
+  clip produces **no** file, asserts a strided record self-labels.
+- **Do not repeat that `docs/sept30_demo.md` §B step 4 or §C are stale.** Both were corrected
+  in session 19; §C now reads ✅ BUILT, and §B carries a note that step 4 was false until
+  session 19.
+- **Do not re-derive that `demo.py`'s records match `detect.py`'s.** Proven byte-identical by
+  `diff` on both `crash1.json` and `crash2.json`.
+- **🔴 Do not quote README §31's "≈23/hour".** It is stale drift. The measured numbers are
+  **92.3 FP/hour for BADAS-Open** (the live system) and **361.4 for T3** (the retired model).
 
 **Added after SESSION 18 — do NOT redo these:**
 
@@ -4391,7 +4607,60 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION · **rewritten 2026-09-24, end of SESSION 18**
+## 13. EXACT NEXT ACTION · **rewritten 2026-09-25, end of SESSION 19**
+
+### ══ THE ONE EXACT NEXT ACTION ══
+
+### **TRACK 1 — draft the THREE customer answers WITH THE USER, then rehearse.**
+### `docs/sept30_demo.md` §H day 6. 🔴 **FIVE DAYS REMAIN (deadline 2026-09-30).**
+
+🔴 **There is NO implementation left in Track 1.** `scripts/demo.py` is finished, verified
+end to end on all three videos, writes the §27 record, and is committed. **Do not build
+anything.** §F's three open boxes are rehearsal and words, not code.
+
+**The three answers, with the honest content already established:**
+
+1. **"How often does it false-alarm?"** — **92.3 per hour** on deliberately hard footage from
+   a *collision* dataset, over a **0.899 h** denominator. The target is **< 0.1/hour**
+   (README §31), so the system is ~900× off. The real number is being measured on **33 h of
+   highway driving** (comma2k19), which has not started.
+   🔴 **DO NOT CONFUSE 92.3 WITH 361.4.** `eval/benchmark.py` prints `FP/hour 361.4` — that
+   is **T3, the RETIRED MobileNetV2+LSTM** (325 FP / 0.899 h). **92.3 is BADAS-Open** at the
+   runtime-derived gate 0.9733 (83 FP / 0.899 h — `eval.timing`'s self-check prints the 83).
+   🔴 **README §31 still says "≈23/hour (derived)".** Stale drift, not a third number.
+2. **"Whose data is this?"** — Nexar test-public under `data/nexar/LICENSE`; BADAS-Open under
+   **Apache-2.0**; the three demo files **predate the project's dataset work**.
+3. **"Does it run in the camera?"** — README §32's two-stage **IMU-wakes-video** design.
+   🔴 **IT IS NOT BUILT. Say so plainly.** Do not start building it (D78).
+
+**The demo command the user will actually type, verified working:**
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i ~/envs/badas/bin/python scripts/demo.py videos/crash1.mov
+```
+~80 s end to end: 8–14 s model load, ~56 s pass 1 with a live progress bar, score
+**0.9968 → INCIDENT**, the record path plus a `cat` command printed, a ~7.4 s playback window,
+then the plain-English summary. **Claude is NOT involved in running the demo.**
+
+### ══ THEN, IN ORDER (`docs/sept30_demo.md` §H days 6–9) ══
+
+1. **Rehearse end to end, timed.** Include one **wifi-off** run (80 s) to close D85's gap.
+2. **Make the `safe.mp4` decision WITH the user** (§E). Two options only — leave it out, or
+   show it at stride 1 (351 s) and own it. 🔴 **The stride-8 third option is ruled out
+   (D84).** Note `safe.mp4` has never been through `demo.py` at stride 1.
+3. **Rehearse a second time, cold.**
+4. **Day 9 is buffer. Do not add features on day 9.**
+
+### ══ TRACK 2 — comma2k19, ONLY WHEN THE USER SAYS THERE IS TIME (D76) ══
+
+**UNCHANGED SINCE SESSION 17. Nothing on Colab was touched in sessions 18 or 19.** The full,
+still-current procedure is in **§13-S18 immediately below**: bundle-freshness grep first
+(D77), then `skip_predictor` on the T4 (D71), then §3→§3b→§4 with GATE D, then the
+20-segment pilot and **STOP**. Do not re-run Colab §1; it PASSED.
+
+---
+
+## 13-S18. SESSION 18's next action (SUPERSEDED by §13 — the two videos HAVE now been run and §F box 1 is CLOSED. Its Track 2 half is still current.)
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 
@@ -5468,7 +5737,25 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
-## 14-S18. NEXT 3–5 ACTIONS · **written end of SESSION 18. Supersedes §14-S17b.**
+## 14-S19. NEXT 3–5 ACTIONS · **written end of SESSION 19. Supersedes §14-S18.**
+
+1. **Draft the THREE customer answers with the user** (§13). 92.3 FP/hour over 0.899 h and
+   ~900× off README §31's target; Nexar + Apache-2.0 + pre-dating demo files; and README
+   §32's in-camera design **which is not built**. 🔴 Never quote 361.4 (retired T3) or
+   README §31's stale ≈23 as the live system's rate.
+2. **Rehearse end to end, timed, including one wifi-off run** (80 s) to close D85.
+3. **Make the `safe.mp4` decision with the user.** Two options, not three — D84 rules out
+   stride 8. Then tick §F's remaining boxes.
+4. **Rehearse a second time, cold.** Fix only what rehearsal exposes. Day 9 is buffer.
+5. **Track 2, only if the user says there is time:** Colab bundle-freshness grep (D77), then
+   `skip_predictor` on the T4 (D71), then the 20-segment pilot and STOP.
+
+🔴 **Do NOT rebuild `scripts/demo.py`. Do NOT start comma2k19 ahead of the demo without
+asking (D76). Do NOT amend `NEW_PLAN.md` §10 unilaterally (D60).**
+
+---
+
+## 14-S18. NEXT 3–5 ACTIONS · **written end of SESSION 18. SUPERSEDED by §14-S19.**
 
 1. **Run `scripts/demo.py` on `videos/crash2.mov` (stride 1, ~41 s) and `videos/safe.mp4`
    (`--stride 8`, ~44 s projected).** Confirm no traceback, no warning spam, readable
@@ -5755,7 +6042,68 @@ it would be wasted work.
 
 ---
 
-## 15.19 PLAN POSITION — SESSION 18 (current)
+## 15.20 PLAN POSITION — SESSION 19 (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged** —
+  nothing this session altered the roadmap.
+- **What it says should happen:** three concurrent tracks (§41). 🔴 **The product is the
+  STRUCTURED INCIDENT RECORD (§27)**, not the detector — BADAS-Open is Apache-2.0 and free,
+  so detection is a commodity. §31 makes **FP/hour the decider**, target **< 0.1/hour**.
+  §32 describes the eventual two-stage dashcam architecture (IMU trigger → video model).
+- **Completed:** Track A's measurement path; §27's MVP rung (`scripts/detect.py`); a decode
+  path fast enough to measure an honest denominator; a working demonstration of the MVP rung
+  (`scripts/demo.py`); 🟢 **and, new this session, that demonstration actually EMITS §27's
+  incident record instead of merely claiming to (D83)** — which is the first time the demo
+  and the stated product definition have actually agreed.
+- **Remains:** the FP/hour denominator (Track 2, not started). Track B needs footage.
+  **Track C declined by the user**, kill condition 2026-10-02 unchanged.
+- 🟡 **Carried (D69):** §31's < 0.1 FP/hour needs ~30 h of clean footage to demonstrate.
+- 🔴 **§31's "≈23/hour (derived)" is STALE DRIFT.** Measured: **92.3 FP/hour** for
+  BADAS-Open (the live system, 83 FP / 0.899 h at gate 0.9733) and **361.4** for T3 (the
+  retired MobileNetV2+LSTM, 325 FP / 0.899 h). **README was NOT edited** — recording the
+  conflict here rather than silently resolving it, per the user's standing instruction.
+- 🟡 **D78 (IMU-first) still touches §32/§28 and still changes neither.** Hypothesis only.
+
+### `NEW_PLAN.md` POSITION (detailed/research plan)
+
+- **Current task:** **Step 2 — an honest FP/hour denominator** from comma2k19 (§8.2).
+- **Completed:** gates 1 ✅, 2 ✅, 3a ✅ (R1 FAILED); calibration Tiers 1–3 ✅; operating
+  point ✅; CPU/MPS ✅; MVP CLI ✅; FP/hour convention ✅; acquisition notebook ✅; GATE C run
+  and failed ✅ (twice, understood); platform chosen ✅; decode fix applied and proven ✅
+  (**scoped to CFR H.264 by D79**); Colab §1 staged and gated ✅.
+- **Remains:** bundle-freshness check, `skip_predictor` on CUDA, acquire, pilot, full run,
+  produce FP/hour. **None of it moved in session 18 or 19.**
+- 🔴 **NEW_PLAN IS STILL NOT THE ACTIVE TRACK (D76).** The demo is. Step 2 is
+  paused-in-background, not abandoned — a resourcing decision on a limited Claude budget,
+  **not** evidence against the plan.
+
+### ALIGNMENT
+
+**No conflict between the two planning documents.** Both still point at the same step.
+
+**Six tensions, none resolved silently:**
+1. §10's ladder rests on a falsified premise (R1 dead, D53) and a falsified assumption
+   (AP→FP/hour, D59). **Still deliberately NOT amended (D60)** — **seventh session carried.**
+2. §8.2's 10 h target cannot demonstrate §31's < 0.1 FP/hour (D69). Same amendment.
+3. **D78's IMU-first framing is the INVERSE of NEW_PLAN R9.** Hypothesis only, not adopted.
+4. **`docs/sept30_demo.md` is a THIRD document, subordinate to both.** It governs only the
+   September 30 demo scope. Its §B/§C/§E/§F were updated this session, which is that file's
+   stated purpose, and that is not a plan change.
+5. **D79 narrows a claim both documents lean on.** Sequential decode is byte-identical **on
+   CFR H.264**, not universally. **GATE D is demonstrably load-bearing.**
+6. 🆕 **README §31's own "current value" column is stale** (see above). It understates the
+   retired model's measured FP/hour by ~16× and is not the live system's number at all.
+   Nothing in the plan depends on it, but it must never be quoted to a customer.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (progress drift):
+header says "Status: PROPOSAL — nothing implemented" (false); §3.4 quotes beta ECE 0.0498 vs
+the committed 0.0503; the gate-3 block says "~30 GB free" vs **19 GB** measured.
+
+---
+
+## 15.19 PLAN POSITION — SESSION 18 (history, superseded by §15.20 above)
 
 ### `README.md` POSITION (master plan)
 
@@ -6559,6 +6907,73 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.17 SESSION 19 FINDINGS — added 2026-09-25. Read after the top banner.
+
+**1. 🔴 THE DEMO CLAIMED TO PRODUCE THE PRODUCT AND DID NOT (CONFIRMED, FIXED, D83).**
+`demo.py`'s summary printed *"produced a structured record that could be sent to an
+insurer"* while writing **no record**; `docs/sept30_demo.md` §B step 4 said the same. Only
+`detect.py` wrote one. **README §27 makes the structured incident record THE PRODUCT**, so
+the one line naming the product was the one line with nothing behind it. **Fixed by importing
+`detect.py::build_record` UNCHANGED** — no new logic — plus a destination and one guard.
+
+**2. ✅ THE FIX IS PROVEN CORRECT BY BYTE-IDENTITY (CONFIRMED).** `runs/demo/incidents/
+crash1.json` and `crash2.json` are **byte-identical** to `detect.py`'s committed
+`runs/incidents/` records (`diff` clean on both). The demo emits exactly what the batch tool
+emits. `--self-check` **10/10** (was 9/9); `detect.py` untouched and still **8/8**.
+
+**3. 🔴 THE STRIDE-8 TRAP (CONFIRMED, D84).** `safe.mp4` at `--stride 8` scores **0.9518 and
+does NOT fire**; at stride 1 it scores **0.9758 and fires**. Stride 8 scores a subset of the
+stride-1 window positions, so the max can only fall — the bias is **downward**, hardest at
+the thinnest margin, and `safe.mp4`'s margin is **0.0025**, the tightest of the three.
+**This is a presentation hazard, not a code bug**, and it rules out a third §E option.
+Measured control: `crash2.mov --stride 8` still scored **0.9959** and still fired.
+
+**4. ✅ THE MODEL LIBRARIES NEED NO NETWORK (CONFIRMED, D85).** `crash1.mov`, full two-pass,
+`HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1`: **exit 0, score 0.9968**
+(exact), load 7.6 s, 44 windows in 55.4 s, **73.4 s total**, record written.
+🟡 **NOT airplane mode.** One wifi-off run at rehearsal is still owed.
+
+**5. ✅ ALL THREE VIDEOS VERIFIED END TO END ON THE CURRENT `demo.py` (CONFIRMED).**
+```
+crash1.mov            offline  55.4s / 44 w  0.9968  fires           73.4s total
+crash2.mov                     39.7s / 31 w  0.9959  fires           ~59s total
+crash2.mov --stride 8          ~39s  / 28 w  0.9959  fires + demo_note
+safe.mp4   --stride 8          39.1s / 28 w  0.9518  DOES NOT FIRE   no record written
+```
+**Zero tracebacks, zero warnings, zero `UNEXPECTED` lines in any log.** 🔴 `safe.mp4` has
+**never** been through `demo.py` at stride 1 (351 s) — a rehearsal choice, not an unverified
+code path.
+
+**6. ✅ FIVE REGRESSION GUARDS RE-RUN TWICE, ALL EXACT (CONFIRMED).** T3 **AUC 0.5339 /
+AP 0.5218**, TP/FP/FN/TN 332/325/2/8; reduction **max 0.8349, last_window +0.0556**
+[+0.0263, +0.0876]; timing **7/7**, gate re-derived live at **0.9733** (0.9830 at 0.70,
+0.8098 at 0.95; FP 60/83/194); heldout **null median ΔAP +0.0025**; gate3_mechanism **PASS**
+(verdict UNINTERPRETABLE, IQR 0.080 s). `git status eval/ vendor/` **empty**.
+
+**7. 🔴 THE 92.3 / 361.4 / ≈23 CONFUSION, RESOLVED (CONFIRMED).** Three FP/hour numbers exist
+and they are **not** alternatives. **92.3/hour = BADAS-Open**, the live system (83 FP /
+0.899 h at gate 0.9733; the 83 is printed by `eval.timing --self-check`). **361.4/hour = T3**,
+the **retired** MobileNetV2+LSTM (325 FP / 0.899 h; printed by `eval/benchmark.py`).
+**≈23/hour = README §31's stale derived figure** for that same retired model, ~16× low.
+**Only 92.3 describes the system being demoed.**
+
+**8. A PROCESS MISTAKE, DISCLOSED.** I ticked `docs/sept30_demo.md` §F box 1, then changed
+`demo.py` underneath it. For ~1 h the box claimed three videos verified against a binary that
+no longer existed. All were re-run afterwards and the box is true again — but the tick was
+briefly ahead of the evidence.
+
+**9. A DATE ERROR, CORRECTED.** I twice said the deadline was "eight days out" on 2026-09-24;
+it was **six**. As of **2026-09-25 it is FIVE days**. §H's days 6–9 still fit, with no slack.
+
+**10. NOTHING ON COLAB WAS TOUCHED.** No bundle-freshness grep, `skip_predictor` still
+UNVERIFIED on CUDA, no comma2k19 data, nothing scored. Track 2 is exactly where session 17
+left it.
+
+**11. NEITHER PLANNING DOCUMENT WAS MODIFIED.** `docs/sept30_demo.md` §B/§C/§E/§F were
+updated, which is that file's stated purpose.
 
 ---
 
@@ -8366,6 +8781,30 @@ document is known to be wrong.
 
 ## 16. README MODIFICATION STATUS
 
+## SESSION 19 — README CHANGED: **NO.** NEW_PLAN CHANGED: **NO.**
+
+**`README.md` — changed this session: NO.** The master plan was left untouched. Nothing this
+session altered the roadmap, the phases, the gates, the product definition or the
+architecture direction. The session's work *served* README §27 rather than changing it: the
+demo now emits the structured incident record §27 defines as the product.
+
+🔴 **One README defect was FOUND and deliberately NOT fixed:** §31's metrics table lists the
+current FP/hour as **"≈23/hour (derived)"**. The measured values are **361.4** for that same
+retired T3 model and **92.3** for BADAS-Open, the live system. This is stale progress drift
+in a "current value" column — **not a plan change** — so per the user's standing instruction
+it is recorded here and in §15.20 rather than edited. **Raise it with the user; do not edit
+README unilaterally.**
+
+**`NEW_PLAN.md` — changed this session: NO.** The detailed plan was left untouched. Nothing
+discovered this session changes what NEW_PLAN says to do: Step 2 (the FP/hour denominator)
+remains the detailed plan's current task, and it remains paused-in-background behind the demo
+by D76. The §10 amendment is **deferred a seventh time (D60)** — still waiting on comma2k19's
+real number, with four items now queued for that single amendment: §10's dead R1 ladder,
+§8.2's 10 h target vs §31's < 0.1 FP/hour (D69), possibly D78's IMU-first framing, and D79's
+re-scoping of the decode identity claim.
+
+---
+
 ## SESSION 18 — README CHANGED: **NO.** NEW_PLAN CHANGED: **NO.**
 
 Neither planning document was touched. `git status` confirms it.
@@ -8740,7 +9179,104 @@ not in `README.md`.**
 
 ---
 
-## 17-S18. FINAL HANDOFF CHECK · **SESSION 18, 2026-09-24. Supersedes §17-S17b.**
+## 17-S19. FINAL HANDOFF CHECK · **SESSION 19, 2026-09-25. Supersedes §17-S18.**
+
+**Can a brand-new Claude answer these from `README.md` + `NEW_PLAN.md` + `progress.md` +
+the repo alone?**
+
+1. **What are we building?** A **structured incident record** from dashcam video (README
+   §27). The detector is a commodity — BADAS-Open is Apache-2.0 and free.
+2. **Master plan?** README: Track A Phase 4 complete, Phase 5 gate passed; **§31 makes
+   FP/hour the decider at < 0.1/hour**.
+3. **Detailed plan?** NEW_PLAN **Step 2** — an honest FP/hour denominator from comma2k19.
+   **Paused in the background by D76.**
+4. **Which phase?** **Track 1, the September 30 demo** (`docs/sept30_demo.md`). Days 1–5
+   **DONE**; days 6–9 (rehearsal + words) remain. **Five days left.**
+5. **Previous session (18)?** Measured `detect.py` on all three videos; **built
+   `scripts/demo.py`** (`7c96495`); found two demo videos are VFR with lying headers (D79);
+   corrected the "crash2 never measured" claim; pushed everything (D81).
+6. **THIS session (19)?** Ran `demo.py` on the two videos it had never been run on; found the
+   **stride-8 trap** (D84); found and fixed a real bug — **the demo claimed to produce the
+   §27 incident record and wrote none** (D83, `9b99f41`); verified it runs with the model
+   libraries offline (D85); re-ran all five guards twice, all exact.
+7. **Evidence?** §21.17, and `docs/sept30_demo.md` §E/§F. Byte-identity of the demo's records
+   against `detect.py`'s committed ones is the key proof.
+8. **What failed / was wrong?** My claim that either stride-8 outcome would be "fine" — the
+   non-firing outcome creates a trap, and the two outcomes are not symmetric. My ticking §F
+   box 1 before changing the code under it. My saying the deadline was "eight days out" when
+   it was six. And the pre-existing false claim in `demo.py` and §B step 4 itself.
+9. **Unknown?** Whether the demo survives a **real wifi-off** run (env vars only, so far).
+   `skip_predictor` on CUDA (D71). comma2k19's real decode cost. Whether `safe.mp4`'s
+   six-minute stride-1 pass 1 is tolerable live. Whether the Colab bundle in Drive is the
+   patched one (D77 — grep it). **Whether the presenter can actually deliver the three
+   customer answers under questioning — never rehearsed.**
+10. **Decisions?** §11, D1–D85. Session 19 added **D83–D85**.
+11. **Not to repeat?** §12, including the new SESSION 19 block — above all, **do not rebuild
+    `scripts/demo.py`**, **do not use `--stride 8` to silence the `safe.mp4` false alarm**,
+    and **do not quote 361.4 or README §31's ≈23 as the live system's rate**.
+12. **Exact next action?** §13 — draft the **three** customer answers with the user, then
+    rehearse. **No implementation remains in Track 1.**
+13. **Next 3–5?** §14-S19.
+14. **Plan changes needed?** **No.** §16's SESSION 19 entry explains why, records that
+    NEW_PLAN §10's amendment is deferred a **seventh** time (D60), and flags README §31's
+    stale ≈23/hour as a defect to raise with the user rather than edit unilaterally.
+
+### 🔴 STATEMENTS ELSEWHERE IN THIS FILE THAT LATER TEXT RETRACTS
+
+Trust the **SESSION 19** block over everything below it wherever they disagree:
+- **§21.15 item 7 and §13-S17b say `crash2.mov` has never been measured. FALSE** — measured
+  at `90e8a58` (0.9961), again in session 18 (0.9958688), and again in session 19 (0.9959).
+- **§13-S17b and §14-S17b say `scripts/demo.py` does not exist. STALE** — it exists and is
+  now **595 lines with 10 self-checks**, not the 509/9 that the SESSION 18 block records.
+- **§13-S17b and §21.14 say "do not push, 21 commits pending". SUPERSEDED (D81).**
+- **§21.14 item 10 and §12 describe `6a705b3` as byte-identical end to end. RE-SCOPED (D79)**
+  — byte-identical **on constant-frame-rate H.264** only.
+- **The SESSION 18 block and §21.16 item 1 say `demo.py` is 509 lines with 9/9 self-checks.
+  SUPERSEDED (D83)** — 595 lines, 10/10, and it now writes the incident record.
+- **`docs/sept30_demo.md` §B step 4's "writes the JSON record" was FALSE until session 19.**
+  It is now TRUE, and §B carries a note saying so.
+- **`docs/sept30_demo.md` §D's ~1.7 s/window is superseded** by §E's measured 1.33–1.58.
+- **README §31's "≈23/hour" is STALE.** Measured 361.4 (retired T3) and 92.3 (BADAS-Open).
+
+### SESSION END STATE
+
+**Track 1 implementation is COMPLETE and nothing is half-written.** `scripts/demo.py` is
+finished, verified end to end on all three videos, writes the §27 incident record, passes
+10/10 self-checks, and is committed. The working tree is clean and `main` is pushed. All five
+regression guards reproduce exactly.
+
+**What remains is words and rehearsal, not code:** the three customer answers are **not
+drafted**, **no rehearsal has happened at all**, the `safe.mp4` presentation decision is
+**not made**, and the **wifi-off run has not been done**. Those are `docs/sept30_demo.md`
+§F's three remaining open boxes and §H's days 6–9, with **five days left**.
+
+**Track 2 is exactly where session 17 left it.** No Colab cell was executed in session 18 or
+19. Nothing has been scored. comma2k19 has not been downloaded.
+
+**The project's central problem is untouched and unchanged:** the system produces **92.3
+false alarms per hour** against README §31's **< 0.1/hour** target — roughly 900× off. Nothing
+this session moved that number, and nothing was supposed to; the demo became more honest, not
+more accurate. The real answer is Track 2, which has not started.
+
+### MODEL / EFFORT HANDOFF
+
+- **Recommended model: `opus` · Recommended effort: `medium`. Switch before next task: NO if
+  already on opus; YES if on sonnet.**
+- **Why:** the next task is the three customer answers and rehearsal. That is judgement about
+  what a non-technical fleet buyer hears when told "92.3 false alarms per hour" and "the
+  in-camera version is not built" — not implementation. There is **no code left to write** in
+  Track 1, so a cheaper model buys nothing here.
+- **`sonnet` · `low` is sufficient** for: running the demo during rehearsal, the wifi-off
+  run, and ticking §F boxes.
+- **`opus` · `high` ONLY for:** the T4 `skip_predictor` read (a wrong call there silently
+  corrupts every comma2k19 score), interpreting the final FP/hour number, and the eventual
+  `NEW_PLAN.md` §10 amendment.
+- 🔴 **The user has a limited Claude subscription budget. Do not spend opus on routine
+  verification or on re-running anything §12 already marks as done.**
+
+---
+
+## 17-S18. FINAL HANDOFF CHECK · **SESSION 18, 2026-09-24. SUPERSEDED by §17-S19.**
 
 **Can a brand-new Claude answer these from `README.md` + `NEW_PLAN.md` + `progress.md` +
 the repo alone?**
