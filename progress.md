@@ -1,13 +1,156 @@
 # progress.md — execution state
 
 **Living execution-state file. `README.md` is the master plan; this file records progress against it.**
-Last updated: **2026-09-22, end of session 17 (continuation)**. `NEW_PLAN.md` is the detailed/current
+Last updated: **2026-09-24, end of session 18**. `NEW_PLAN.md` is the detailed/current
 execution plan and must be read alongside `README.md`.
 
 > **🔴 R1 IS DEAD (session 14) AND DETECTION TUNING IS NOW MEASURED TO BE THE WRONG LEVER
 > (session 15).** The project is executing **Step 2 — a real FP/hour denominator** on Google
-> **Colab (D72)**, on a **Tesla T4**. Nothing is running. Both decode changes are APPLIED
-> and COMMITTED (D70/D71). See the SESSION 17 block immediately below.
+> **Colab (D72)**, on a **Tesla T4**. Nothing is running there. Both decode changes are
+> APPLIED and COMMITTED (D70/D71). 🟢 **TRACK 1's DEMO IS NOW BUILT AND WORKING** —
+> `scripts/demo.py` exists, runs, and is pushed. See the SESSION 18 block immediately below.
+
+> # ▶▶▶▶▶▶▶▶▶▶▶ SESSION 18 (2026-09-24) — READ THIS FIRST
+>
+> ### What this session did, in one line
+>
+> **TRACK 1 DAY 1 AND DAYS 2–5 BOTH LANDED: `detect.py` was measured end to end on all three
+> demo videos, `scripts/demo.py` WAS BUILT AND WORKS, and nine sessions of unpushed history
+> was pushed to GitHub on the user's explicit instruction. Along the way two of the three
+> demo videos turned out to be variable-frame-rate with lying metadata, which moved their
+> committed scores.**
+>
+> | | |
+> |---|---|
+> | Commits this session | **3**: `a9410d2`, `7c96495`, `ab93a86` |
+> | HEAD | `ab93a86` · 🟢 **PUSHED. `main` is LEVEL with `origin/main`, 0 ahead** |
+> | Working tree | **CLEAN** |
+> | `scripts/demo.py` | 🟢 **EXISTS, 509 lines, 9/9 self-checks, verified on `crash1.mov`** |
+> | Five regression guards | re-run **twice** (before and after `demo.py`), **all exact** |
+> | `eval/` and `vendor/` | **UNTOUCHED** — `git status eval/ vendor/` empty |
+> | Colab / comma2k19 | **UNCHANGED from session 17.** Nothing run, nothing scored. |
+>
+> ---
+>
+> ### 1. 🟢 THE DEMO IS BUILT. `scripts/demo.py` WORKS (CONFIRMED, `7c96495`)
+>
+> One command, two passes, no UI — exactly D75's scope.
+> ```bash
+> PYTORCH_ENABLE_MPS_FALLBACK=1 ~/envs/badas/bin/python scripts/demo.py videos/crash1.mov
+> ```
+> **Verified end to end on `crash1.mov`:** 44 windows in 56.5 s (1.28 s/window), score
+> **0.9968**, which **reproduces the day-1 `detect.py` number exactly** — so the glue changes
+> no result. Pass 2 replayed all **257** frames with no exception, 8.5 s against 7.37 s of
+> video (`waitKey` granularity, ~15% slow, smooth, not worth chasing).
+>
+> 🔴 **It has NOT been run on `crash2.mov` (~41 s) or `safe.mp4` (~6 min).** That is the
+> single biggest open box and it is the exact next action.
+>
+> ---
+>
+> ### 2. ✅ THE PROGRESS COUNTER TOUCHES NO COMMITTED FILE (D80, CONFIRMED)
+>
+> `BadasOpen.score()` is one blocking call into vendored `predict()`; there is **no progress
+> hook**. The window loop lives at `vendor/badas-open/badas/utils/sliding_window.py:124` and
+> calls its `preprocess_fn` once per window (line 133), which calls the model's `processor`.
+> **So `demo.py` wraps `model._model.processor` with a counting proxy AT RUNTIME.** Exact
+> per-window ticks, **zero edits to `eval/` or `vendor/`**. The proxy must stay truthy and
+> callable because vendor code gates on `if self.processor` and `hasattr(..., "__call__")`;
+> `--self-check` asserts both. If the processor is absent it degrades to an elapsed-time line.
+>
+> ---
+>
+> ### 3. 🔴 TWO OF THE THREE DEMO VIDEOS ARE VFR WITH LYING METADATA (D79, CONFIRMED)
+>
+> I predicted the re-run would reproduce the committed scores byte for byte. **It did not, and
+> I was wrong about that.**
+>
+> | Video | Codec / fps | Header claims | cv2 reads | Trace was → now | Score was → now |
+> |---|---|---|---|---|---|
+> | `crash1.mov` | h264 / **35.158** | 259 | **257** | 56 → 59 | 0.9966185 → **0.9968072** |
+> | `crash2.mov` | h264 / **31.175** | 187 | **177** | 44 → 46 | 0.9960537 → **0.9958688** |
+> | `safe.mp4` | h264 / 24.000 | 714 | 714 ✅ | 238 → 238 | 0.9758111 → **0.9758111** ✅ |
+>
+> **Cause:** `6a705b3` changed frame extraction from seek-per-frame to straight-through
+> reading. On CFR video with honest metadata the two agree **exactly** — `safe.mp4`'s files
+> did not even change on disk. On a VFR file whose header overstates its own length they land
+> on different frames, the 8 fps resample differs, and the score shifts by ~2e-4.
+>
+> 🔴 **THIS DOES NOT RETRACT `6a705b3`'s 333/333 BYTE-IDENTICAL PROOF.** That ran over the
+> Nexar corpus, which is uniformly well-formed CFR H.264 — the `safe.mp4` category, which
+> still reproduces exactly. The proof was sound; **it simply never covered VFR input.** The
+> claim's correct scope is **"byte-identical on constant-frame-rate H.264"** and it must be
+> quoted that way from now on.
+>
+> **Demo impact: NONE.** All three cleared the gate before and after; the deltas are ~2e-4
+> against a 0.0025 gate margin (`safe.mp4`, the tightest). **User decision: keep the files,
+> record the new numbers.** Re-encoding to CFR is blocked — ffmpeg is not installed.
+>
+> 🟡 **Consequence for Track 2:** comma2k19 is raw HEVC with no container — a **third** decode
+> category, neither CFR-mp4 nor VFR-mov. This is direct evidence that **GATE D** (frame rate
+> read back THROUGH cv2) is load-bearing and must not be skipped.
+>
+> ---
+>
+> ### 4. 🔴 "crash2.mov HAS NEVER BEEN MEASURED" WAS FALSE (CONFIRMED, corrected)
+>
+> §21.15 item 7, §13, and `docs/sept30_demo.md` §E all said so. **The repository disagreed.**
+> `runs/incidents/crash2.json` and `runs/incidents/frames/crash2.npz` are **tracked** and were
+> committed at `90e8a58` ("Ship the MVP") carrying **0.9961**. The claim arose because
+> `runs/incidents/summary.jsonl` held only **two** rows (safe, crash1) — the last pre-session-18
+> run processed only those two, so crash2's record survived from an earlier run and the docs
+> lost track of it. **Corrected in `docs/sept30_demo.md` §E.**
+>
+> ---
+>
+> ### 5. 🟢 EVERYTHING IS PUSHED. THE "DO NOT PUSH" HOLD IS LIFTED (D81)
+>
+> The user said, verbatim: *"commit them and push it to github"*. Nine sessions and 23+
+> commits of unpushed history are now on `github.com:khushpal-cipher/crash-detection-system`.
+> **`main` is level with `origin/main`.** Checked before pushing: the 3.98 GB checkpoint is
+> correctly **untracked**, pack size 217.63 MiB, and a secret scan over every tracked text
+> file came back clean. 🔴 **§13's old "do not push" line is SUPERSEDED — the user decides,
+> and they decided yes.**
+>
+> ---
+>
+> ### 6. MEASURED: THE 1.7 s/WINDOW PLANNING FIGURE WAS PESSIMISTIC (CONFIRMED)
+>
+> ```
+>   crash1.mov   7.38 s   43 windows    57.3 s   1.333 s/window   0.9968  fires
+>   crash2.mov   5.75 s   30 windows    40.9 s   1.363 s/window   0.9959  fires
+>   safe.mp4    29.75 s  222 windows   351.2 s   1.582 s/window   0.9758  fires (FALSE ALARM)
+>   total 449.4 s of scoring, 463 s wall clock including the ~14 s model load
+> ```
+> It is **1.33–1.58 s/window**, not 1.7, and it **rises with clip length** — do not extrapolate
+> a short clip's rate to a long one. §D's *conclusion* still stands: `safe.mp4` really is ~6
+> minutes, so scoring during playback remains impossible and two passes is still required.
+> 🟢 **But the P0 clip needs no speed lever:** `crash1.mov` is 57 s. **`--stride 8` and
+> `skip_predictor` are P2, not P0.**
+>
+> ---
+>
+> ### 7. TWO PRESENTATION PROBLEMS FOUND AND FIXED (CONFIRMED)
+>
+> **(a) Fixed font sizes rendered as unreadable specks.** `crash1.mov` is **3408×1910**.
+> Every overlay size in `draw_overlay` now scales with frame height against a 1080 reference.
+> **(b) ~35 lines of `VJEPA2Model LOAD REPORT` UNEXPECTED-key warnings print on every start.**
+> They are expected — the checkpoint replaces the pooler and classifier head — but
+> `docs/sept30_demo.md` §F forbids warning spam. **Suppressed by default; `--loud` restores.**
+>
+> ---
+>
+> ### 8. WHAT WAS **NOT** DONE
+>
+> `demo.py` **not run on `crash2.mov` or `safe.mp4`.** The `safe.mp4` presentation decision
+> **not made**. **No rehearsal.** The two customer answers (*"how often does it false-alarm?"*
+> / *"whose data is this?"*) **not drafted**. **Nothing on Colab touched** — bundle-freshness
+> grep not run, `skip_predictor` still unverified on CUDA, no comma2k19 data, nothing scored.
+> `README.md` and `NEW_PLAN.md` **NOT modified**.
+>
+> **Read order for a brand-new Claude: this block → the SESSION 17 CONTINUATION block below →
+> §21.16 → §21.15 → §13 (exact next action) → §12 → §11 D79–D82 → §15.19 → §17-S18 →
+> `docs/sept30_demo.md` in full.**
 
 > # ▶▶▶▶▶▶▶▶▶▶▶ SESSION 17 CONTINUATION (2026-09-21 → 2026-09-22) — READ THIS FIRST
 >
@@ -3704,6 +3847,34 @@ Do not reverse these without new evidence.
   **Evidence needed:** comma2k19 ships synchronised IMU and CAN, so it is testable there.
   **Do not build it, and do not amend either planning document for it, without the user.**
 
+- **D79 — The sequential-decode identity claim is RE-SCOPED to constant-frame-rate video,
+  and the two `.mov` demo scores are ACCEPTED as they now stand.** **What:** `6a705b3` is
+  byte-identical on CFR H.264, **not** on VFR files with inaccurate headers. **Evidence:**
+  `safe.mp4` (24.000 fps, header 714 = reads 714) reproduced byte-identically; `crash1.mov`
+  (35.158 fps, header 259, reads 257) and `crash2.mov` (31.175 fps, header 187, reads 177)
+  each gained frames and shifted ~2e-4. **Why it is not a retraction:** the 333/333 Nexar
+  proof ran on a uniformly CFR corpus and remains valid within that scope. **User decision:**
+  keep the files, record the new numbers — all three still fire, and re-encoding is blocked
+  because ffmpeg is not installed. **Consequence:** quote the claim with its scope, and treat
+  **GATE D** as load-bearing for comma2k19's raw HEVC.
+- **D80 — `demo.py`'s progress counter is a RUNTIME WRAP, never a code edit.** **What:** wrap
+  `model._model.processor` with a counting proxy. **Why:** the only per-window hook is inside
+  `vendor/.../sliding_window.py:133`, and four of the five regression guards live in `eval/`.
+  **Evidence:** guards re-run after `demo.py` existed, all exact; `git status eval/ vendor/`
+  empty. **Consequence:** the proxy must stay truthy and callable — vendor gates on
+  `if self.processor` and `hasattr(..., "__call__")`. Asserted in `--self-check`.
+- **D81 — THE "DO NOT PUSH" HOLD IS LIFTED. Everything is pushed.** **What:** the user said
+  *"commit them and push it to github"*. **Evidence:** `main` is level with `origin/main`;
+  pre-push checks confirmed the 3.98 GB checkpoint untracked, 217.63 MiB pack, clean secret
+  scan. **Consequence:** §13's old "do not push, 21 commits pending" line is SUPERSEDED.
+  Future pushes are still the user's call, but the backlog is cleared.
+- **D82 — `scripts/demo.py` must NEVER grow a cached-replay path.** **What:** pass 2 replays
+  only what pass 1 just computed, in the same process. **Why:** a mode that replays an earlier
+  run's scores while implying it is live is the "fake functionality presented as real" failure
+  and is the one thing this demo cannot survive being caught doing (`docs/sept30_demo.md` §D).
+  **Note:** a headless *test* harness that stubs `cv2.imshow` to exercise the replay loop is
+  fine and was used this session — that is a test, not a demo feature.
+
 ---
 
 **NOT decisions of record:** `NEW_PLAN.md`'s hybrid keep/rebuild verdict and its ranked R1–R9 plan.
@@ -3714,6 +3885,35 @@ gate-3 design was explicitly signed off and IS a decision of record (D39) — th
 ---
 
 ## 12. THINGS THE NEXT CLAUDE MUST NOT DO
+
+**Added after SESSION 18 — do NOT redo these:**
+
+- **🔴 Do not rebuild, rewrite or "improve" `scripts/demo.py`.** It exists (`7c96495`, 509
+  lines), passes 9/9 self-checks, and is verified end to end on `crash1.mov`. Run it on the
+  other two videos; do not start it over.
+- **🔴 Do not give `demo.py` a cached-replay path (D82).** Pass 2 replays only what pass 1
+  just computed, in the same process.
+- **🔴 Do not edit `eval/` or `vendor/` to add progress reporting (D80).** The runtime
+  processor wrap already works and keeps all five guards green.
+- **🔴 Do not re-measure `detect.py`'s wall clock on the three demo videos.** Done and
+  recorded in `docs/sept30_demo.md` §E: 57.3 / 40.9 / 351.2 s, 1.33–1.58 s/window.
+- **Do not quote ~1.7 s/window any more.** Measured 1.33–1.58, rising with clip length.
+- **Do not reach for `--stride 8` or `skip_predictor` for the P0 demo.** `crash1.mov` scores
+  in 57 s at stride 1. They are P2 and only `safe.mp4` (351 s) would need them.
+- **🔴 Do not claim `6a705b3` is byte-identical without saying "on constant-frame-rate
+  H.264" (D79).** It is NOT identical on `crash1.mov` / `crash2.mov`.
+- **Do not "fix" the two `.mov` files or re-encode them.** User decision: keep and record.
+  ffmpeg is not installed anyway.
+- **Do not repeat the claim that `crash2.mov` has never been measured.** It was, at
+  `90e8a58`, carrying 0.9961; it now reads 0.9958688.
+- **Do not chase `demo.py`'s ~15% playback overrun.** 8.5 s against 7.37 s is `waitKey`
+  granularity over 257 frames; moving the clock start gained 0.1 s. Smooth enough.
+- **Do not re-run the five regression guards speculatively.** They were run TWICE this
+  session, before and after `demo.py`, all exact. Re-run them only after touching `eval/`.
+- **Do not tell the user there are unpushed commits (D81).** `main` is level with
+  `origin/main`.
+- **🔴 Do not un-suppress the transformers LOAD REPORT.** It is ~35 lines of expected
+  UNEXPECTED-key warnings and `docs/sept30_demo.md` §F forbids it on screen. `--loud` exists.
 
 **Added after the SESSION 17 CONTINUATION — do NOT redo these:**
 
@@ -4191,7 +4391,101 @@ now finished and committed, but the underlying decisions below still hold):**
 
 ---
 
-## 13. EXACT NEXT ACTION · **rewritten 2026-09-22, end of SESSION 17 CONTINUATION**
+## 13. EXACT NEXT ACTION · **rewritten 2026-09-24, end of SESSION 18**
+
+### ══ THE ONE EXACT NEXT ACTION ══
+
+### **TRACK 1 — run the EXISTING `scripts/demo.py` on the two videos it has never been run
+### on, and close the last verification box in `docs/sept30_demo.md` §F.**
+
+```bash
+cd /Users/khushpalsinghchouhan/dev/crash_detection/crash_detection_v2
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i ~/envs/badas/bin/python scripts/demo.py videos/crash2.mov
+PYTORCH_ENABLE_MPS_FALLBACK=1 caffeinate -i ~/envs/badas/bin/python scripts/demo.py videos/safe.mp4 --stride 8
+```
+
+🔴 **`scripts/demo.py` ALREADY EXISTS and WORKS. Do NOT rebuild it.** It is `7c96495`, 509
+lines, 9/9 self-checks, verified end to end on `crash1.mov` (44 windows, 56.5 s, 0.9968 —
+reproducing the day-1 `detect.py` number exactly). The only thing missing is that it has
+never been run on the other two videos.
+
+**Expect, and check:**
+- `crash2.mov` at stride 1: **~41 s**, score near **0.9959**, fires, playback ~5.8 s.
+- `safe.mp4`: at stride 1 it is **351 s**, which is unwatchable, so the command above uses
+  `--stride 8`. 🔴 **The stride-8 score WILL DIFFER from 0.9758 and that is expected** —
+  `demo.py` prints a red stride warning on screen for exactly this reason. **Never compare a
+  stride-8 score against the committed stride-1 numbers** (`docs/sept30_demo.md` §D).
+  Run it once at stride 1 too only if the user wants the six-minute version rehearsed.
+- Any traceback, warning spam, or dead flag is a §F failure and must be fixed.
+
+**Then tick the first box of `docs/sept30_demo.md` §F** (that file is a plan whose own tables
+are meant to be filled in — unlike `README.md` and `NEW_PLAN.md`, which stay untouched).
+
+**Why this first.** Six of §F's ten boxes are closed. This is the only remaining box that
+could still surface a *bug*, and `safe.mp4` is the longest pass 1 the progress bar has ever
+had to hold attention through. Better to find that now than on the 30th.
+
+### ══ THEN, IN ORDER (docs/sept30_demo.md §H days 6–9) ══
+
+1. **The two customer answers**, written with the user. *"How often does it false-alarm?"* —
+   the honest answer is **92.3 per hour on deliberately hard footage from a collision
+   dataset, over a 0.899 h denominator; the real-world number is being measured on 33 h of
+   highway driving.** *"Whose data is this?"* — Nexar's test-public corpus under
+   `data/nexar/LICENSE`, BADAS-Open under Apache-2.0, the three demo files predate the
+   project's dataset work. A third likely question — *"does it run in the camera?"* — is
+   README §32's two-stage IMU-wakes-video design, **which is NOT built**.
+2. **Make the `safe.mp4` decision** (`docs/sept30_demo.md` §E). Leave it out, or show it
+   deliberately as the honest-limitation close. 🔴 **Decide it WITH the user at rehearsal,
+   not before.** Note it costs 351 s at stride 1.
+3. **Rehearse end to end, timed.** Twice, the second time cold.
+4. **Fix whatever rehearsal exposes.** Day 9 is buffer — do not add features on day 9.
+
+### ══ TRACK 2 — comma2k19, ONLY WHEN THE USER SAYS THERE IS TIME (D76) ══
+
+**UNCHANGED FROM SESSION 17. Nothing on Colab was touched in session 18.**
+
+**FIRST, two seconds, before anything else on Colab:**
+```python
+!grep -c "VENDORED-UPSTREAM CHANGE (2026-09-21)" /content/repo/vendor/badas-open/badas/utils/video.py
+```
+`1` → the patched decoder is live. `0` → **STALE bundle; re-upload `runs/colab_bundle.tar.gz`
+(67,416 bytes, sha256 `84dee33c…`) to `MyDrive/crash_detection_colab/`.**
+🔴 **GATE B will NOT catch this for you (D77).** Missing it costs 65 h instead of 7.5 h.
+
+Colab §1 has already PASSED — do not re-run it. Then:
+
+1. **Verify `skip_predictor` on the T4 (D71).** ~5 min of GPU; the only applied change never
+   tested on CUDA. Score 3 Nexar clips with and without it against
+   `runs/baselines/badas-open/scores.jsonl`:
+   `01044 0.9179524779 · 01056 0.4771927893 · 01059 0.0893020481`.
+   Anything other than `max |delta| = 0.000e+00` → **do NOT use `--skip-predictor`**; fall
+   back to sequential-decode-only, which still projects to 9.3 h per 10 h and clears the bar.
+2. **Notebook §3 → §3b → §4.** Chunk 1 (~9 GB); R9's three-way partition by ROUTE, seed 0,
+   **before any score exists** (D58); **GATE D** — frame rate per segment from
+   `global_pos/frame_times` (**`global_pos/`, NOT `global_pose/`**), read back **through
+   cv2**, because cv2's reading becomes `len(scores)` and therefore `fp_rate`'s hours
+   denominator. 🔴 **Session 18's VFR finding (D79) is direct evidence GATE D is
+   load-bearing:** header frame counts lie, and comma2k19's raw HEVC is a third decode
+   category, neither CFR-mp4 nor VFR-mov.
+3. **Notebook §5, the 20-segment pilot. Report s/segment against the 72 s bar and STOP.**
+   `APPROVED_AFTER_PILOT = False` is a hard stop. **This is the real gate, not the
+   projection.**
+4. **After approval:** §6 (3 chunks ≈ 10 h) → §7 → re-derive the Nexar threshold on the T4
+   over all **667** clips (~6.8 h).
+5. **Compute the number LOCALLY:**
+   `~/envs/badas/bin/python -m eval.fp_rate --frames-dir runs/comma2k19/frames --label comma2k19`
+   Convention B headline, A beside it, denominators always, **never pooled with ZOD**.
+
+Total Colab budget from Colab's own measurements: **~14.3 h**.
+
+🟢 **PUSHING: the hold is LIFTED (D81).** `main` is level with `origin/main`. Future pushes
+are still the user's call, but there is no backlog and no warning to repeat.
+🔴 **Track C:** the user declined the outreach, citing time. Kill condition still
+**2026-10-02**. Raise it once if the demo lands early; do not nag.
+
+---
+
+## 13-S17b. SESSION 17 CONTINUATION's next action (SUPERSEDED by §13 — day 1 is DONE and `scripts/demo.py` now EXISTS. Track 2 half is still current.)
 
 ### ══ THE ONE EXACT NEXT ACTION ══
 
@@ -5174,6 +5468,28 @@ Keep them separate — do not add torch to `~/envs/crashdet` or TF to `~/envs/ba
 
 ---
 
+## 14-S18. NEXT 3–5 ACTIONS · **written end of SESSION 18. Supersedes §14-S17b.**
+
+1. **Run `scripts/demo.py` on `videos/crash2.mov` (stride 1, ~41 s) and `videos/safe.mp4`
+   (`--stride 8`, ~44 s projected).** Confirm no traceback, no warning spam, readable
+   overlay, sensible summary. 🔴 The stride-8 score WILL differ from 0.9758 — expected, and
+   printed on screen. Then tick the first box of `docs/sept30_demo.md` §F.
+2. **Draft the two customer answers with the user** — *"how often does it false-alarm?"*
+   (92.3/hour over 0.899 h of deliberately hard collision footage; real number being measured
+   on 33 h of highway) and *"whose data is this?"* (Nexar test-public under
+   `data/nexar/LICENSE`, BADAS-Open Apache-2.0, demo files predate the dataset work). Prepare
+   the third likely question too: *"does it run in the camera?"* → README §32, **not built**.
+3. **Rehearse end to end, timed, and make the `safe.mp4` decision with the user**
+   (`docs/sept30_demo.md` §E — leave it out, or show it as the honest-limitation close).
+4. **Rehearse a second time, cold.** Fix only what rehearsal exposes. Day 9 is buffer.
+5. **Track 2, only if the user says there is time:** the Colab bundle-freshness grep (D77),
+   then `skip_predictor` on the T4 (D71), then the 20-segment pilot and STOP.
+
+🔴 **Do NOT rebuild `scripts/demo.py`. Do NOT start comma2k19 ahead of the demo without
+asking (D76). Do NOT amend `NEW_PLAN.md` §10 unilaterally (D60).**
+
+---
+
 ## 14-S17b. NEXT 3–5 ACTIONS · **written end of SESSION 17 CONTINUATION. Supersedes §14-S17.**
 
 1. **Read `docs/sept30_demo.md` in full, then measure `scripts/detect.py` on the three demo
@@ -5436,6 +5752,61 @@ after ~2 weeks, evaluate a substitute corpus with real negatives — **not befor
 `corgi1205@gmail.com`; the official form's agreement document is a dead link). If 3a passes and DAD
 is still silent after ~2 weeks, evaluate a substitute corpus with real negatives — **not before**,
 it would be wasted work.
+
+---
+
+## 15.19 PLAN POSITION — SESSION 18 (current)
+
+### `README.md` POSITION (master plan)
+
+- **Current phase:** Track A, Phase 4 **COMPLETE**, Phase 5 gate **PASSED**. **Unchanged** —
+  nothing this session altered the roadmap.
+- **What it says should happen:** three concurrent tracks (§41). The product is the
+  **structured incident record** (§27). §31 makes **FP/hour the decider**, target < 0.1/hour.
+  §32 describes the eventual two-stage dashcam architecture (IMU trigger → video model).
+- **Completed:** Track A's measurement path; §27's MVP rung (`scripts/detect.py`); a decode
+  path fast enough to measure an honest denominator; 🟢 **and now a working demonstration of
+  the MVP rung (`scripts/demo.py`) that a non-technical person can watch.**
+- **Remains:** the FP/hour denominator (Track 2). Track B needs footage. **Track C declined
+  by the user**, kill condition 2026-10-02 unchanged.
+- 🟡 **Carried (D69):** §31's < 0.1 FP/hour needs ~30 h of clean footage to demonstrate.
+- 🟢 **D75 scope holds and is now SHIPPED:** the September 30 work targets README §27's *MVP*
+  rung, not *Prototype V1*. **README was NOT edited.**
+- 🟡 **D78 (IMU-first) still touches §32/§28 and still changes neither.** Hypothesis only.
+
+### `NEW_PLAN.md` POSITION (detailed/research plan)
+
+- **Current task:** **Step 2 — an honest FP/hour denominator** from comma2k19 (§8.2).
+- **Completed:** gates 1 ✅, 2 ✅, 3a ✅ (R1 FAILED); calibration Tiers 1–3 ✅; operating
+  point ✅; CPU/MPS ✅; MVP CLI ✅; FP/hour convention ✅; acquisition notebook ✅; GATE C run
+  and failed ✅ (twice, understood); platform chosen ✅; decode fix applied and proven ✅
+  (**now re-scoped to CFR H.264 by D79**); Colab §1 staged and gated ✅.
+- **Remains:** bundle-freshness check, `skip_predictor` on CUDA, acquire, pilot, full run,
+  produce FP/hour. **None of it moved in session 18.**
+- 🔴 **NEW_PLAN IS STILL NOT THE ACTIVE TRACK (D76).** The demo is, and the demo now exists.
+  Step 2 is paused-in-background, not abandoned — a resourcing decision on a limited Claude
+  budget, **not** evidence against the plan.
+
+### ALIGNMENT
+
+**No conflict between the two planning documents.** Both still point at the same step.
+
+**Five tensions, none resolved silently:**
+1. §10's ladder rests on a falsified premise (R1 dead, D53) and a falsified assumption
+   (AP→FP/hour, D59). **Still deliberately NOT amended (D60)** — **sixth session carried.**
+2. §8.2's 10 h target cannot demonstrate §31's < 0.1 FP/hour (D69). Same amendment.
+3. **D78's IMU-first framing is the INVERSE of NEW_PLAN R9.** Hypothesis only, not adopted.
+4. **`docs/sept30_demo.md` is a THIRD document, subordinate to both.** It governs only the
+   September 30 demo scope. Its §D/§E/§F were updated this session, which is its stated
+   purpose, and that is not a plan change.
+5. 🆕 **D79 narrows a claim NEW_PLAN and progress.md both lean on.** The sequential decoder
+   is byte-identical **on CFR H.264**, not universally. Nothing in either plan depends on the
+   wider claim — the Nexar corpus is CFR — but **GATE D is now demonstrably load-bearing**,
+   and anyone quoting "333/333 byte-identical" must carry the scope with it.
+
+**Three stale statements in `NEW_PLAN.md`, still deliberately UNEDITED** (progress drift):
+header says "Status: PROPOSAL — nothing implemented" (false); §3.4 quotes beta ECE 0.0498 vs
+the committed 0.0503; the gate-3 block says "~30 GB free" vs **19 GB** measured.
 
 ---
 
@@ -6188,6 +6559,66 @@ committed before being quoted anywhere.
 
 **6. F3 (temporal smoothing hurts) — reconfirmed and extended, still PROVISIONAL.** mean 0.7066,
 persistence k=4/8/16 all below max. Every averaging form is worse, for the reason in finding 3.
+
+---
+
+## 21.16 SESSION 18 FINDINGS — added 2026-09-24. Read after the top banner.
+
+**1. 🟢 `scripts/demo.py` EXISTS AND WORKS (CONFIRMED, `7c96495`, 509 lines).** Two passes in
+one command, no UI. Verified end to end on `crash1.mov`: **44 windows in 56.5 s
+(1.28 s/window), score 0.9968**, identical to the day-1 `detect.py` figure — the glue changes
+no result. Pass 2 rendered **all 257 frames** with no exception. **9/9 `--self-check` pass.**
+🔴 **NOT yet run on `crash2.mov` or `safe.mp4`.**
+
+**2. ✅ `eval/` AND `vendor/` ARE UNTOUCHED (CONFIRMED by `git status eval/ vendor/`, empty).**
+Five regression guards re-run **after** `demo.py` existed, all exact: T3 **AUC 0.5339 /
+AP 0.5218**; reduction **max 0.8349, last_window +0.0556**; timing **7/7**; heldout **null
+median ΔAP +0.0025**; gate3_mechanism **PASS (UNINTERPRETABLE, IQR 0.080 s)**. The gate
+re-derives live at **0.9733** for recall 0.80 (0.9830 at 0.70, 0.8098 at 0.95).
+
+**3. ✅ THE PROGRESS HOOK NEEDS NO CODE CHANGE (D80, CONFIRMED).**
+`vendor/badas-open/badas/utils/sliding_window.py:124` loops windows, calls `preprocess_fn`
+per window at line 133, which calls the model's `processor`. `demo.py` wraps
+`model._model.processor` at runtime with a counting proxy. `BadasOpen.score()` itself offers
+no hook — it is one blocking call into vendored `predict()`.
+
+**4. 🔴 TWO DEMO VIDEOS ARE VFR WITH INACCURATE HEADERS; THEIR SCORES MOVED (D79, CONFIRMED).**
+`crash1.mov` h264 **35.158 fps**, header 259 frames, cv2 reads **257**, trace 56→59, score
+**0.9966185 → 0.9968072**. `crash2.mov` h264 **31.175 fps**, header 187, reads **177**, trace
+44→46, score **0.9960537 → 0.9958688**. `safe.mp4` h264 **24.000 fps**, header 714, reads
+714, trace 238→238, score **0.9758111 → 0.9758111, files byte-identical**.
+**`6a705b3`'s 333/333 proof is NOT retracted** — Nexar is uniformly CFR H.264, the `safe.mp4`
+category. **Correct scope: "byte-identical on constant-frame-rate H.264".** Demo impact NONE;
+all three fire before and after. **GATE D is thereby shown to be load-bearing for comma2k19's
+raw HEVC, a third decode category.**
+
+**5. 🔴 "crash2.mov NEVER MEASURED" WAS FALSE (CONFIRMED, corrected).** `runs/incidents/
+crash2.json` is tracked, committed at `90e8a58`, carrying **0.9961**. `summary.jsonl` held
+only two rows, which is how the docs lost it. §21.15 item 7 is wrong on this point.
+
+**6. ✅ END-TO-END TIMING MEASURED (CONFIRMED).** `crash1` **57.3 s / 1.333 s/window**,
+`crash2` **40.9 s / 1.363**, `safe` **351.2 s / 1.582**; total **449.4 s** scoring, **463 s**
+wall clock. **1.33–1.58 s/window, NOT 1.7**, and it rises with clip length. Taken under
+ordinary desktop load (`uptime` 2.06, Chrome + Claude running), deliberately not a quiet rig.
+🟢 **`crash1.mov` at 57 s needs no speed lever — `--stride 8` and `skip_predictor` are P2.**
+
+**7. ✅ EVERYTHING IS PUSHED (D81).** `main` level with `origin/main`. Pre-push checks: 3.98 GB
+checkpoint **untracked**, pack **217.63 MiB**, secret scan over all tracked text files clean.
+
+**8. TWO PRESENTATION DEFECTS FOUND AND FIXED.** Fixed font sizes were unreadable on a
+**3408×1910** frame (now scaled to frame height against a 1080 reference); the ~35-line
+transformers LOAD REPORT is suppressed by default (`--loud` restores it).
+
+**9. PLAYBACK PACING IS ~15% SLOW AND DELIBERATELY NOT CHASED.** 8.5 s against 7.37 s of
+video. Moving the clock start past window creation gained only 0.1 s, so the cost is
+`waitKey` granularity across 257 frames, not startup. Smooth; not what the demo is about.
+
+**10. NOTHING ON COLAB WAS TOUCHED.** No bundle-freshness grep, `skip_predictor` still
+UNVERIFIED on CUDA, no comma2k19 data, nothing scored. Track 2 is exactly where session 17
+left it.
+
+**11. NEITHER PLANNING DOCUMENT WAS MODIFIED.** `docs/sept30_demo.md` §D/§E/§F were updated,
+which is that file's stated purpose.
 
 ---
 
@@ -7935,6 +8366,29 @@ document is known to be wrong.
 
 ## 16. README MODIFICATION STATUS
 
+## SESSION 18 — README CHANGED: **NO.** NEW_PLAN CHANGED: **NO.**
+
+Neither planning document was touched. `git status` confirms it.
+
+**What WAS edited:** `docs/sept30_demo.md` only — §D gained a supersession banner (the
+~1.7 s/window input was pessimistic; its two-pass conclusion stands), §E was rewritten with
+the measured table and the VFR finding, and §F's checklist was ticked to 6/10. **That file is
+a demo-prep plan whose own tables are meant to be filled in**, it is subordinate to both
+planning documents, and updating it is not a plan change.
+
+**Why no plan change was needed:** session 18 executed `docs/sept30_demo.md` §H days 1–5 as
+written. The measurement confirmed §D's conclusion while correcting its input number, and
+`scripts/demo.py` was built to the spec already in §B/§C/§D. Nothing discovered contradicts
+README's roadmap or NEW_PLAN's Step 2.
+
+**The one finding that touches a plan-level claim — D79 — was deliberately NOT written into
+either document.** The sequential-decode identity claim is now scoped to constant-frame-rate
+H.264. Nothing in either plan depends on the wider claim (Nexar is CFR), so the correction
+lives here and in `docs/sept30_demo.md` §E. **NEW_PLAN.md §10's amendment remains deferred
+for a sixth session (D60)** — still waiting on comma2k19's real number.
+
+---
+
 ## SESSION 16 — README CHANGED: **NO.** NEW_PLAN CHANGED: **NO.**
 
 Neither planning document was modified. Nothing this session changed the master plan or the
@@ -8283,6 +8737,65 @@ reframing is settled project direction, it is a legitimate plan-level README edi
 
 **Going forward: progress, session history, experiment results and task status belong in this file,
 not in `README.md`.**
+
+---
+
+## 17-S18. FINAL HANDOFF CHECK · **SESSION 18, 2026-09-24. Supersedes §17-S17b.**
+
+**Can a brand-new Claude answer these from `README.md` + `NEW_PLAN.md` + `progress.md` +
+the repo alone?**
+
+1. **What are we building?** A structured incident record from dashcam video (README §27).
+   The detector is a commodity — BADAS-Open is Apache-2.0 and free.
+2. **Master plan?** README: Track A Phase 4 complete, Phase 5 gate passed; §31 makes FP/hour
+   the decider at < 0.1/hour.
+3. **Detailed plan?** NEW_PLAN Step 2 — an honest FP/hour denominator from comma2k19.
+   **Paused in the background by D76.**
+4. **Which phase?** Track 1, the September 30 demo (`docs/sept30_demo.md`), days 1–5 **DONE**.
+5. **Previous session (17 + continuation)?** Platform decided (Colab), both decode changes
+   committed at `6a705b3`, `docs/sept30_demo.md` written, Colab §1 passed, GATE B found
+   unable to detect a stale bundle (D77), demo prioritised over comma2k19 (D76).
+6. **THIS session (18)?** Measured `detect.py` on all three demo videos; **built
+   `scripts/demo.py`** (`7c96495`); found two demo videos are VFR with lying headers (D79);
+   corrected the "crash2 never measured" claim; **pushed everything to GitHub** (D81).
+7. **Evidence?** §21.16, and `docs/sept30_demo.md` §E/§F. Five guards exact, twice.
+8. **What failed / was wrong?** My prediction that the re-run would reproduce the committed
+   scores — two of three did not (D79). The docs' claim that crash2 was never measured. The
+   ~1.7 s/window figure (actually 1.33–1.58). The first overlay was unreadable at 3408×1910.
+9. **Unknown?** `skip_predictor` on CUDA (D71). comma2k19's real decode cost. Whether
+   `safe.mp4`'s 6-minute pass 1 is tolerable in front of an audience. Whether the Colab
+   bundle staged in Drive is the patched one (D77 — grep it).
+10. **Decisions?** §11, D1–D82. Session 18 added **D79–D82**.
+11. **Not to repeat?** §12, including the new SESSION 18 block — above all, **do not rebuild
+    `scripts/demo.py`**.
+12. **Exact next action?** §13 — run `demo.py` on `crash2.mov` and `safe.mp4`.
+13. **Next 3–5?** §14-S18.
+14. **Plan changes needed?** **No.** §16's SESSION 18 entry explains why, and records that
+    NEW_PLAN §10's amendment is deferred a sixth time (D60).
+
+### 🔴 STATEMENTS ELSEWHERE IN THIS FILE THAT LATER TEXT RETRACTS
+
+Trust the **SESSION 18** block over everything below it wherever they disagree:
+- **§21.15 item 7 and §13-S17b say `crash2.mov` has never been measured. FALSE** — it was
+  measured at `90e8a58` (0.9961) and again in session 18 (0.9958688).
+- **§13-S17b and §14-S17b say `scripts/demo.py` does not exist. STALE** — it exists,
+  `7c96495`, and works.
+- **§13-S17b and §21.14 say "do not push, 21 commits pending". SUPERSEDED (D81)** — the user
+  instructed a push; `main` is level with `origin/main`.
+- **§21.14 item 10 and §12 describe `6a705b3` as byte-identical end to end. RE-SCOPED (D79)**
+  — byte-identical **on constant-frame-rate H.264**; the two `.mov` demo files differ.
+- **`docs/sept30_demo.md` §D's ~1.7 s/window is superseded** by §E's measured 1.33–1.58; a
+  banner in §D says so and its two-pass conclusion is unaffected.
+
+### SESSION END STATE
+
+**`scripts/demo.py` is COMPLETE and WORKING but verified on only ONE of three videos.**
+Nothing was left half-written: the working tree is clean, `main` is pushed, all nine
+self-checks and all five regression guards pass. What remains is **verification and
+rehearsal**, not implementation — run it on `crash2.mov` and `safe.mp4`, draft the two
+customer answers, decide the `safe.mp4` question, and rehearse twice.
+
+**Track 2 is exactly where session 17 left it.** No Colab cell was executed in session 18.
 
 ---
 
